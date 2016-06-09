@@ -34,5 +34,4 @@ public enum JDGExternalizerIDs {
         return id;
     }
 
-    public enum HASessionDeltaFact {}
 }
