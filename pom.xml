@@ -62,8 +62,7 @@
 
     <modules>
         <module>hacep-core</module>
-        <module>hacep-perf-client</module>
-        <module>hacep-playground</module>
+        <module>hacep-examples</module>
     </modules>
 
     <dependencyManagement>
@@ -98,13 +97,13 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>it.redhat.jdg</groupId>
-                <artifactId>model</artifactId>
+                <groupId>it.redhat.jdg.examples</groupId>
+                <artifactId>hacep-model</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>it.redhat.jdg</groupId>
-                <artifactId>rules</artifactId>
+                <groupId>it.redhat.jdg.examples</groupId>
+                <artifactId>hacep-rules</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

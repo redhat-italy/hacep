@@ -1,0 +1,19 @@
+package it.redhat.hacep.rules.reward.catalog;
+
+import it.redhat.hacep.rules.model.Gameplay;
+import it.redhat.hacep.rules.model.GameplayBet;
+
+import accumulate it.redhat.hacep.rules.reward.catalog.ConsecutiveDaysAccumulateFunction consecutivedays;
+
+declare Gameplay
+    @role( event )
+    @timestamp( timestamp.getTime() )
+    @expires( 60d )
+end
+
+declare GameplayBet
+    @role( event )
+    @timestamp ( timestamp.getTime() )
+    @expires( 60d )
+end
+
