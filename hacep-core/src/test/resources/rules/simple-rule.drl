@@ -1,0 +1,22 @@
+import it.redhat.hacep.cluster.TestFact
+
+dialect  "mvel"
+
+declare TestFact
+    @role( event )
+    @timestamp ( instant.toEpochMilli() )
+    @expires( 1d )
+end
+
+rule "proxy-rule"
+    when
+        $g: TestFact() over window:length(1)
+        $cumulative: Long(longValue>0) from accumulate(
+            TestFact($g.ppid == ppid, $amount: amount),
+            init(long total = 0),
+            action(total += $amount),
+            result(total)
+        )
+    then
+        channels["additions"].send($cumulative);
+end
