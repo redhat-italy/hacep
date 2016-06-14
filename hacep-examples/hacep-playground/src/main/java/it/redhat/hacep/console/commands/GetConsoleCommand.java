@@ -18,6 +18,7 @@
 package it.redhat.hacep.console.commands;
 
 import it.redhat.hacep.cache.GameplayKey;
+import it.redhat.hacep.configuration.HACEPApplication;
 import it.redhat.hacep.console.UI;
 import it.redhat.hacep.console.support.IllegalParametersException;
 import it.redhat.hacep.model.Key;
@@ -30,10 +31,10 @@ import java.util.NoSuchElementException;
 public class GetConsoleCommand implements ConsoleCommand {
 
     private static final String COMMAND_NAME = "get";
-    private final DefaultCacheManager cacheManager;
+    private final HACEPApplication application;
 
-    public GetConsoleCommand(DefaultCacheManager cacheManager) {
-        this.cacheManager = cacheManager;
+    public GetConsoleCommand(HACEPApplication application) {
+        this.application = application;
     }
 
     @Override
@@ -45,7 +46,7 @@ public class GetConsoleCommand implements ConsoleCommand {
     public boolean execute(UI console, Iterator<String> args) throws IllegalParametersException {
         try {
             String cacheName = args.next();
-            Cache<Key, Object> cache = cacheManager.getCache(cacheName, false);
+            Cache<Key, Object> cache = application.getCacheManager().getCache(cacheName, false);
 
             if (cache != null) {
                 String id = args.next();

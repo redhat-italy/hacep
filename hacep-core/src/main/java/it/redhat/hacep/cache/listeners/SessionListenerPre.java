@@ -17,7 +17,7 @@
 
 package it.redhat.hacep.cache.listeners;
 
-import it.redhat.hacep.configuration.HACEPConfiguration;
+import it.redhat.hacep.configuration.CamelConfiguration;
 import org.apache.camel.CamelContext;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
@@ -39,8 +39,8 @@ public class SessionListenerPre {
     public void rehash(DataRehashedEvent event) {
         logger.info("Rehashing STARTED for cache " + event.getCache());
         try {
-            logger.info("Suspending route " + HACEPConfiguration.CAMEL_ROUTE);
-            camelContext.suspendRoute(HACEPConfiguration.CAMEL_ROUTE);
+            logger.info("Suspending route " + CamelConfiguration.CAMEL_ROUTE);
+            camelContext.suspendRoute(CamelConfiguration.CAMEL_ROUTE);
         } catch (Exception e) {
             logger.error("Error suspending camel route.", e);
         }

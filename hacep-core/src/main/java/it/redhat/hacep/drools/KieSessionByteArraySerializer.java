@@ -78,7 +78,6 @@ public class KieSessionByteArraySerializer {
             return null;
         }
         ObjectInputStream ois = null;
-        ;
         ByteArrayInputStream inputStream = null;
         try {
             if (compressed) {

@@ -28,13 +28,15 @@ import org.kie.api.runtime.KieSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Produces;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@ApplicationScoped
 public class DroolsConfigurationImpl implements DroolsConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(DroolsConfigurationImpl.class);
-    private static final DroolsConfiguration INSTANCE = new DroolsConfigurationImpl();
 
     private final Map<String, Channel> channels = new ConcurrentHashMap<>();
     private final Map<String, Channel> replayChannels = new ConcurrentHashMap<>();
@@ -45,7 +47,7 @@ public class DroolsConfigurationImpl implements DroolsConfiguration {
     private static final String KSESSION_RULES = "hacep-sessions";
     private static final String KBASE_NAME = "hacep-rules";
 
-    private DroolsConfigurationImpl() {
+    public DroolsConfigurationImpl() {
         KieServices kieServices = KieServices.Factory.get();
         kieContainer = kieServices.getKieClasspathContainer();
         kieBase = kieContainer.getKieBase(KBASE_NAME);
@@ -82,13 +84,10 @@ public class DroolsConfigurationImpl implements DroolsConfiguration {
     @Override
     public int getMaxBufferSize() {
         try {
-            return Integer.valueOf(System.getProperty("grid.buffer", "10"));
+            return Integer.valueOf(System.getProperty("facts.buffer", "10"));
         } catch (IllegalArgumentException e) {
             return 10;
         }
     }
 
-    public static DroolsConfiguration get() {
-        return INSTANCE;
-    }
 }

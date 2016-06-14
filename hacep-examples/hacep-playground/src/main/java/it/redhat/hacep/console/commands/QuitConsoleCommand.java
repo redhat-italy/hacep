@@ -17,6 +17,7 @@
 
 package it.redhat.hacep.console.commands;
 
+import it.redhat.hacep.configuration.HACEPApplication;
 import it.redhat.hacep.console.UI;
 import it.redhat.hacep.console.support.IllegalParametersException;
 import org.apache.camel.CamelContext;
@@ -27,12 +28,10 @@ import java.util.Iterator;
 public class QuitConsoleCommand implements ConsoleCommand {
 
     private static final String COMMAND_NAME = "quit|exit|q|x";
-    private final DefaultCacheManager cacheManager;
-    private final CamelContext context;
+    private final HACEPApplication application;
 
-    public QuitConsoleCommand(DefaultCacheManager cacheManager, CamelContext context) {
-        this.cacheManager = cacheManager;
-        this.context = context;
+    public QuitConsoleCommand(HACEPApplication application) {
+        this.application = application;
     }
 
     @Override
@@ -44,11 +43,10 @@ public class QuitConsoleCommand implements ConsoleCommand {
     public boolean execute(UI console, Iterator<String> args) throws IllegalParametersException {
         console.println("Shutting down...");
         try {
-            context.stop();
+            application.stop();
         } catch (Exception e) {
             console.println("Can't stop camel route: " + e.getMessage());
         }
-        cacheManager.stop();
         return false;
     }
 

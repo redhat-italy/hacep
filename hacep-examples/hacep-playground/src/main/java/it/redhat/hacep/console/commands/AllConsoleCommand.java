@@ -18,6 +18,7 @@
 package it.redhat.hacep.console.commands;
 
 import it.redhat.hacep.JDG;
+import it.redhat.hacep.configuration.HACEPApplication;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.console.UI;
 import it.redhat.hacep.console.support.IllegalParametersException;
@@ -29,10 +30,10 @@ import java.util.Iterator;
 public class AllConsoleCommand implements ConsoleCommand {
 
     private static final String COMMAND_NAME = "all";
-    private final DefaultCacheManager cacheManager;
+    private final HACEPApplication application;
 
-    public AllConsoleCommand(DefaultCacheManager cacheManager) {
-        this.cacheManager = cacheManager;
+    public AllConsoleCommand(HACEPApplication application) {
+        this.application = application;
     }
 
     @Override
@@ -44,7 +45,7 @@ public class AllConsoleCommand implements ConsoleCommand {
     public boolean execute(UI console, Iterator<String> args) throws IllegalParametersException {
 
         String cacheName = args.next();
-        Cache<Key, Object> cache = cacheManager.getCache(cacheName, false);
+        Cache<Key, Object> cache = application.getCacheManager().getCache(cacheName, false);
 
         if (cache != null) {
             JDG.valuesFromKeys(cache).forEach(console::println);

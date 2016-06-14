@@ -44,8 +44,9 @@
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <version.org.infinispan>6.4.0.Final-redhat-4</version.org.infinispan>
-        <version.org.jboss>6.4.0.GA</version.org.jboss>
+        <version.org.jboss.fuse>6.2.1.redhat-084</version.org.jboss.fuse>
         <version.org.jboss.bom.brms>6.2.0.GA-redhat-1</version.org.jboss.bom.brms>
+        <version.org.jboss.bom.eap>6.4.5.GA</version.org.jboss.bom.eap>
 
         <version.buildhelper.maven.plugin>1.7</version.buildhelper.maven.plugin>
         <version.maven.surefire>2.18.1</version.maven.surefire>
@@ -68,6 +69,14 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>org.jboss.bom.eap</groupId>
+                <artifactId>jboss-javaee-6.0-with-transactions</artifactId>
+                <version>${version.org.jboss.bom.eap}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-bom</artifactId>
                 <version>${version.org.infinispan}</version>
@@ -84,11 +93,17 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.camel</groupId>
-                <artifactId>camel-parent</artifactId>
-                <version>${camel-version}</version>
+                <groupId>org.jboss.fuse.bom</groupId>
+                <artifactId>jboss-fuse-parent</artifactId>
+                <version>${version.org.jboss.fuse}</version>
                 <type>pom</type>
                 <scope>import</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.guava</groupId>
+                        <artifactId>guava</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
