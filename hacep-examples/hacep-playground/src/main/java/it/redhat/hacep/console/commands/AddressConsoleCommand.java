@@ -17,6 +17,7 @@
 
 package it.redhat.hacep.console.commands;
 
+import it.redhat.hacep.configuration.HACEPApplication;
 import it.redhat.hacep.console.UI;
 import it.redhat.hacep.console.support.IllegalParametersException;
 import org.infinispan.manager.DefaultCacheManager;
@@ -26,12 +27,11 @@ import java.util.Iterator;
 public class AddressConsoleCommand implements ConsoleCommand {
 
     private static final String COMMAND_NAME = "address";
-    private DefaultCacheManager cacheManager;
+    private final HACEPApplication application;
 
-    public AddressConsoleCommand(DefaultCacheManager cacheManager) {
-        this.cacheManager = cacheManager;
+    public AddressConsoleCommand(HACEPApplication application) {
+        this.application = application;
     }
-
 
     @Override
     public String command() {
@@ -40,7 +40,7 @@ public class AddressConsoleCommand implements ConsoleCommand {
 
     @Override
     public boolean execute(UI console, Iterator<String> args) throws IllegalParametersException {
-        console.println(cacheManager.getAddress());
+        console.println(application.getCacheManager().getAddress());
         return true;
     }
 

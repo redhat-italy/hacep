@@ -17,27 +17,29 @@
 
 package it.redhat.hacep;
 
-import it.redhat.hacep.configuration.PlaygroundConfiguration;
+import it.redhat.hacep.configuration.HACEPApplication;
 import it.redhat.hacep.console.TextUI;
 import it.redhat.hacep.console.UI;
-import it.redhat.hacep.console.commands.ConsoleCommand;
+import it.redhat.hacep.console.commands.*;
+import org.jboss.weld.environment.se.Weld;
+import org.jboss.weld.environment.se.WeldContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 public class Main {
 
     private static Logger log = LoggerFactory.getLogger(Main.class.getName());
 
-    public static void main(String[] args) throws IOException {
-        PlaygroundConfiguration configuration = new PlaygroundConfiguration().configure();
+    public static void main(String[] args) throws Exception {
+        Weld weld = new Weld();
+        WeldContainer container = weld.initialize();
 
-        UI textUI = new TextUI(System.in, System.out);
-        List<ConsoleCommand> uiCommands = configuration.baseCommands();
-        uiCommands.forEach(textUI::register);
-
-        new Hacep().configure(configuration).connectConsole(textUI).start();
+        HACEPApplication application = container.instance().select(HACEPApplication.class).get();
+        Playground playground = new Playground(application);
+        playground.start();
     }
+
 }

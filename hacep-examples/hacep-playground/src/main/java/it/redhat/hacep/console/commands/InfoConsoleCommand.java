@@ -17,6 +17,7 @@
 
 package it.redhat.hacep.console.commands;
 
+import it.redhat.hacep.configuration.HACEPApplication;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.console.UI;
 import it.redhat.hacep.console.support.IllegalParametersException;
@@ -30,10 +31,10 @@ public class InfoConsoleCommand implements ConsoleCommand {
 
     private static final String COMMAND_NAME = "info";
 
-    private DefaultCacheManager cacheManager;
+    private final HACEPApplication application;
 
-    public InfoConsoleCommand(DefaultCacheManager cacheManager) {
-        this.cacheManager = cacheManager;
+    public InfoConsoleCommand(HACEPApplication application) {
+        this.application = application;
     }
 
     @Override
@@ -46,7 +47,7 @@ public class InfoConsoleCommand implements ConsoleCommand {
 
         try {
             String cacheName = args.next();
-            Cache<Key, Object> cache = cacheManager.getCache(cacheName, false);
+            Cache<Key, Object> cache = application.getCacheManager().getCache(cacheName, false);
 
             if (cache != null) {
                 console.println(buildInfo(cache));
@@ -62,7 +63,7 @@ public class InfoConsoleCommand implements ConsoleCommand {
     }
 
     private String generalInfo() {
-
+        DefaultCacheManager cacheManager = application.getCacheManager();
         StringBuilder info = new StringBuilder();
         info.append("Cache Manager Status: ").append(cacheManager.getStatus()).append("\n");
         info.append("Cache Manager Address: ").append(cacheManager.getAddress()).append("\n");

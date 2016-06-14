@@ -18,6 +18,7 @@
 package it.redhat.hacep.cache.session;
 
 import it.redhat.hacep.configuration.DroolsConfiguration;
+import it.redhat.hacep.configuration.annotations.HACEPSessionCache;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.model.SessionKey;
@@ -25,6 +26,7 @@ import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -34,13 +36,13 @@ public class SessionSaver {
     private static final Logger audit = LoggerFactory.getLogger("audit.redhat.hacep");
 
     private final ConcurrentMap<String, Object> locks = new ConcurrentHashMap<>();
-    private final Cache<Key, Object> sessionCache;
-    private DroolsConfiguration droolsConfiguration;
 
-    public SessionSaver(Cache<Key, Object> sessionCache, DroolsConfiguration droolsConfiguration) {
-        this.sessionCache = sessionCache;
-        this.droolsConfiguration = droolsConfiguration;
-    }
+    @Inject
+    @HACEPSessionCache
+    private Cache<Key, Object> sessionCache;
+
+    @Inject
+    private DroolsConfiguration droolsConfiguration;
 
     public SessionSaver insert(Key key, Fact fact) {
         SessionKey sessionKey = new SessionKey(key.getGroup());

@@ -18,11 +18,11 @@
 package it.redhat.hacep.console.commands;
 
 import it.redhat.hacep.JDG;
+import it.redhat.hacep.configuration.HACEPApplication;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.console.UI;
 import it.redhat.hacep.console.support.IllegalParametersException;
 import org.infinispan.Cache;
-import org.infinispan.manager.DefaultCacheManager;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -30,11 +30,11 @@ import java.util.Set;
 public class ReplicaConsoleCommand implements ConsoleCommand {
 
     private static final String COMMAND_NAME = "replica";
-    private final DefaultCacheManager cacheManager;
 
+    private final HACEPApplication application;
 
-    public ReplicaConsoleCommand(DefaultCacheManager cacheManager) {
-        this.cacheManager = cacheManager;
+    public ReplicaConsoleCommand(HACEPApplication application) {
+        this.application = application;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class ReplicaConsoleCommand implements ConsoleCommand {
     public boolean execute(UI console, Iterator<String> args) throws IllegalParametersException {
 
         String cacheName = args.next();
-        Cache<Key, Object> cache = cacheManager.getCache(cacheName, false);
+        Cache<Key, Object> cache = application.getCacheManager().getCache(cacheName, false);
 
         if (cache != null) {
             Set<String> replicas = JDG.replicaValuesFromKeys(cache);
