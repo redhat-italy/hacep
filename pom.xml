@@ -36,17 +36,7 @@
     </licenses>
 
     <properties>
-        <activemq-version>5.13.2</activemq-version>
-        <camel-version>2.15.1</camel-version>
-        <junit.version>4.12</junit.version>
-        <mockito.version>1.10.19</mockito.version>
-        <log4j.version>1.2.17</log4j.version>
-
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <version.org.infinispan>6.4.0.Final-redhat-4</version.org.infinispan>
-        <version.org.jboss.fuse>6.2.1.redhat-084</version.org.jboss.fuse>
-        <version.org.jboss.bom.brms>6.2.0.GA-redhat-1</version.org.jboss.bom.brms>
-        <version.org.jboss.bom.eap>6.4.5.GA</version.org.jboss.bom.eap>
 
         <version.buildhelper.maven.plugin>1.7</version.buildhelper.maven.plugin>
         <version.maven.surefire>2.18.1</version.maven.surefire>
@@ -56,8 +46,10 @@
         <maven.compiler.plugin.version>3.3</maven.compiler.plugin.version>
         <maven.resources.plugin.version>2.6</maven.resources.plugin.version>
         <maven.bundle.plugin.version>2.3.7</maven.bundle.plugin.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <junit.version>4.12</junit.version>
+        <mockito.version>1.10.19</mockito.version>
+        <log4j.version>1.2.17</log4j.version>
         <slf4j.version>1.7.12</slf4j.version>
     </properties>
 
@@ -66,46 +58,118 @@
         <module>hacep-examples</module>
     </modules>
 
+    <profiles>
+        <profile>
+            <id>supported-GA</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <version.org.infinispan>6.4.0.Final-redhat-4</version.org.infinispan>
+                <version.org.jboss.fuse>6.2.1.redhat-084</version.org.jboss.fuse>
+                <version.org.jboss.bom.brms>6.2.0.GA-redhat-1</version.org.jboss.bom.brms>
+                <version.org.jboss.bom.eap>6.4.5.GA</version.org.jboss.bom.eap>
+            </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>javax.jms</groupId>
+                        <artifactId>jms</artifactId>
+                        <version>1.1</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.infinispan</groupId>
+                        <artifactId>infinispan-bom</artifactId>
+                        <version>${version.org.infinispan}</version>
+                        <type>pom</type>
+                        <scope>import</scope>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.bom.brms</groupId>
+                        <artifactId>jboss-brms-bpmsuite-bom</artifactId>
+                        <version>${version.org.jboss.bom.brms}</version>
+                        <type>pom</type>
+                        <scope>import</scope>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.fuse.bom</groupId>
+                        <artifactId>jboss-fuse-parent</artifactId>
+                        <version>${version.org.jboss.fuse}</version>
+                        <type>pom</type>
+                        <scope>import</scope>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>com.google.guava</groupId>
+                                <artifactId>guava</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+        <profile>
+            <id>community</id>
+            <properties>
+                <version.org.infinispan>8.2.2.Final</version.org.infinispan>
+                <version.org.drools.bom>6.4.0.Final</version.org.drools.bom>
+                <version.org.jboss.bom>1.0.7.Final</version.org.jboss.bom>
+                <version.org.apache.camel>2.15.1</version.org.apache.camel>
+                <version.org.apache.activemq>5.11.1</version.org.apache.activemq>
+            </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>javax.jms</groupId>
+                        <artifactId>jms</artifactId>
+                        <version>1.1</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.infinispan</groupId>
+                        <artifactId>infinispan-bom</artifactId>
+                        <version>${version.org.infinispan}</version>
+                        <type>pom</type>
+                        <scope>import</scope>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.drools</groupId>
+                        <artifactId>drools-bom</artifactId>
+                        <version>${version.org.drools.bom}</version>
+                        <type>pom</type>
+                        <scope>import</scope>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.apache.camel</groupId>
+                        <artifactId>camel-parent</artifactId>
+                        <version>${version.org.apache.camel}</version>
+                        <type>pom</type>
+                        <scope>import</scope>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>com.google.guava</groupId>
+                                <artifactId>guava</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.activemq</groupId>
+                        <artifactId>activemq-parent</artifactId>
+                        <version>${version.org.apache.activemq}</version>
+                        <type>pom</type>
+                        <scope>import</scope>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+    </profiles>
+
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>org.jboss.bom.eap</groupId>
-                <artifactId>jboss-javaee-6.0-with-transactions</artifactId>
-                <version>${version.org.jboss.bom.eap}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-bom</artifactId>
-                <version>${version.org.infinispan}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.bom.brms</groupId>
-                <artifactId>jboss-brms-bpmsuite-bom</artifactId>
-                <version>${version.org.jboss.bom.brms}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.fuse.bom</groupId>
-                <artifactId>jboss-fuse-parent</artifactId>
-                <version>${version.org.jboss.fuse}</version>
-                <type>pom</type>
-                <scope>import</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.google.guava</groupId>
-                        <artifactId>guava</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
             <dependency>
                 <groupId>it.redhat.jdg</groupId>
                 <artifactId>hacep-core</artifactId>
@@ -178,7 +242,6 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-
         </plugins>
 
         <pluginManagement>
