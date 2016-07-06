@@ -54,6 +54,7 @@
     </properties>
 
     <modules>
+        <module>hacep-core-model</module>
         <module>hacep-core</module>
         <module>hacep-examples</module>
     </modules>
@@ -170,6 +171,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>it.redhat.jdg</groupId>
+                <artifactId>hacep-core-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>it.redhat.jdg</groupId>
                 <artifactId>hacep-core</artifactId>
