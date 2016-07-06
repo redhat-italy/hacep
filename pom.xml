@@ -74,12 +74,6 @@
             <dependencyManagement>
                 <dependencies>
                     <dependency>
-                        <groupId>javax.jms</groupId>
-                        <artifactId>jms</artifactId>
-                        <version>1.1</version>
-                    </dependency>
-
-                    <dependency>
                         <groupId>org.infinispan</groupId>
                         <artifactId>infinispan-bom</artifactId>
                         <version>${version.org.infinispan}</version>
@@ -122,12 +116,6 @@
             </properties>
             <dependencyManagement>
                 <dependencies>
-                    <dependency>
-                        <groupId>javax.jms</groupId>
-                        <artifactId>jms</artifactId>
-                        <version>1.1</version>
-                    </dependency>
-
                     <dependency>
                         <groupId>org.infinispan</groupId>
                         <artifactId>infinispan-bom</artifactId>
@@ -192,6 +180,12 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.jboss.spec.javax.transaction</groupId>
+                <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+                <version>1.0.0.Final</version>
+            </dependency>
+
             <!--TEST-->
             <dependency>
                 <groupId>junit</groupId>
@@ -225,6 +219,15 @@
 
         </dependencies>
     </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>

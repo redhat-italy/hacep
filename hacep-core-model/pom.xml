@@ -26,12 +26,4 @@
     <name>HACEP Core Model</name>
     <packaging>jar</packaging>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
-
 </project>
