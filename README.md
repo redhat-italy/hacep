@@ -6,10 +6,16 @@ HACEP base project
 Build instructions
 ==================
 
-To build the code you just need Maven.
+To build the code you just need Maven. This way you are building code using the Red Hat supported repositories. 
 
 ```shell
 mvn clean install
+```
+
+Instead to build code using community repository simply add the "community" profile to the Maven command
+
+```shell
+mvn clean install -P community
 ```
 
 Install the Maven repositories
