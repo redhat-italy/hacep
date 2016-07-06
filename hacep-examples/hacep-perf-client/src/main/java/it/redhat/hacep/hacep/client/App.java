@@ -102,7 +102,7 @@ public class App {
 
     private boolean getSecurity() {
         try {
-            return Boolean.valueOf(System.getProperty("broker.security", "false"));
+            return Boolean.valueOf(System.getProperty("broker.authentication", "false"));
         } catch (IllegalArgumentException e) {
             return false;
         }
