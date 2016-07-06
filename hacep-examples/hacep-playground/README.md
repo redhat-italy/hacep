@@ -73,3 +73,35 @@ help
 exit|quit|q|x
      Exit the shell.
 ```
+
+Troubleshooting
+===============
+
+Multicast routing
+-----------------
+
+When using UDP, IP multicasting is required
+
+On some systems, could be needed to add multicast route(s) 
+
+Otherwise, the default route will be used
+
+Note that some systems don’t consult the routing table for IP multicast routing, only for unicast routing
+
+MacOS example:
+
+```shell
+# When binding to 127.0.0.1, UDP.mcast_addr should be set to a value between 224.0.0.1 and 231.255.255.254
+# Adds a multicast route for 224.0.0.1-231.255.255.254
+sudo route add -net 224.0.0.0/5 127.0.0.1
+
+# Adds a multicast route for 232.0.0.1-239.255.255.254
+sudo route add -net 232.0.0.0/5 192.168.1.3
+```
+
+Linux example:
+
+```shell
+# When binding to 127.0.0.1, UDP.mcast_addr should be set to a value between 224.0.0.1 and 231.255.255.254
+route add -net 224.0.0.0 netmask 240.0.0.0 dev lo
+```
