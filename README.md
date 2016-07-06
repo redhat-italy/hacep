@@ -18,10 +18,10 @@ Alternatively, you can build code using community repository: simply add the "co
 mvn clean install -P community
 ```
 
-Install the Maven repositories
-------------------------------
+Install the Red Hat supported Maven repositories
+------------------------------------------------
 
-If you want to use the Red Hat supported bits, you must install JDG/BRMS/EAP repos and edit accordingly the <version.org.infinispan> attribute in POM.xml.
+If you want to use the Red Hat supported bits, you must install JDG/BRMS/EAP repos.
 
 How to install the various repositories:
  
@@ -31,7 +31,6 @@ How to install the various repositories:
 * [EAP 7.0 maven repository](https://access.redhat.com/jbossnetwork/restricted/softwareDetail.html?softwareId=43861&product=appplatform&version=&downloadType=distributions)
 
 For your reference, you will find an example settings.xml to copy in your .m2 directory in the example-maven-settings directory.
-
 This Maven settings.xml assumes you have unzipped the repositories in the following locations, so edit it accordingly:
 
 * /opt/jboss-datagrid-7.0.0-maven-repository
@@ -42,4 +41,4 @@ This Maven settings.xml assumes you have unzipped the repositories in the follow
 Run the example
 ---------------
 
-Please refer to hacep-playground submodule Readme.md for detailed instructions on how to run an example.
+Please refer to hacep-examples -> hacep-playground submodule Readme.md for detailed instructions on how to run an example.

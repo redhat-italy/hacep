@@ -2,14 +2,51 @@ HACEP-playground
 ================
 
 A small project to learn and explore HACEP using a command line.
-This is the common base project.
 
 Running HACEP-playground
-========================
+------------------------
 
-An example script is in the scripts directory. 
+An example script is in the scripts directory. Alternatively, you can use mvn -P run.
 
-You can override HACEP behaviour passing -D options. Default values are:
+For example to launch four nodes on a single machine for the basic playground just run these commands using different terminals:
+
+```shell
+mvn -P run -DnodeName=node1 -Djava.net.preferIPv4Stack=true -Djgroups.bind_addr=localhost -Dgrid.buffer=5000 -Dqueue.url=tcp://localhost:61616 -Dqueue.security=true -Dqueue.usr=admin -Dqueue.pwd=admin
+
+mvn -P run -DnodeName=node2 -Djava.net.preferIPv4Stack=true -Djgroups.bind_addr=localhost -Dgrid.buffer=5000 -Dqueue.url=tcp://localhost:61616 -Dqueue.security=true -Dqueue.usr=admin -Dqueue.pwd=admin
+
+mvn -P run -DnodeName=node3 -Djava.net.preferIPv4Stack=true -Djgroups.bind_addr=localhost -Dgrid.buffer=5000 -Dqueue.url=tcp://localhost:61616 -Dqueue.security=true -Dqueue.usr=admin -Dqueue.pwd=admin
+
+mvn -P run -DnodeName=node4 -Djava.net.preferIPv4Stack=true -Djgroups.bind_addr=localhost -Dgrid.buffer=5000 -Dqueue.url=tcp://localhost:61616 -Dqueue.security=true -Dqueue.usr=admin -Dqueue.pwd=admin
+```
+
+If you bind on localhost and use UDP, you'll probably have to configure your routing table accordingly, see Troubleshooting section
+
+Or on four different machines:
+
+```shell
+cd playground
+mvn -P run -Djava.net.preferIPv4Stack=true -Djgroups.bind_addr=localhost -Dgrid.buffer=5000 -Dqueue.url=tcp://localhost:61616 -Dqueue.security=true -Dqueue.usr=admin -Dqueue.pwd=admin
+
+cd playground
+mvn -P run -Djava.net.preferIPv4Stack=true -Djgroups.bind_addr=localhost -Dgrid.buffer=5000 -Dqueue.url=tcp://localhost:61616 -Dqueue.security=true -Dqueue.usr=admin -Dqueue.pwd=admin
+
+cd playground
+mvn -P run -Djava.net.preferIPv4Stack=true -Djgroups.bind_addr=localhost -Dgrid.buffer=5000 -Dqueue.url=tcp://localhost:61616 -Dqueue.security=true -Dqueue.usr=admin -Dqueue.pwd=admin
+
+cd playground
+mvn -P run -Djava.net.preferIPv4Stack=true -Djgroups.bind_addr=localhost -Dgrid.buffer=5000 -Dqueue.url=tcp://localhost:61616 -Dqueue.security=true -Dqueue.usr=admin -Dqueue.pwd=admin
+```
+
+Configuring HACEP
+-----------------
+
+You can override HACEP behaviour passing -D options from the CLI. 
+
+TOD: update with final version of parameters
+
+Default values are:
+
 * jgroups.configuration=jgroups-tcp.xml
 * grid.mode=DIST_SYNC
 * grid.owners=2
@@ -18,54 +55,22 @@ You can override HACEP behaviour passing -D options. Default values are:
 * queue.name=HACEP.FACT
 * queue.prefetch=5
 * queue.consumers=5
-* session.compression=false
-
 
 Please refer to the parent project Readme.md for more details
 
-Usage
------
+HACEP-Playground CLI Usage
+--------------------------
 
-Every node will have its own command line interface "attached", which you can use to play with HACEP.
+Every node has attached its own command line interface, which you can use to play with HACEP.
+
+TOD: update with final version of commands
+
 Type 'help' on the command line to show a list of commands:
 
 ```shell
 
-all
-     List all valuesFromKeys.
-
-get id
-     Get an object from the grid.
-
-put id value
-     Put an object (id, value) in the grid.
-
-putIfAbsent|putifabsent|pia id value
-     Put an object (id, value) in the grid if not already present
-
-locate id
-     Locate an object in the grid.
-
-loadtest
-     Load example values in the grid
-
-local
-     List all local valuesFromKeys.
-
-primary
-     List all local valuesFromKeys for which this node is primary.
-
-clear
-     Clear all valuesFromKeys.
-
 info
      Information on cache.
-
-replica
-    List all local valuesFromKeys for which this node is a replica.
-    
-routing
-     Print routing table.
 
 help
      List of commands.
