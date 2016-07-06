@@ -10,10 +10,12 @@ HACEP Playground
 ----------------
 
 CLI Example of HACEP. Deployed in a plain JVM. 
+
 Detailed instructions in its README.md
 
 HACEP EAP Playground
 --------------------
 
 REST Example of HACEP. Deployed in EAP. 
+
 Detailed instructions in its README.md
