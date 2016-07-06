@@ -6,13 +6,13 @@ HACEP Core project
 Build instructions
 ==================
 
-To build the code you just need Maven. Default builds code using the Red Hat supported repositories. 
+To build the HACEP core code you just need Maven. Default builds code using the Red Hat supported repositories. 
 
 ```shell
 mvn clean install
 ```
 
-Alternatively, you can build code using community repository: simply add the "community" profile to the Maven command
+Alternatively, you can build the core using community repository: simply add the "community" profile to the Maven command
 
 ```shell
 mvn clean install -P community
@@ -38,7 +38,7 @@ This Maven settings.xml assumes you have unzipped the repositories in the follow
 * /opt/jboss-eap-7.0.0.GA-maven-repository/maven-repository
 
 
-Run the example
----------------
+Run an HACEP example
+--------------------
 
-Please refer to hacep-examples -> hacep-playground submodule Readme.md for detailed instructions on how to run an example.
+Please refer to hacep-examples -> hacep-playground submodule Readme.md for detailed instructions on how to run an HACEP example.
