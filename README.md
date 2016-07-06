@@ -41,4 +41,4 @@ This Maven settings.xml assumes you have unzipped the repositories in the follow
 Run an HACEP example
 --------------------
 
-Please refer to hacep-examples -> hacep-playground submodule Readme.md for detailed instructions on how to run an HACEP example.
+Please refer to hacep-examples Readme.md for detailed instructions on how to run an HACEP example.
