@@ -28,6 +28,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>it.redhat.jdg</groupId>
+            <artifactId>hacep-core-model</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
         </dependency>
