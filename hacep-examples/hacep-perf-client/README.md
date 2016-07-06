@@ -19,21 +19,25 @@ You can override HACEP-perf-client behaviour passing -D options from the CLI.
 
 Parameters:
 
+* duration
+
+Duration of the test. Default is 15 (in minutes) 
+
 * concurrent.players
 
 How many different concurrent players. Default is 5.
 
 * delay.range
 
-Each player starts at a random moment in the delay.range interval. Default is 15 seconds
+Each player starts at a random moment in the delay.range interval. Default is 15 (in seconds)
 
 * event.interval
 
-Interval time between each player event. Default is 3 seconds
+Interval time between each player event. Default is 3 (in seconds)
 
 * test.preload
 
-If true, HACEP-perf-client will preload the Queue with test.messages.Default is false
+If true, HACEP-perf-client will preload the Queue with test.messages. Default is false
 
 * test.messages
 
@@ -54,7 +58,3 @@ Broker authentication User
 * broker.pwd 
 
 Broker authentication User
-
-* duration
-
-Duration in minutes. Default is 15 
