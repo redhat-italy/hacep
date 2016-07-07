@@ -1,5 +1,8 @@
 package it.redhat.hacep.configuration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.annotation.Resource;
 import javax.enterprise.context.ApplicationScoped;
 import javax.jms.ConnectionFactory;
@@ -7,11 +10,16 @@ import javax.jms.ConnectionFactory;
 @ApplicationScoped
 public class JmsConfigurationImpl implements JmsConfiguration {
 
-    @Resource(name = "java:/HACEPConnectionFactory")
+    private static final Logger log = LoggerFactory.getLogger(JmsConfigurationImpl.class);
+
+    @Resource(lookup = "java:/HACEPConnectionFactory")
     private ConnectionFactory connectionFactory;
 
     @Override
     public ConnectionFactory getConnectionFactory() {
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Provide connection factory [%s]", connectionFactory));
+        }
         return connectionFactory;
     }
 

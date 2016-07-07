@@ -17,13 +17,13 @@
 
 package it.redhat.hacep.cache;
 
-import it.redhat.hacep.camel.KeyBuilder;
 import it.redhat.hacep.model.Key;
-import it.redhat.hacep.rules.model.Gameplay;
 
 import java.util.Objects;
 
 public class GameplayKey extends Key<String> {
+
+    private String id;
 
     public GameplayKey(String id, String player) {
         super(player);
@@ -52,13 +52,4 @@ public class GameplayKey extends Key<String> {
         return Objects.hash(super.hashCode(), id);
     }
 
-    private String id;
-
-    public static class Builder extends KeyBuilder<Gameplay, String> {
-
-        @Override
-        public Key<String> extractFromFact(Gameplay fact) {
-            return new GameplayKey(String.valueOf(fact.getId()), String.valueOf(fact.getPlayerId()));
-        }
-    }
 }

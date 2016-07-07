@@ -19,6 +19,7 @@ package it.redhat.hacep.camel;
 
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
+import it.redhat.hacep.model.KeyBuilder;
 import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,7 @@ public class Putter {
     public void put(Fact fact) {
         logger.debug("Start processing gameplay fact");
         if (cache != null) {
-            cache.put(keyBuilder.extract(fact), fact, -1, TimeUnit.MILLISECONDS, 500, TimeUnit.MILLISECONDS);
+            cache.put(keyBuilder.extractFromFact(fact), fact, -1, TimeUnit.MILLISECONDS, 500, TimeUnit.MILLISECONDS);
         }
     }
 }

@@ -22,6 +22,7 @@ import it.redhat.hacep.console.UI;
 import it.redhat.hacep.console.support.IllegalParametersException;
 import org.infinispan.manager.DefaultCacheManager;
 
+import javax.inject.Inject;
 import java.util.Iterator;
 
 public class AddressConsoleCommand implements ConsoleCommand {
@@ -29,6 +30,7 @@ public class AddressConsoleCommand implements ConsoleCommand {
     private static final String COMMAND_NAME = "address";
     private final HACEPApplication application;
 
+    @Inject
     public AddressConsoleCommand(HACEPApplication application) {
         this.application = application;
     }

@@ -17,14 +17,14 @@
 
 package it.redhat.hacep.console.commands;
 
-import it.redhat.hacep.JDG;
+import it.redhat.hacep.JDGUtility;
 import it.redhat.hacep.configuration.HACEPApplication;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.console.UI;
 import it.redhat.hacep.console.support.IllegalParametersException;
 import org.infinispan.Cache;
-import org.infinispan.manager.DefaultCacheManager;
 
+import javax.inject.Inject;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -32,9 +32,12 @@ public class PrimaryConsoleCommand implements ConsoleCommand {
 
     private static final String COMMAND_NAME = "primary";
     private final HACEPApplication application;
+    private final JDGUtility jdgUtility;
 
-    public PrimaryConsoleCommand(HACEPApplication application) {
+    @Inject
+    public PrimaryConsoleCommand(HACEPApplication application, JDGUtility jdgUtility) {
         this.application = application;
+        this.jdgUtility = jdgUtility;
     }
 
     @Override
@@ -49,7 +52,7 @@ public class PrimaryConsoleCommand implements ConsoleCommand {
         Cache<Key, Object> cache = application.getCacheManager().getCache(cacheName, false);
 
         if (cache != null) {
-            Set<String> primaryVals = JDG.primaryValuesFromKeys(cache);
+            Set<String> primaryVals = jdgUtility.primaryValuesFromKeys(cache);
             primaryVals.forEach(console::println);
             console.println("Cache Size: " + cache.size() + "\n");
             console.println("Primary Size: " + primaryVals.size() + "\n");

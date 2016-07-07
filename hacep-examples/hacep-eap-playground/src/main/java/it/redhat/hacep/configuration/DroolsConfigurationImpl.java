@@ -17,9 +17,13 @@
 
 package it.redhat.hacep.configuration;
 
+import it.redhat.hacep.cache.GameplayKeyBuilder;
+import it.redhat.hacep.model.KeyBuilder;
+import it.redhat.hacep.configuration.annotations.HACEPKeyBuilder;
 import it.redhat.hacep.drools.channels.AuditChannel;
 import it.redhat.hacep.drools.channels.NullChannel;
 import it.redhat.hacep.drools.channels.SysoutChannel;
+import it.redhat.hacep.rules.model.Gameplay;
 import org.kie.api.KieBase;
 import org.kie.api.KieServices;
 import org.kie.api.runtime.Channel;
@@ -84,10 +88,15 @@ public class DroolsConfigurationImpl implements DroolsConfiguration {
     @Override
     public int getMaxBufferSize() {
         try {
-            return Integer.valueOf(System.getProperty("facts.buffer", "10"));
+            return Integer.valueOf(System.getProperty("grid.buffer", "1000"));
         } catch (IllegalArgumentException e) {
-            return 10;
+            return 1000;
         }
+    }
+
+    @Override
+    public KeyBuilder getKeyBuilder() {
+        return new GameplayKeyBuilder();
     }
 
 }

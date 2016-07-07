@@ -17,14 +17,14 @@
 
 package it.redhat.hacep.console.commands;
 
-import it.redhat.hacep.JDG;
+import it.redhat.hacep.JDGUtility;
 import it.redhat.hacep.configuration.HACEPApplication;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.console.UI;
 import it.redhat.hacep.console.support.IllegalParametersException;
 import org.infinispan.Cache;
-import org.infinispan.manager.DefaultCacheManager;
 
+import javax.inject.Inject;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -32,9 +32,12 @@ public class LocalConsoleCommand implements ConsoleCommand {
 
     private static final String COMMAND_NAME = "local";
     private final HACEPApplication application;
+    private final JDGUtility jdgUtility;
 
-    public LocalConsoleCommand(HACEPApplication application) {
+    @Inject
+    public LocalConsoleCommand(HACEPApplication application, JDGUtility jdgUtility) {
         this.application = application;
+        this.jdgUtility = jdgUtility;
     }
 
     @Override
@@ -48,7 +51,7 @@ public class LocalConsoleCommand implements ConsoleCommand {
         Cache<Key, Object> cache = application.getCacheManager().getCache(cacheName, false);
 
         if (cache != null) {
-            Set<String> local = JDG.localValuesFromKeys(cache);
+            Set<String> local = jdgUtility.localValuesFromKeys(cache);
             local.forEach(console::println);
             console.println("Cache Size: " + cache.size() + "\n");
             console.println("Local Size: " + local.size() + "\n");

@@ -24,6 +24,7 @@ import it.redhat.hacep.console.support.IllegalParametersException;
 import org.infinispan.Cache;
 import org.infinispan.manager.DefaultCacheManager;
 
+import javax.inject.Inject;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -33,6 +34,7 @@ public class InfoConsoleCommand implements ConsoleCommand {
 
     private final HACEPApplication application;
 
+    @Inject
     public InfoConsoleCommand(HACEPApplication application) {
         this.application = application;
     }
@@ -44,7 +46,6 @@ public class InfoConsoleCommand implements ConsoleCommand {
 
     @Override
     public boolean execute(UI console, Iterator<String> args) throws IllegalParametersException {
-
         try {
             String cacheName = args.next();
             Cache<Key, Object> cache = application.getCacheManager().getCache(cacheName, false);

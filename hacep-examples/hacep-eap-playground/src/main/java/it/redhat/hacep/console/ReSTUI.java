@@ -2,17 +2,20 @@ package it.redhat.hacep.console;
 
 import it.redhat.hacep.console.commands.ConsoleCommand;
 import it.redhat.hacep.console.support.ConsoleCommandComparator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 public class ReSTUI implements UI {
+
+    private final static Logger log = LoggerFactory.getLogger(ReSTUI.class);
 
     @Inject
     private Instance<ConsoleCommand> commands;
@@ -47,16 +50,23 @@ public class ReSTUI implements UI {
 
     @Override
     public void printUsage() {
-        out.println("Commands:");
+        log.info("Start print usage");
         StreamSupport.stream(commands.spliterator(), true)
                 .sorted(new ConsoleCommandComparator())
-                .forEachOrdered(c -> c.usage(this));
+                .forEachOrdered(c -> {
+                    c.usage(this);
+                    out.println();out.println();
+                });
     }
 
     @Override
     public String toString() {
-        out.flush();
-        return os.toString();
+        try {
+            out.flush();
+            return os.toString();
+        } finally {
+            os.reset();
+        }
     }
 
     @Override
