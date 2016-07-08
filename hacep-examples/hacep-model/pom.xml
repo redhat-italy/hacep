@@ -18,4 +18,5 @@
 			<artifactId>hacep-core</artifactId>
 		</dependency>
 	</dependencies>
+
 </project>

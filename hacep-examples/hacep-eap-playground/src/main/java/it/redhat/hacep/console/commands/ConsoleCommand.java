@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,26 +15,18 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.configuration;
+package it.redhat.hacep.console.commands;
 
-import it.redhat.hacep.model.KeyBuilder;
-import org.kie.api.KieBase;
-import org.kie.api.runtime.Channel;
-import org.kie.api.runtime.KieSession;
+import it.redhat.hacep.console.UI;
+import it.redhat.hacep.console.support.IllegalParametersException;
 
-import java.util.Map;
+import java.util.Iterator;
 
-public interface DroolsConfiguration {
+public interface ConsoleCommand {
 
-    KieSession getKieSession();
+    String command();
 
-    KieBase getKieBase();
+    boolean execute(UI console, Iterator<String> args) throws IllegalParametersException;
 
-    Map<String, Channel> getChannels();
-
-    Map<String, Channel> getReplayChannels();
-
-    int getMaxBufferSize();
-
-    KeyBuilder getKeyBuilder();
+    void usage(UI console);
 }

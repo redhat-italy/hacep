@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,23 +15,11 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.camel;
+package it.redhat.hacep.console.support;
 
-import it.redhat.hacep.model.Fact;
-import it.redhat.hacep.model.Key;
+public class IllegalParametersException extends RuntimeException {
 
-public abstract class KeyBuilder<F extends Fact, T> {
-
-    public abstract Key<T> extractFromFact(F fact);
-
-    protected final Key<T> extract(Fact fact) {
-        if (fact != null) {
-            try {
-                return extractFromFact((F) fact);
-            } catch (ClassCastException e) {
-                throw new IllegalArgumentException("Type [" + fact + "] not supported");
-            }
-        }
-        throw new IllegalArgumentException("Null value not supported");
+    public IllegalParametersException(String message) {
+        super(message);
     }
 }

@@ -18,17 +18,16 @@
 package it.redhat.hacep.configuration;
 
 import it.redhat.hacep.cache.externalizers.KieSessionExternalizer;
-import it.redhat.hacep.cache.listeners.FactListenerPost;
-import it.redhat.hacep.cache.listeners.SessionListenerPost;
-import it.redhat.hacep.cache.listeners.SessionListenerPre;
-import it.redhat.hacep.cache.session.*;
+import it.redhat.hacep.cache.session.HASerializedSession;
+import it.redhat.hacep.cache.session.HASession;
+import it.redhat.hacep.cache.session.HASessionDeltaEmpty;
+import it.redhat.hacep.cache.session.HASessionDeltaFact;
 import it.redhat.hacep.configuration.annotations.HACEPCacheManager;
 import it.redhat.hacep.configuration.annotations.HACEPFactCache;
 import it.redhat.hacep.configuration.annotations.HACEPSessionCache;
 import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
-import org.apache.camel.CamelContext;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
@@ -52,8 +51,6 @@ public class DataGridConfiguration {
     private final static Logger log = LoggerFactory.getLogger(DataGridConfiguration.class);
 
     private DefaultCacheManager manager;
-    private Cache<Key, Fact> factCache;
-    private Cache<Key, Object> sessionCache;
 
     @Inject
     private DroolsConfiguration droolsConfiguration;
@@ -90,22 +87,19 @@ public class DataGridConfiguration {
         }
         Configuration loc = configurationBuilder.build();
 
-        this.manager = new DefaultCacheManager(glob, loc, true);
-
-        this.factCache = this.manager.getCache("fact", true);
-        this.sessionCache = this.manager.getCache("session", true);
+        this.manager = new DefaultCacheManager(glob, loc, false);
     }
 
     @Produces
     @HACEPFactCache
     public Cache<Key, Fact> getFactCache() {
-        return factCache;
+        return this.manager.getCache("fact", true);
     }
 
     @Produces
     @HACEPSessionCache
     public Cache<Key, Object> getSessionCache() {
-        return sessionCache;
+        return this.manager.getCache("session", true);
     }
 
     @Produces

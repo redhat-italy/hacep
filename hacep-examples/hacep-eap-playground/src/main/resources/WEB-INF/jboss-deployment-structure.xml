@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
+    <deployment>
+        <exclusions>
+            <module name="org.jgroups"/>
+            <module name="org.infinispan"/>
+            <module name="org.jboss.netty"/>
+        </exclusions>
+    </deployment>
+</jboss-deployment-structure>

@@ -1,12 +1,12 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * the License.  You may obtain a copy of the License at
  * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,26 +15,26 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.configuration;
+package it.redhat.hacep.console;
 
-import it.redhat.hacep.model.KeyBuilder;
-import org.kie.api.KieBase;
-import org.kie.api.runtime.Channel;
-import org.kie.api.runtime.KieSession;
+import it.redhat.hacep.console.commands.ConsoleCommand;
 
-import java.util.Map;
+import java.io.IOException;
 
-public interface DroolsConfiguration {
+public interface UI {
+    void print(Object message);
 
-    KieSession getKieSession();
+    void println(Object message);
 
-    KieBase getKieBase();
+    void print(String message);
 
-    Map<String, Channel> getChannels();
+    void println(String message);
 
-    Map<String, Channel> getReplayChannels();
+    void println();
 
-    int getMaxBufferSize();
+    void printUsage();
 
-    KeyBuilder getKeyBuilder();
+    void start() throws IOException;
+
+    UI register(ConsoleCommand cmd);
 }

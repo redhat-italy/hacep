@@ -31,6 +31,8 @@ import org.apache.camel.CamelContext;
 import org.infinispan.Cache;
 import org.infinispan.manager.DefaultCacheManager;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -59,17 +61,27 @@ public class HACEPApplication {
     public HACEPApplication() {
     }
 
-    public void start() throws Exception {
-        this.factCache.addListener(new FactListenerPost(this.sessionSaver));
-        this.sessionCache.addListener(new SessionListenerPre(this.camelContext));
-        this.sessionCache.addListener(new SessionListenerPost(this.camelContext));
-        this.camelContext.start();
+    public void start() {
+        try {
+            this.factCache.addListener(new FactListenerPost(this.sessionSaver));
+            this.sessionCache.addListener(new SessionListenerPre(this.camelContext));
+            this.sessionCache.addListener(new SessionListenerPost(this.camelContext));
+
+            this.camelContext.start();
+            this.manager.start();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void stop() throws Exception {
-        this.camelContext.stop();
+    public void stop() {
+        try {
+            this.camelContext.stop();
+            this.manager.stop();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
-
 
     public Cache<Key, Fact> getFactCache() {
         return factCache;

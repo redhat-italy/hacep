@@ -19,6 +19,7 @@ package it.redhat.hacep.cluster;
 
 import it.redhat.hacep.cluster.KieBaseContainerTest;
 import it.redhat.hacep.configuration.DroolsConfiguration;
+import it.redhat.hacep.model.KeyBuilder;
 import org.kie.api.KieBase;
 import org.kie.api.runtime.Channel;
 import org.kie.api.runtime.KieSession;
@@ -79,6 +80,11 @@ public class TestDroolsConfiguration implements DroolsConfiguration {
     @Override
     public int getMaxBufferSize() {
         return maxBufferSize;
+    }
+
+    @Override
+    public KeyBuilder getKeyBuilder() {
+        return null;
     }
 
 

@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,26 +15,26 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.configuration;
+package it.redhat.hacep.console.support;
 
-import it.redhat.hacep.model.KeyBuilder;
-import org.kie.api.KieBase;
-import org.kie.api.runtime.Channel;
-import org.kie.api.runtime.KieSession;
+import it.redhat.hacep.console.commands.ConsoleCommand;
 
-import java.util.Map;
+import java.util.Comparator;
 
-public interface DroolsConfiguration {
+public class ConsoleCommandComparator implements Comparator<ConsoleCommand> {
 
-    KieSession getKieSession();
+    @Override
+    public int compare(ConsoleCommand o1, ConsoleCommand o2) {
+        if (o1 == o2) {
+            return 0;
+        }
+        if (o1 == null) {
+            return 1;
+        }
+        if (o2 == null) {
+            return -1;
+        }
 
-    KieBase getKieBase();
-
-    Map<String, Channel> getChannels();
-
-    Map<String, Channel> getReplayChannels();
-
-    int getMaxBufferSize();
-
-    KeyBuilder getKeyBuilder();
+        return o1.command().compareTo(o2.command());
+    }
 }

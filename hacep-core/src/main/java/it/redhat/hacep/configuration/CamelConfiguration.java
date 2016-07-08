@@ -1,6 +1,5 @@
 package it.redhat.hacep.configuration;
 
-import it.redhat.hacep.camel.KeyBuilder;
 import it.redhat.hacep.camel.Putter;
 import it.redhat.hacep.configuration.annotations.HACEPCamelContext;
 import it.redhat.hacep.configuration.annotations.HACEPFactCache;
@@ -14,6 +13,8 @@ import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -28,25 +29,25 @@ public class CamelConfiguration {
     private JmsConfiguration jmsConfiguration;
 
     @Inject
-    private KeyBuilder keyBuilder;
+    private DroolsConfiguration droolsConfiguration;
 
     @Inject
     @HACEPFactCache
     private Cache<Key, Fact> factCache;
 
+    private CamelContext camelContext;
+
     public CamelConfiguration() {
     }
 
-    @Produces
-    @ApplicationScoped
-    @HACEPCamelContext
-    public CamelContext createCamelContext() {
-        CamelContext context = new DefaultCamelContext();
+    @PostConstruct
+    public void createCamelContext() {
+        camelContext = new DefaultCamelContext();
         try {
 
             JmsComponent component = JmsComponent.jmsComponent(jmsConfiguration.getConnectionFactory());
-            context.addComponent("jms", component);
-            context.addRoutes(new RouteBuilder() {
+            camelContext.addComponent("jms", component);
+            camelContext.addRoutes(new RouteBuilder() {
 
                 @Override
                 public void configure() throws Exception {
@@ -60,20 +61,22 @@ public class CamelConfiguration {
                 }
             });
 
-            context.addRoutes(new RouteBuilder() {
+            camelContext.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
                     from("direct:putInGrid")
-                            .bean(new Putter(keyBuilder, factCache), "put(${body})");
+                            .bean(new Putter(droolsConfiguration.getKeyBuilder(), factCache), "put(${body})");
                 }
             });
-
-            context.start();
-
         } catch (Exception e) {
             log.error(e.getMessage());
         }
-        return context;
     }
 
+    @Produces
+    @ApplicationScoped
+    @HACEPCamelContext
+    public CamelContext getCamelContext() {
+        return camelContext;
+    }
 }
