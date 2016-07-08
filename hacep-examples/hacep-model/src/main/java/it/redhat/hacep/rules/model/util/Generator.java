@@ -11,12 +11,9 @@ public abstract class Generator<T> {
 
     private final List<T> list = new CopyOnWriteArrayList<>();
     private long from;
-    private long last;
     private long duration;
 
     private int count = 1;
-
-    private int mode = 0;
 
     protected abstract T build(long ts);
 
@@ -25,30 +22,17 @@ public abstract class Generator<T> {
         return this;
     }
 
-    public final Generator mode(int mode) {
-        this.mode = mode;
-        return this;
-    }
-
     public final Generator timestamp(long from, long duration, TimeUnit unit) {
         this.from = from;
-        this.last = from;
         this.duration = unit.toMillis(duration);
         return this;
     }
 
     public final List<T> generate() {
+        long ts = this.from;
+        long delta = (duration / count);
         for (int i = 0; i < count; i++) {
-            long delta = 0;
-            if (mode == MODE_RANDOM) {
-                delta = (long) (Math.random() * ((duration + from - last) / (count - i)));
-            } else if (mode == MODE_INTERVAL) {
-                delta = duration;
-            }
-            long ts = delta + last;
-            this.last = ts;
-
-
+            ts += delta;
             list.add(build(ts));
         }
         return list;
