@@ -47,7 +47,7 @@ public class LogoutConsoleCommand implements ConsoleCommand {
             LogoutEvent logout = new LogoutEvent(ZonedDateTime.now().toInstant(), usr);
             Sender sender = new Sender(jmsConfiguration.getConnectionFactory(), jmsConfiguration.getQueueName());
             sender.send(logout);
-            
+
         } catch (NoSuchElementException e) {
             throw new IllegalParametersException("Expected usage: logout <user>");
         }
