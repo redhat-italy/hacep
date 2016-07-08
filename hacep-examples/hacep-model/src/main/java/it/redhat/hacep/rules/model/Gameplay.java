@@ -23,7 +23,7 @@ public class Gameplay implements Fact {
     }
 
     @Override
-    public Instant getDateTime() {
+    public Instant getInstant() {
         return timestamp.toInstant();
     }
 

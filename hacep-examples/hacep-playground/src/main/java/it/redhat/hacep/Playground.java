@@ -21,8 +21,6 @@ import it.redhat.hacep.configuration.HACEPApplication;
 import it.redhat.hacep.console.TextUI;
 import it.redhat.hacep.console.UI;
 import it.redhat.hacep.console.commands.*;
-import org.jboss.weld.environment.se.Weld;
-import org.jboss.weld.environment.se.WeldContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,14 +56,18 @@ public class Playground {
     private List<ConsoleCommand> baseCommands(HACEPApplication hacepApplication) {
         return Arrays.asList(
                 new AddressConsoleCommand(hacepApplication),
+                new AllConsoleCommand(hacepApplication),
+                new ChangePasswordConsoleCommand(),
                 new GetConsoleCommand(hacepApplication),
                 new HelpConsoleCommand(),
                 new InfoConsoleCommand(hacepApplication),
-                new AllConsoleCommand(hacepApplication),
                 new LocalConsoleCommand(hacepApplication),
+                new LoginConsoleCommand(),
+                new LogoutConsoleCommand(),
                 new PrimaryConsoleCommand(hacepApplication),
-                new ReplicaConsoleCommand(hacepApplication),
-                new QuitConsoleCommand(hacepApplication));
+                new QuitConsoleCommand(hacepApplication),
+                new ReplicaConsoleCommand(hacepApplication));
+
     }
 
 }

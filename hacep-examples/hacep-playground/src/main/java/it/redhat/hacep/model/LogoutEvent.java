@@ -1,4 +1,8 @@
-/*
+package it.redhat.hacep.model;
+
+import java.time.Instant;
+
+/**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,12 +19,23 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.model;
+public class LogoutEvent implements Fact {
 
-import java.io.Serializable;
-import java.time.Instant;
+    private Instant instant;
+    private String usr;
 
-public interface Fact extends Serializable {
+    public LogoutEvent(Instant instant, String usr) {
+        this.instant = instant;
+        this.usr = usr;
+    }
 
-    Instant getInstant();
+    public String getUsr() {
+        return usr;
+    }
+
+    @Override
+    public Instant getInstant() {
+        return null;
+    }
+
 }

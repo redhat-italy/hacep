@@ -1,4 +1,8 @@
-/*
+package it.redhat.hacep.model;
+
+import java.time.Instant;
+
+/**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,12 +19,35 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.model;
+public class ChangePasswordEvent implements Fact {
 
-import java.io.Serializable;
-import java.time.Instant;
+    private Instant instant;
+    private String usr;
+    private String newPwd;
+    private String oldPwd;
 
-public interface Fact extends Serializable {
+    public ChangePasswordEvent(Instant instant, String usr, String oldPwd, String newPwd) {
+        this.instant = instant;
+        this.usr = usr;
+        this.oldPwd = oldPwd;
+        this.newPwd = newPwd;
+    }
 
-    Instant getInstant();
+    public String getUsr() {
+        return usr;
+    }
+
+    public String getOldPwd() {
+        return oldPwd;
+    }
+
+    public String getNewPwd() {
+        return newPwd;
+    }
+
+    @Override
+    public Instant getInstant() {
+        return null;
+    }
+
 }

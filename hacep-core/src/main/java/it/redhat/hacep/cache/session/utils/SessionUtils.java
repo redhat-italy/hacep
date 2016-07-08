@@ -31,7 +31,7 @@ public class SessionUtils {
 
     public static void advanceClock(KieSession kieSession, Fact fact) {
         SessionPseudoClock clock = kieSession.getSessionClock();
-        long gts = fact.getDateTime().toEpochMilli();
+        long gts = fact.getInstant().toEpochMilli();
         long current = clock.getCurrentTime();
         clock.advanceTime(gts - current, TimeUnit.MILLISECONDS);
     }

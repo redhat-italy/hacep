@@ -41,12 +41,8 @@ public class TestFact implements Fact {
         return amount;
     }
 
-    public Instant getInstant() {
-        return instant;
-    }
-
     @Override
-    public Instant getDateTime() {
+    public Instant getInstant() {
         return instant;
     }
 }
