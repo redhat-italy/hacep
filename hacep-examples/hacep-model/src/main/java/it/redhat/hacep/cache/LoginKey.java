@@ -1,9 +1,3 @@
-package it.redhat.hacep.event.model;
-
-import it.redhat.hacep.model.Fact;
-
-import java.time.Instant;
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,35 +15,41 @@ import java.time.Instant;
  * limitations under the License.
  */
 
-public class ChangePasswordEvent implements Fact {
+package it.redhat.hacep.cache;
 
-    private Instant instant;
-    private String usr;
-    private String newPwd;
-    private String oldPwd;
+import it.redhat.hacep.model.Key;
 
-    public ChangePasswordEvent(Instant instant, String usr, String oldPwd, String newPwd) {
-        this.instant = instant;
-        this.usr = usr;
-        this.oldPwd = oldPwd;
-        this.newPwd = newPwd;
+import java.util.Objects;
+
+public class LoginKey extends Key<String> {
+
+    private String id;
+
+    public LoginKey(String id, String group) {
+        super(group);
+        this.id = id;
     }
 
-    public String getUsr() {
-        return usr;
+    public String getId() {
+        return id;
     }
 
-    public String getOldPwd() {
-        return oldPwd;
-    }
-
-    public String getNewPwd() {
-        return newPwd;
+    public String toString() {
+        return id + "::" + getGroup();
     }
 
     @Override
-    public Instant getInstant() {
-        return null;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof LoginKey)) return false;
+        if (!super.equals(o)) return false;
+        LoginKey gameplayKey = (LoginKey) o;
+        return Objects.equals(id, gameplayKey.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), id);
     }
 
 }

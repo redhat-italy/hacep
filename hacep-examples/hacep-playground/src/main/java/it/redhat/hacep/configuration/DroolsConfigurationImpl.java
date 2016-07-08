@@ -18,6 +18,7 @@
 package it.redhat.hacep.configuration;
 
 import it.redhat.hacep.cache.GameplayKeyBuilder;
+import it.redhat.hacep.cache.LoginKeyBuilder;
 import it.redhat.hacep.drools.channels.AuditChannel;
 import it.redhat.hacep.drools.channels.NullChannel;
 import it.redhat.hacep.drools.channels.SysoutChannel;
@@ -94,7 +95,7 @@ public class DroolsConfigurationImpl implements DroolsConfiguration {
 
     @Override
     public KeyBuilder getKeyBuilder() {
-        return new GameplayKeyBuilder();
+        return new LoginKeyBuilder();
     }
 
 }

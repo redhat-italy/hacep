@@ -1,6 +1,4 @@
-package it.redhat.hacep.event.model;
-
-import it.redhat.hacep.model.Fact;
+package it.redhat.hacep.rules.model;
 
 import java.time.Instant;
 
@@ -21,29 +19,10 @@ import java.time.Instant;
  * limitations under the License.
  */
 
-public class LoginEvent implements Fact {
+public class LogoutEvent extends UserEvent {
 
-    private Instant instant;
-    private String usr;
-    private String pwd;
-
-    public LoginEvent(Instant instant, String usr, String pwd) {
-        this.instant = instant;
-        this.usr = usr;
-        this.pwd = pwd;
-    }
-
-    public String getUsr() {
-        return usr;
-    }
-
-    public String getPwd() {
-        return pwd;
-    }
-
-    @Override
-    public Instant getInstant() {
-        return null;
+    public LogoutEvent(long id, Instant instant, String usr) {
+        super(id, usr, instant);
     }
 
 }

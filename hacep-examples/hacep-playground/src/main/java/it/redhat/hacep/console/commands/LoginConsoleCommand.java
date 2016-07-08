@@ -20,13 +20,14 @@ package it.redhat.hacep.console.commands;
 import it.redhat.hacep.configuration.JmsConfiguration;
 import it.redhat.hacep.console.UI;
 import it.redhat.hacep.console.support.IllegalParametersException;
-import it.redhat.hacep.event.model.LoginEvent;
+import it.redhat.hacep.rules.model.LoginEvent;
 import it.redhat.hacep.event.send.Sender;
 
 import javax.inject.Inject;
 import java.time.ZonedDateTime;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Random;
 
 public class LoginConsoleCommand implements ConsoleCommand {
 
@@ -45,7 +46,8 @@ public class LoginConsoleCommand implements ConsoleCommand {
         try {
             String usr = args.next();
             String pwd = args.next();
-            LoginEvent login = new LoginEvent(ZonedDateTime.now().toInstant(), usr, pwd);
+            Random rnd = new Random(System.currentTimeMillis());
+            LoginEvent login = new LoginEvent(rnd.nextLong(), ZonedDateTime.now().toInstant(), usr, pwd);
             Sender sender = new Sender(jmsConfiguration.getConnectionFactory(), jmsConfiguration.getQueueName());
             sender.send(login);
 

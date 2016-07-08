@@ -1,9 +1,3 @@
-package it.redhat.hacep.event.model;
-
-import it.redhat.hacep.model.Fact;
-
-import java.time.Instant;
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,18 +15,21 @@ import java.time.Instant;
  * limitations under the License.
  */
 
-public class LogoutEvent implements Fact {
+package it.redhat.hacep.rules.model;
 
-    private Instant instant;
-    private String usr;
+import java.time.Instant;
 
-    public LogoutEvent(Instant instant, String usr) {
-        this.instant = instant;
-        this.usr = usr;
+public class LoginEvent extends UserEvent {
+
+    private String pwd;
+
+    public LoginEvent(long id, Instant instant, String usr, String pwd) {
+        super(id, usr, instant);
+        this.pwd = pwd;
     }
 
-    public String getUsr() {
-        return usr;
+    public String getPwd() {
+        return pwd;
     }
 
     @Override

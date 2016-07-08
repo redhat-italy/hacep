@@ -20,13 +20,14 @@ package it.redhat.hacep.console.commands;
 import it.redhat.hacep.configuration.JmsConfiguration;
 import it.redhat.hacep.console.UI;
 import it.redhat.hacep.console.support.IllegalParametersException;
-import it.redhat.hacep.event.model.ChangePasswordEvent;
+import it.redhat.hacep.rules.model.ChangePasswordEvent;
 import it.redhat.hacep.event.send.Sender;
 
 import javax.inject.Inject;
 import java.time.ZonedDateTime;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Random;
 
 public class ChangePasswordConsoleCommand implements ConsoleCommand {
 
@@ -43,11 +44,14 @@ public class ChangePasswordConsoleCommand implements ConsoleCommand {
     @Override
     public boolean execute(UI console, Iterator<String> args) throws IllegalParametersException {
         try {
+
             String usr = args.next();
             String oldPwd = args.next();
             String newPwd = args.next();
 
-            ChangePasswordEvent change = new ChangePasswordEvent(ZonedDateTime.now().toInstant(), usr, oldPwd, newPwd);
+            Random rnd = new Random(System.currentTimeMillis());
+
+            ChangePasswordEvent change = new ChangePasswordEvent(rnd.nextLong(), ZonedDateTime.now().toInstant(), usr, oldPwd, newPwd);
 
             Sender sender = new Sender(jmsConfiguration.getConnectionFactory(), jmsConfiguration.getQueueName());
             sender.send(change);
