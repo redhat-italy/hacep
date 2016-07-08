@@ -1,4 +1,6 @@
-package it.redhat.hacep.model;
+package it.redhat.hacep.event.model;
+
+import it.redhat.hacep.model.Fact;
 
 import java.time.Instant;
 

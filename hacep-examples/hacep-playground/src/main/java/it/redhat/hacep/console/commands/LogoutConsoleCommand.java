@@ -20,7 +20,8 @@ package it.redhat.hacep.console.commands;
 import it.redhat.hacep.configuration.JmsConfiguration;
 import it.redhat.hacep.console.UI;
 import it.redhat.hacep.console.support.IllegalParametersException;
-import it.redhat.hacep.model.LogoutEvent;
+import it.redhat.hacep.event.model.LogoutEvent;
+import it.redhat.hacep.event.send.Sender;
 
 import javax.inject.Inject;
 import java.time.ZonedDateTime;
@@ -44,7 +45,9 @@ public class LogoutConsoleCommand implements ConsoleCommand {
         try {
             String usr = args.next();
             LogoutEvent logout = new LogoutEvent(ZonedDateTime.now().toInstant(), usr);
-
+            Sender sender = new Sender(jmsConfiguration.getConnectionFactory(), jmsConfiguration.getQueueName());
+            sender.send(logout);
+            
         } catch (NoSuchElementException e) {
             throw new IllegalParametersException("Expected usage: logout <user>");
         }
