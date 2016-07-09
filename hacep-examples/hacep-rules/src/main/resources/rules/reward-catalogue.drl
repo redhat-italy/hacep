@@ -3,7 +3,7 @@ package it.redhat.hacep.playground.rules.reward.catalog;
 import it.redhat.hacep.playground.rules.model.Gameplay;
 import it.redhat.hacep.playground.rules.model.GameplayBet;
 
-import accumulate it.redhat.hacep.rules.reward.catalog.ConsecutiveDaysAccumulateFunction consecutivedays;
+import accumulate it.redhat.hacep.playground.rules.reward.catalog.ConsecutiveDaysAccumulateFunction consecutivedays;
 
 declare Gameplay
     @role( event )
