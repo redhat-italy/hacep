@@ -38,7 +38,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>it.redhat.hacep.hacep.client.App</mainClass>
+							<mainClass>it.redhat.hacep.client.App</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

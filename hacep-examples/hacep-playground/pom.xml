@@ -90,7 +90,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>it.redhat.hacep.Main</mainClass>
+                            <mainClass>it.redhat.hacep.playground.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -170,7 +170,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
                             <archive>
                                 <manifest>
                                     <addClasspath>true</addClasspath>
-                                    <mainClass>it.redhat.hacep.Main</mainClass>
+                                    <mainClass>it.redhat.hacep.playground.Main</mainClass>
                                     <classpathPrefix>lib/</classpathPrefix>
                                 </manifest>
                             </archive>
@@ -190,7 +190,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
                                     <goal>java</goal>
                                 </goals>
                                 <configuration>
-                                    <mainClass>it.redhat.hacep.Main</mainClass>
+                                    <mainClass>it.redhat.hacep.playground.Main</mainClass>
                                 </configuration>
                             </execution>
                         </executions>
