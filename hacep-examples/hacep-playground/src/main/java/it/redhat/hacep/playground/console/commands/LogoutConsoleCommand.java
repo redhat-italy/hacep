@@ -20,7 +20,7 @@ package it.redhat.hacep.playground.console.commands;
 import it.redhat.hacep.configuration.JmsConfiguration;
 import it.redhat.hacep.playground.console.UI;
 import it.redhat.hacep.playground.console.support.IllegalParametersException;
-import it.redhat.hacep.rules.model.LogoutEvent;
+import it.redhat.hacep.playground.rules.model.LogoutEvent;
 import it.redhat.hacep.playground.event.send.Sender;
 
 import javax.inject.Inject;

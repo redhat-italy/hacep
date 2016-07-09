@@ -17,7 +17,7 @@
 
 package it.redhat.hacep.playground.configuration;
 
-import it.redhat.hacep.cache.GameplayKeyBuilder;
+import it.redhat.hacep.playground.cache.GameplayKeyBuilder;
 import it.redhat.hacep.configuration.DroolsConfiguration;
 import it.redhat.hacep.model.KeyBuilder;
 import it.redhat.hacep.playground.drools.channels.AuditChannel;

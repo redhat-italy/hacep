@@ -1,7 +1,7 @@
 package it.redhat.hacep.client;
 
-import it.redhat.hacep.rules.model.Gameplay;
-import it.redhat.hacep.rules.model.util.GameplayBuilder;
+import it.redhat.hacep.playground.rules.model.Gameplay;
+import it.redhat.hacep.playground.rules.model.util.GameplayBuilder;
 
 import javax.jms.*;
 

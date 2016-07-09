@@ -17,7 +17,7 @@
 
 package it.redhat.hacep.playground.configuration;
 
-import it.redhat.hacep.cache.LoginKeyBuilder;
+import it.redhat.hacep.playground.cache.LoginKeyBuilder;
 import it.redhat.hacep.configuration.DroolsConfiguration;
 import it.redhat.hacep.playground.drools.channels.AuditChannel;
 import it.redhat.hacep.drools.channels.NullChannel;

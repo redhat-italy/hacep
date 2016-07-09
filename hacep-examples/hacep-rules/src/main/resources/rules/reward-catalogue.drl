@@ -1,7 +1,7 @@
-package it.redhat.hacep.rules.reward.catalog;
+package it.redhat.hacep.playground.rules.reward.catalog;
 
-import it.redhat.hacep.rules.model.Gameplay;
-import it.redhat.hacep.rules.model.GameplayBet;
+import it.redhat.hacep.playground.rules.model.Gameplay;
+import it.redhat.hacep.playground.rules.model.GameplayBet;
 
 import accumulate it.redhat.hacep.rules.reward.catalog.ConsecutiveDaysAccumulateFunction consecutivedays;
 
