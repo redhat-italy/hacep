@@ -40,9 +40,9 @@ import java.util.concurrent.Executor;
 import static it.redhat.hacep.cache.session.JDGExternalizerIDs.HASerializerSessionID;
 import static org.infinispan.commons.util.Util.asSet;
 
-public class HASerializedSession implements DeltaAware {
+public class HAKieSerializedSession implements DeltaAware {
 
-    private final static Logger logger = LoggerFactory.getLogger(HASerializedSession.class);
+    private final static Logger logger = LoggerFactory.getLogger(HAKieSerializedSession.class);
 
     private final KieSessionByteArraySerializer serializer;
     private final Executor executor;
@@ -54,7 +54,7 @@ public class HASerializedSession implements DeltaAware {
     private transient long size = 0;
     private Queue<Fact> buffer = new ConcurrentLinkedQueue<>();
 
-    public HASerializedSession(DroolsConfiguration droolsConfiguration, KieSessionByteArraySerializer serializer, Executor executor) {
+    public HAKieSerializedSession(DroolsConfiguration droolsConfiguration, KieSessionByteArraySerializer serializer, Executor executor) {
         this.serializer = serializer;
         this.droolsConfiguration = droolsConfiguration;
         this.executor = executor;
@@ -69,9 +69,9 @@ public class HASerializedSession implements DeltaAware {
         }
     }
 
-    public HASession rebuild() {
+    public HAKieSession rebuild() {
         this.waitSafePoint();
-        return new HASession(droolsConfiguration, buildSession());
+        return new HAKieSession(droolsConfiguration, buildSession());
     }
 
     private void waitSafePoint() {
@@ -137,19 +137,19 @@ public class HASerializedSession implements DeltaAware {
 
     @Override
     public Delta delta() {
-        throw new IllegalStateException("Delta not expected on HASerializedSession");
+        throw new IllegalStateException("Delta not expected on HAKieSerializedSession");
     }
 
     @Override
     public void commit() {
-        throw new IllegalStateException("Delta not expected on HASerializedSession");
+        throw new IllegalStateException("Delta not expected on HAKieSerializedSession");
     }
 
     private boolean isSaving() {
         return latch.getCount() > 0;
     }
 
-    public static class HASerializedSessionExternalizer implements AdvancedExternalizer<HASerializedSession> {
+    public static class HASerializedSessionExternalizer implements AdvancedExternalizer<HAKieSerializedSession> {
 
         private final DroolsConfiguration droolsConfiguration;
         private final KieSessionByteArraySerializer serializer;
@@ -162,8 +162,8 @@ public class HASerializedSession implements DeltaAware {
         }
 
         @Override
-        public Set<Class<? extends HASerializedSession>> getTypeClasses() {
-            return asSet(HASerializedSession.class);
+        public Set<Class<? extends HAKieSerializedSession>> getTypeClasses() {
+            return asSet(HAKieSerializedSession.class);
         }
 
         @Override
@@ -172,7 +172,7 @@ public class HASerializedSession implements DeltaAware {
         }
 
         @Override
-        public void writeObject(ObjectOutput output, HASerializedSession object) throws IOException {
+        public void writeObject(ObjectOutput output, HAKieSerializedSession object) throws IOException {
             output.writeInt(object.session!=null?object.session.length:0);
             if(object.session!=null) {
                 output.write(object.session);
@@ -181,15 +181,15 @@ public class HASerializedSession implements DeltaAware {
         }
 
         @Override
-        public HASerializedSession readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-            HASerializedSession haSerializedSession = new HASerializedSession(droolsConfiguration, serializer, executor);
+        public HAKieSerializedSession readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+            HAKieSerializedSession haKieSerializedSession = new HAKieSerializedSession(droolsConfiguration, serializer, executor);
             int len = input.readInt();
             if(len>0) {
-                haSerializedSession.session = new byte[len];
-                input.read(haSerializedSession.session);
+                haKieSerializedSession.session = new byte[len];
+                input.read(haKieSerializedSession.session);
             }
-            haSerializedSession.buffer = (Queue<Fact>) input.readObject();
-            return haSerializedSession;
+            haKieSerializedSession.buffer = (Queue<Fact>) input.readObject();
+            return haKieSerializedSession;
         }
     }
 }

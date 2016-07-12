@@ -30,13 +30,13 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Set;
 
-public class HASessionDeltaFact implements Delta {
+public class HAKieSessionDeltaFact implements Delta {
 
-    private final static Logger logger = LoggerFactory.getLogger(HASessionDeltaFact.class);
+    private final static Logger logger = LoggerFactory.getLogger(HAKieSessionDeltaFact.class);
 
     private final Fact fact;
 
-    public HASessionDeltaFact(Fact fact) {
+    public HAKieSessionDeltaFact(Fact fact) {
         this.fact = fact;
     }
 
@@ -45,7 +45,7 @@ public class HASessionDeltaFact implements Delta {
         if (d == null) {
             throw new IllegalStateException();
         }
-        HASerializedSession haSession = (HASerializedSession) d;
+        HAKieSerializedSession haSession = (HAKieSerializedSession) d;
         haSession.add(fact);
         return haSession;
     }
@@ -54,11 +54,11 @@ public class HASessionDeltaFact implements Delta {
         return fact;
     }
 
-    public static class HASessionDeltaFactExternalizer implements AdvancedExternalizer<HASessionDeltaFact> {
+    public static class HASessionDeltaFactExternalizer implements AdvancedExternalizer<HAKieSessionDeltaFact> {
 
         @Override
-        public Set<Class<? extends HASessionDeltaFact>> getTypeClasses() {
-            return Util.asSet(HASessionDeltaFact.class);
+        public Set<Class<? extends HAKieSessionDeltaFact>> getTypeClasses() {
+            return Util.asSet(HAKieSessionDeltaFact.class);
         }
 
         @Override
@@ -67,14 +67,14 @@ public class HASessionDeltaFact implements Delta {
         }
 
         @Override
-        public void writeObject(ObjectOutput output, HASessionDeltaFact object) throws IOException {
+        public void writeObject(ObjectOutput output, HAKieSessionDeltaFact object) throws IOException {
             output.writeObject(object.getFact());
         }
 
         @Override
-        public HASessionDeltaFact readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        public HAKieSessionDeltaFact readObject(ObjectInput input) throws IOException, ClassNotFoundException {
             Object o = input.readObject();
-            return new HASessionDeltaFact((Fact) o);
+            return new HAKieSessionDeltaFact((Fact) o);
         }
     }
 }

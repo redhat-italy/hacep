@@ -32,17 +32,17 @@ import java.util.concurrent.Executor;
 
 import static it.redhat.hacep.cache.session.JDGExternalizerIDs.HASessionDeltaID;
 
-public class HASessionDeltaEmpty implements Delta {
+public class HAKieSessionDeltaEmpty implements Delta {
 
     private final KieSessionByteArraySerializer serializer;
     private final Executor executor;
     private final DroolsConfiguration droolsConfiguration;
 
-    public HASessionDeltaEmpty() {
+    public HAKieSessionDeltaEmpty() {
         this(null, null, null);
     }
 
-    public HASessionDeltaEmpty(DroolsConfiguration droolsConfiguration, KieSessionByteArraySerializer serializer, Executor executor) {
+    public HAKieSessionDeltaEmpty(DroolsConfiguration droolsConfiguration, KieSessionByteArraySerializer serializer, Executor executor) {
         this.serializer = serializer;
         this.executor = executor;
         this.droolsConfiguration = droolsConfiguration;
@@ -53,10 +53,10 @@ public class HASessionDeltaEmpty implements Delta {
         if (d != null) {
             return d;
         }
-        return new HASerializedSession(droolsConfiguration, serializer, executor);
+        return new HAKieSerializedSession(droolsConfiguration, serializer, executor);
     }
 
-    public static class HASessionDeltaEmptyExternalizer implements AdvancedExternalizer<HASessionDeltaEmpty> {
+    public static class HASessionDeltaEmptyExternalizer implements AdvancedExternalizer<HAKieSessionDeltaEmpty> {
 
         private final KieSessionByteArraySerializer serializer;
         private final Executor executor;
@@ -70,8 +70,8 @@ public class HASessionDeltaEmpty implements Delta {
         }
 
         @Override
-        public Set<Class<? extends HASessionDeltaEmpty>> getTypeClasses() {
-            return Util.asSet(HASessionDeltaEmpty.class);
+        public Set<Class<? extends HAKieSessionDeltaEmpty>> getTypeClasses() {
+            return Util.asSet(HAKieSessionDeltaEmpty.class);
         }
 
         @Override
@@ -80,12 +80,12 @@ public class HASessionDeltaEmpty implements Delta {
         }
 
         @Override
-        public void writeObject(ObjectOutput output, HASessionDeltaEmpty object) throws IOException {
+        public void writeObject(ObjectOutput output, HAKieSessionDeltaEmpty object) throws IOException {
         }
 
         @Override
-        public HASessionDeltaEmpty readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-            return new HASessionDeltaEmpty(droolsConfiguration, serializer, executor);
+        public HAKieSessionDeltaEmpty readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+            return new HAKieSessionDeltaEmpty(droolsConfiguration, serializer, executor);
         }
     }
 }

@@ -30,9 +30,9 @@ import javax.inject.Inject;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class SessionSaver {
+public class KieSessionSaver {
 
-    private static final Logger logger = LoggerFactory.getLogger(SessionSaver.class);
+    private static final Logger logger = LoggerFactory.getLogger(KieSessionSaver.class);
     private static final Logger audit = LoggerFactory.getLogger("audit.redhat.hacep");
 
     private final ConcurrentMap<String, Object> locks = new ConcurrentHashMap<>();
@@ -44,23 +44,23 @@ public class SessionSaver {
     @Inject
     private DroolsConfiguration droolsConfiguration;
 
-    public SessionSaver insert(Key key, Fact fact) {
+    public KieSessionSaver insert(Key key, Fact fact) {
         SessionKey sessionKey = new SessionKey(key.getGroup());
         audit.info(key + " | " + fact + " | COD_21 | starting to insert fact");
         synchronized (getLock(sessionKey.toString())) {
-            HASession haSession;
+            HAKieSession haKieSession;
             Object value = sessionCache.get(sessionKey);
             if (value == null) {
-                haSession = new HASession(droolsConfiguration);
-                sessionCache.put(sessionKey, haSession);
-            } else if (HASerializedSession.class.isAssignableFrom(value.getClass())) {
-                haSession = ((HASerializedSession) value).rebuild();
+                haKieSession = new HAKieSession(droolsConfiguration);
+                sessionCache.put(sessionKey, haKieSession);
+            } else if (HAKieSerializedSession.class.isAssignableFrom(value.getClass())) {
+                haKieSession = ((HAKieSerializedSession) value).rebuild();
             } else {
-                haSession = (HASession) value;
+                haKieSession = (HAKieSession) value;
             }
-            haSession.insert(fact);
+            haKieSession.insert(fact);
             audit.info(key + " | " + fact + " | COD_23 | rules invoked");
-            sessionCache.put(sessionKey, haSession);
+            sessionCache.put(sessionKey, haKieSession);
             audit.info(key + " | " + fact + " | COD_24 | fact inserted");
         }
         return this;

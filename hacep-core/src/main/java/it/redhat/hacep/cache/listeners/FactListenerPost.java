@@ -17,7 +17,7 @@
 
 package it.redhat.hacep.cache.listeners;
 
-import it.redhat.hacep.cache.session.SessionSaver;
+import it.redhat.hacep.cache.session.KieSessionSaver;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
 import org.infinispan.notifications.Listener;
@@ -31,10 +31,10 @@ public class FactListenerPost {
 
     private static final Logger audit = LoggerFactory.getLogger("audit.redhat.hacep");
 
-    private final SessionSaver saver;
+    private final KieSessionSaver saver;
 
-    public FactListenerPost(SessionSaver sessionSaver) {
-        this.saver = sessionSaver;
+    public FactListenerPost(KieSessionSaver kieSessionSaver) {
+        this.saver = kieSessionSaver;
     }
 
     @CacheEntryCreated

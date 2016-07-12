@@ -20,7 +20,7 @@ package it.redhat.hacep.configuration;
 import it.redhat.hacep.cache.listeners.FactListenerPost;
 import it.redhat.hacep.cache.listeners.SessionListenerPost;
 import it.redhat.hacep.cache.listeners.SessionListenerPre;
-import it.redhat.hacep.cache.session.SessionSaver;
+import it.redhat.hacep.cache.session.KieSessionSaver;
 import it.redhat.hacep.configuration.annotations.HACEPCacheManager;
 import it.redhat.hacep.configuration.annotations.HACEPCamelContext;
 import it.redhat.hacep.configuration.annotations.HACEPFactCache;
@@ -31,8 +31,6 @@ import org.apache.camel.CamelContext;
 import org.infinispan.Cache;
 import org.infinispan.manager.DefaultCacheManager;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -56,14 +54,14 @@ public class HACEPApplication {
     private CamelContext camelContext;
 
     @Inject
-    private SessionSaver sessionSaver;
+    private KieSessionSaver kieSessionSaver;
 
     public HACEPApplication() {
     }
 
     public void start() {
         try {
-            this.factCache.addListener(new FactListenerPost(this.sessionSaver));
+            this.factCache.addListener(new FactListenerPost(this.kieSessionSaver));
             this.sessionCache.addListener(new SessionListenerPre(this.camelContext));
             this.sessionCache.addListener(new SessionListenerPost(this.camelContext));
 

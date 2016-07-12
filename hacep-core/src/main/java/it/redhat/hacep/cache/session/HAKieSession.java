@@ -36,20 +36,20 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static org.infinispan.commons.util.Util.asSet;
 
-public class HASession implements DeltaAware {
+public class HAKieSession implements DeltaAware {
 
-    private final static Logger logger = LoggerFactory.getLogger(HASession.class);
+    private final static Logger logger = LoggerFactory.getLogger(HAKieSession.class);
 
     private final DroolsConfiguration droolsConfiguration;
 
     private KieSession session;
     private Queue<Fact> buffer = new ConcurrentLinkedQueue<>();
 
-    public HASession(DroolsConfiguration droolsConfiguration) {
+    public HAKieSession(DroolsConfiguration droolsConfiguration) {
         this.droolsConfiguration = droolsConfiguration;
     }
 
-    public HASession(DroolsConfiguration droolsConfiguration, KieSession session) {
+    public HAKieSession(DroolsConfiguration droolsConfiguration, KieSession session) {
         this.droolsConfiguration = droolsConfiguration;
         this.session = session;
     }
@@ -69,9 +69,9 @@ public class HASession implements DeltaAware {
     public Delta delta() {
         Fact fact = buffer.poll();
         if (fact != null) {
-            return new HASessionDeltaFact(fact);
+            return new HAKieSessionDeltaFact(fact);
         }
-        return new HASessionDeltaEmpty();
+        return new HAKieSessionDeltaEmpty();
     }
 
     @Override
@@ -82,13 +82,13 @@ public class HASession implements DeltaAware {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof HASession)) return false;
+        if (!(o instanceof HAKieSession)) return false;
 
-        HASession haSession = (HASession) o;
+        HAKieSession haKieSession = (HAKieSession) o;
 
-        return (session != null ? session.equals(haSession.session) : haSession.session == null) &&
-                this.buffer.stream().allMatch(haSession.buffer::contains) &&
-                haSession.buffer.stream().allMatch(this.buffer::contains);
+        return (session != null ? session.equals(haKieSession.session) : haKieSession.session == null) &&
+                this.buffer.stream().allMatch(haKieSession.buffer::contains) &&
+                haKieSession.buffer.stream().allMatch(this.buffer::contains);
     }
 
     @Override
@@ -107,7 +107,7 @@ public class HASession implements DeltaAware {
         super.finalize();
     }
 
-    public static class HASessionExternalizer implements AdvancedExternalizer<HASession> {
+    public static class HASessionExternalizer implements AdvancedExternalizer<HAKieSession> {
 
         private final DroolsConfiguration droolsConfiguration;
 
@@ -116,8 +116,8 @@ public class HASession implements DeltaAware {
         }
 
         @Override
-        public Set<Class<? extends HASession>> getTypeClasses() {
-            return asSet(HASession.class);
+        public Set<Class<? extends HAKieSession>> getTypeClasses() {
+            return asSet(HAKieSession.class);
         }
 
         @Override
@@ -126,17 +126,17 @@ public class HASession implements DeltaAware {
         }
 
         @Override
-        public void writeObject(ObjectOutput output, HASession object) throws IOException {
+        public void writeObject(ObjectOutput output, HAKieSession object) throws IOException {
             output.writeObject(object.session);
             object.buffer.clear();
         }
 
         @Override
-        public HASession readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-            HASession haSession = new HASession(droolsConfiguration);
-            haSession.session = (KieSession) input.readObject();
-            droolsConfiguration.getChannels().forEach(haSession.session::registerChannel);
-            return haSession;
+        public HAKieSession readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+            HAKieSession haKieSession = new HAKieSession(droolsConfiguration);
+            haKieSession.session = (KieSession) input.readObject();
+            droolsConfiguration.getChannels().forEach(haKieSession.session::registerChannel);
+            return haKieSession;
         }
     }
 }

@@ -17,8 +17,8 @@
 
 package it.redhat.hacep.cluster;
 
-import it.redhat.hacep.cache.session.HASerializedSession;
-import it.redhat.hacep.cache.session.HASession;
+import it.redhat.hacep.cache.session.HAKieSerializedSession;
+import it.redhat.hacep.cache.session.HAKieSession;
 import it.redhat.hacep.configuration.DroolsConfiguration;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
@@ -58,8 +58,8 @@ public class ClusterTest extends AbstractClusterTest {
     public void testClusterSize() {
         System.out.println("Start test cluster size");
         logger.info("Start test cluster size");
-        Cache<Key, HASession> cache1 = startDistSyncNode(2).getCache();
-        Cache<Key, HASession> cache2 = startDistSyncNode(2).getCache();
+        Cache<Key, HAKieSession> cache1 = startDistSyncNode(2).getCache();
+        Cache<Key, HAKieSession> cache2 = startDistSyncNode(2).getCache();
 
         assertEquals(2, ((DefaultCacheManager) cache1.getCacheManager()).getClusterSize());
         assertEquals(2, ((DefaultCacheManager) cache2.getCacheManager()).getClusterSize());
@@ -79,17 +79,17 @@ public class ClusterTest extends AbstractClusterTest {
         reset(replayChannel);
 
         Key key = new SessionKey("1");
-        HASession session1 = new HASession(droolsConfiguration);
+        HAKieSession session1 = new HAKieSession(droolsConfiguration);
 
         cache1.put(key, session1);
         Object serializedSessionCopy = cache2.get(key);
 
         Assert.assertNotNull(serializedSessionCopy);
-        Assert.assertTrue(HASerializedSession.class.isAssignableFrom(serializedSessionCopy.getClass()));
+        Assert.assertTrue(HAKieSerializedSession.class.isAssignableFrom(serializedSessionCopy.getClass()));
 
         reset(replayChannel, additionsChannel);
 
-        HASession session2 = ((HASerializedSession) serializedSessionCopy).rebuild();
+        HAKieSession session2 = ((HAKieSerializedSession) serializedSessionCopy).rebuild();
         Assert.assertNotNull(session2);
         System.out.println("End test empty HASessionID");
         logger.info("End test empty HASessionID");
@@ -106,7 +106,7 @@ public class ClusterTest extends AbstractClusterTest {
         Cache<Key, Object> cache2 = startDistSyncNode(2).getCache();
 
         Key key = new SessionKey("2");
-        HASession session1 = new HASession(droolsConfiguration);
+        HAKieSession session1 = new HAKieSession(droolsConfiguration);
 
         cache1.put(key, session1);
 
@@ -132,11 +132,11 @@ public class ClusterTest extends AbstractClusterTest {
         Object serializedSessionCopy = cache2.get(key);
 
         Assert.assertNotNull(serializedSessionCopy);
-        Assert.assertTrue(HASerializedSession.class.isAssignableFrom(serializedSessionCopy.getClass()));
+        Assert.assertTrue(HAKieSerializedSession.class.isAssignableFrom(serializedSessionCopy.getClass()));
 
         reset(replayChannel, additionsChannel);
 
-        HASession session2 = ((HASerializedSession) serializedSessionCopy).rebuild();
+        HAKieSession session2 = ((HAKieSerializedSession) serializedSessionCopy).rebuild();
 
         session2.insert(generateFactTenSecondsAfter(1L, 40L));
 
@@ -159,13 +159,13 @@ public class ClusterTest extends AbstractClusterTest {
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(2);
 
-        Cache<Key, HASession> cache1 = startDistSyncNode(2).getCache();
-        Cache<Key, HASession> cache2 = startDistSyncNode(2).getCache();
+        Cache<Key, HAKieSession> cache1 = startDistSyncNode(2).getCache();
+        Cache<Key, HAKieSession> cache2 = startDistSyncNode(2).getCache();
 
         reset(replayChannel, additionsChannel);
 
         Key key = new SessionKey("3");
-        HASession session1 = new HASession(droolsConfiguration);
+        HAKieSession session1 = new HAKieSession(droolsConfiguration);
 
         cache1.put(key, session1);
 
@@ -189,11 +189,11 @@ public class ClusterTest extends AbstractClusterTest {
         Object serializedSessionCopy = cache2.get(key);
 
         Assert.assertNotNull(serializedSessionCopy);
-        Assert.assertTrue(HASerializedSession.class.isAssignableFrom(serializedSessionCopy.getClass()));
+        Assert.assertTrue(HAKieSerializedSession.class.isAssignableFrom(serializedSessionCopy.getClass()));
 
         reset(replayChannel, additionsChannel);
 
-        HASession session2 = ((HASerializedSession) serializedSessionCopy).rebuild();
+        HAKieSession session2 = ((HAKieSerializedSession) serializedSessionCopy).rebuild();
 
         session2.insert(generateFactTenSecondsAfter(1L, 40L));
 
@@ -212,12 +212,12 @@ public class ClusterTest extends AbstractClusterTest {
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(10);
 
-        Cache<Key, HASession> cache1 = startDistSyncNode(2).getCache();
+        Cache<Key, HAKieSession> cache1 = startDistSyncNode(2).getCache();
 
         reset(replayChannel, additionsChannel);
 
         Key key = new SessionKey("3");
-        HASession session1 = new HASession(droolsConfiguration);
+        HAKieSession session1 = new HAKieSession(droolsConfiguration);
 
         cache1.put(key, session1);
 
@@ -240,15 +240,15 @@ public class ClusterTest extends AbstractClusterTest {
         // Double check on total number of calls to the method send
         verify(additionsChannel, times(3)).send(any());
 
-        Cache<Key, HASession> cache2 = startDistSyncNode(2).getCache();
+        Cache<Key, HAKieSession> cache2 = startDistSyncNode(2).getCache();
         Object serializedSessionCopy = cache2.get(key);
 
         Assert.assertNotNull(serializedSessionCopy);
-        Assert.assertTrue(HASession.class.isAssignableFrom(serializedSessionCopy.getClass()));
+        Assert.assertTrue(HAKieSession.class.isAssignableFrom(serializedSessionCopy.getClass()));
 
         reset(replayChannel, additionsChannel);
 
-        HASession session2 = (HASession) serializedSessionCopy;
+        HAKieSession session2 = (HAKieSession) serializedSessionCopy;
 
         session2.insert(generateFactTenSecondsAfter(1L, 40L));
 

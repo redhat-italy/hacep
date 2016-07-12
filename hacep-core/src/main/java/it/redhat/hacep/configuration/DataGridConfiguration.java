@@ -18,10 +18,10 @@
 package it.redhat.hacep.configuration;
 
 import it.redhat.hacep.cache.externalizers.KieSessionExternalizer;
-import it.redhat.hacep.cache.session.HASerializedSession;
-import it.redhat.hacep.cache.session.HASession;
-import it.redhat.hacep.cache.session.HASessionDeltaEmpty;
-import it.redhat.hacep.cache.session.HASessionDeltaFact;
+import it.redhat.hacep.cache.session.HAKieSerializedSession;
+import it.redhat.hacep.cache.session.HAKieSession;
+import it.redhat.hacep.cache.session.HAKieSessionDeltaEmpty;
+import it.redhat.hacep.cache.session.HAKieSessionDeltaFact;
 import it.redhat.hacep.configuration.annotations.HACEPCacheManager;
 import it.redhat.hacep.configuration.annotations.HACEPFactCache;
 import it.redhat.hacep.configuration.annotations.HACEPSessionCache;
@@ -69,10 +69,10 @@ public class DataGridConfiguration {
                 .globalJmxStatistics().allowDuplicateDomains(true).enable()
                 .serialization()
                 .addAdvancedExternalizer(new KieSessionExternalizer(serializer))
-                .addAdvancedExternalizer(new HASession.HASessionExternalizer(droolsConfiguration))
-                .addAdvancedExternalizer(new HASerializedSession.HASerializedSessionExternalizer(droolsConfiguration, serializer, executorService))
-                .addAdvancedExternalizer(new HASessionDeltaEmpty.HASessionDeltaEmptyExternalizer(droolsConfiguration, serializer, executorService))
-                .addAdvancedExternalizer(new HASessionDeltaFact.HASessionDeltaFactExternalizer())
+                .addAdvancedExternalizer(new HAKieSession.HASessionExternalizer(droolsConfiguration))
+                .addAdvancedExternalizer(new HAKieSerializedSession.HASerializedSessionExternalizer(droolsConfiguration, serializer, executorService))
+                .addAdvancedExternalizer(new HAKieSessionDeltaEmpty.HASessionDeltaEmptyExternalizer(droolsConfiguration, serializer, executorService))
+                .addAdvancedExternalizer(new HAKieSessionDeltaFact.HASessionDeltaFactExternalizer())
                 .build();
 
         ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();

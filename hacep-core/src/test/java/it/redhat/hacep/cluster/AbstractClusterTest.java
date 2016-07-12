@@ -19,10 +19,10 @@ package it.redhat.hacep.cluster;
 
 
 import it.redhat.hacep.cache.externalizers.KieSessionExternalizer;
-import it.redhat.hacep.cache.session.HASerializedSession;
-import it.redhat.hacep.cache.session.HASession;
-import it.redhat.hacep.cache.session.HASessionDeltaEmpty;
-import it.redhat.hacep.cache.session.HASessionDeltaFact;
+import it.redhat.hacep.cache.session.HAKieSerializedSession;
+import it.redhat.hacep.cache.session.HAKieSession;
+import it.redhat.hacep.cache.session.HAKieSessionDeltaEmpty;
+import it.redhat.hacep.cache.session.HAKieSessionDeltaFact;
 import it.redhat.hacep.configuration.DroolsConfiguration;
 import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import org.infinispan.configuration.cache.CacheMode;
@@ -65,10 +65,10 @@ public abstract class AbstractClusterTest {
                 .globalJmxStatistics().allowDuplicateDomains(true).enable()
                 .serialization()
                 .addAdvancedExternalizer(new KieSessionExternalizer(serializer))
-                .addAdvancedExternalizer(new HASession.HASessionExternalizer(getKieBaseConfiguration()))
-                .addAdvancedExternalizer(new HASerializedSession.HASerializedSessionExternalizer(getKieBaseConfiguration(), serializer, executorService))
-                .addAdvancedExternalizer(new HASessionDeltaEmpty.HASessionDeltaEmptyExternalizer(getKieBaseConfiguration(), serializer, executorService))
-                .addAdvancedExternalizer(new HASessionDeltaFact.HASessionDeltaFactExternalizer())
+                .addAdvancedExternalizer(new HAKieSession.HASessionExternalizer(getKieBaseConfiguration()))
+                .addAdvancedExternalizer(new HAKieSerializedSession.HASerializedSessionExternalizer(getKieBaseConfiguration(), serializer, executorService))
+                .addAdvancedExternalizer(new HAKieSessionDeltaEmpty.HASessionDeltaEmptyExternalizer(getKieBaseConfiguration(), serializer, executorService))
+                .addAdvancedExternalizer(new HAKieSessionDeltaFact.HASessionDeltaFactExternalizer())
                 .build();
 
         ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
