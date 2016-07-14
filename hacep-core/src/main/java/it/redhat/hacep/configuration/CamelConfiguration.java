@@ -10,6 +10,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jms.JmsComponent;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.infinispan.Cache;
+import org.omg.CORBA.PUBLIC_MEMBER;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +39,52 @@ public class CamelConfiguration {
     private CamelContext camelContext;
 
     public CamelConfiguration() {
+    }
+
+    /**
+     * Start camel context.
+     */
+    public void start() {
+        try {
+            camelContext.start();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Stop camel context.
+     */
+    public void stop() {
+        try {
+            camelContext.stop();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Suspend the route responsible for the messages ingestion.
+     */
+    public void suspend() {
+        log.info("Suspending route " + CamelConfiguration.CAMEL_ROUTE);
+        try {
+            camelContext.suspendRoute(CAMEL_ROUTE);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Resume the route responsible for the messages ingestion.
+     */
+    public void resume() {
+        log.info("Resuming route " + CamelConfiguration.CAMEL_ROUTE);
+        try {
+            camelContext.resumeRoute(CAMEL_ROUTE);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @PostConstruct

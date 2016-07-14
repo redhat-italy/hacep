@@ -50,8 +50,7 @@ public class HACEPApplication {
     private Cache<Key, Object> sessionCache;
 
     @Inject
-    @HACEPCamelContext
-    private CamelContext camelContext;
+    private CamelConfiguration camelConfiguration;
 
     @Inject
     private KieSessionSaver kieSessionSaver;
@@ -62,10 +61,10 @@ public class HACEPApplication {
     public void start() {
         try {
             this.factCache.addListener(new FactListenerPost(this.kieSessionSaver));
-            this.sessionCache.addListener(new SessionListenerPre(this.camelContext));
-            this.sessionCache.addListener(new SessionListenerPost(this.camelContext));
+            this.sessionCache.addListener(new SessionListenerPre(this.camelConfiguration));
+            this.sessionCache.addListener(new SessionListenerPost(this.camelConfiguration));
 
-            this.camelContext.start();
+            this.camelConfiguration.start();
             this.manager.start();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -74,11 +73,19 @@ public class HACEPApplication {
 
     public void stop() {
         try {
-            this.camelContext.stop();
+            this.camelConfiguration.stop();
             this.manager.stop();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void suspend() {
+        this.camelConfiguration.suspend();
+    }
+
+    public void resume() {
+        this.camelConfiguration.resume();
     }
 
     public Cache<Key, Fact> getFactCache() {
@@ -89,7 +96,4 @@ public class HACEPApplication {
         return manager;
     }
 
-    public CamelContext getCamelContext() {
-        return camelContext;
-    }
 }

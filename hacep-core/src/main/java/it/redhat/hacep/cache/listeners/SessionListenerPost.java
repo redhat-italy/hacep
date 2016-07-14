@@ -28,21 +28,16 @@ import org.slf4j.LoggerFactory;
 @Listener(primaryOnly = true, observation = Listener.Observation.POST)
 public class SessionListenerPost {
     private static final Logger logger = LoggerFactory.getLogger(SessionListenerPost.class);
-    private final CamelContext camelContext;
+    private final CamelConfiguration camelConfiguration;
 
-    public SessionListenerPost(CamelContext camelContext) {
-        this.camelContext = camelContext;
+    public SessionListenerPost(CamelConfiguration camelConfiguration) {
+        this.camelConfiguration = camelConfiguration;
     }
 
     @DataRehashed
     public void rehash(DataRehashedEvent event) {
         logger.info("Rehashing FINISHED for cache " + event.getCache());
-        try {
-            logger.info("Resuming route " + CamelConfiguration.CAMEL_ROUTE);
-            camelContext.resumeRoute(CamelConfiguration.CAMEL_ROUTE);
-        } catch (Exception e) {
-            logger.error("Error suspending camel route.", e);
-        }
+        this.camelConfiguration.resume();
     }
 
 }
