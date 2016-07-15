@@ -17,8 +17,7 @@
 
 package it.redhat.hacep.cache.listeners;
 
-import it.redhat.hacep.configuration.CamelConfiguration;
-import org.apache.camel.CamelContext;
+import it.redhat.hacep.configuration.RouterManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
@@ -28,16 +27,16 @@ import org.slf4j.LoggerFactory;
 @Listener(primaryOnly = true, observation = Listener.Observation.POST)
 public class SessionListenerPost {
     private static final Logger logger = LoggerFactory.getLogger(SessionListenerPost.class);
-    private final CamelConfiguration camelConfiguration;
+    private final RouterManager routerManager;
 
-    public SessionListenerPost(CamelConfiguration camelConfiguration) {
-        this.camelConfiguration = camelConfiguration;
+    public SessionListenerPost(RouterManager routerManager) {
+        this.routerManager = routerManager;
     }
 
     @DataRehashed
     public void rehash(DataRehashedEvent event) {
         logger.info("Rehashing FINISHED for cache " + event.getCache());
-        this.camelConfiguration.resume();
+        this.routerManager.resume();
     }
 
 }

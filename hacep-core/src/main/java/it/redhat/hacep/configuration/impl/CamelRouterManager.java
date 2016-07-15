@@ -1,6 +1,9 @@
-package it.redhat.hacep.configuration;
+package it.redhat.hacep.configuration.impl;
 
 import it.redhat.hacep.camel.Putter;
+import it.redhat.hacep.configuration.DroolsConfiguration;
+import it.redhat.hacep.configuration.JmsConfiguration;
+import it.redhat.hacep.configuration.RouterManager;
 import it.redhat.hacep.configuration.annotations.HACEPCamelContext;
 import it.redhat.hacep.configuration.annotations.HACEPFactCache;
 import it.redhat.hacep.model.Fact;
@@ -10,19 +13,17 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jms.JmsComponent;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.infinispan.Cache;
-import org.omg.CORBA.PUBLIC_MEMBER;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
-public class CamelConfiguration {
+public class CamelRouterManager implements RouterManager {
 
-    private final static Logger log = LoggerFactory.getLogger(CamelConfiguration.class);
+    private final static Logger log = LoggerFactory.getLogger(CamelRouterManager.class);
 
     public static final String CAMEL_ROUTE = "facts";
 
@@ -38,12 +39,10 @@ public class CamelConfiguration {
 
     private CamelContext camelContext;
 
-    public CamelConfiguration() {
+    public CamelRouterManager() {
     }
 
-    /**
-     * Start camel context.
-     */
+    @Override
     public void start() {
         try {
             camelContext.start();
@@ -52,9 +51,7 @@ public class CamelConfiguration {
         }
     }
 
-    /**
-     * Stop camel context.
-     */
+    @Override
     public void stop() {
         try {
             camelContext.stop();
@@ -63,11 +60,9 @@ public class CamelConfiguration {
         }
     }
 
-    /**
-     * Suspend the route responsible for the messages ingestion.
-     */
+    @Override
     public void suspend() {
-        log.info("Suspending route " + CamelConfiguration.CAMEL_ROUTE);
+        log.info("Suspending route " + CamelRouterManager.CAMEL_ROUTE);
         try {
             camelContext.suspendRoute(CAMEL_ROUTE);
         } catch (Exception e) {
@@ -75,11 +70,9 @@ public class CamelConfiguration {
         }
     }
 
-    /**
-     * Resume the route responsible for the messages ingestion.
-     */
+    @Override
     public void resume() {
-        log.info("Resuming route " + CamelConfiguration.CAMEL_ROUTE);
+        log.info("Resuming route " + CamelRouterManager.CAMEL_ROUTE);
         try {
             camelContext.resumeRoute(CAMEL_ROUTE);
         } catch (Exception e) {
