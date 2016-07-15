@@ -15,37 +15,26 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.playground.rules.model.util;
+package it.redhat.hacep.configuration;
 
-import it.redhat.hacep.playground.rules.model.Gameplay;
+public interface RouterManager {
+    /**
+     * Start camel context.
+     */
+    void start();
 
-import java.util.Date;
+    /**
+     * Stop camel context.
+     */
+    void stop();
 
-public class GameplayBuilder {
+    /**
+     * Suspend the route responsible for the messages ingestion.
+     */
+    void suspend();
 
-    private long playerId;
-
-    private long id;
-
-    private Date timestamp;
-
-    public GameplayBuilder id(long id) {
-        this.id = id;
-        return this;
-    }
-
-    public GameplayBuilder playerId(long playerId) {
-        this.playerId = playerId;
-        return this;
-    }
-
-    public GameplayBuilder timestamp(long time) {
-        this.timestamp = new Date(time);
-        return this;
-    }
-
-    public Gameplay build() {
-        return new Gameplay(id, playerId, timestamp);
-    }
-
+    /**
+     * Resume the route responsible for the messages ingestion.
+     */
+    void resume();
 }
