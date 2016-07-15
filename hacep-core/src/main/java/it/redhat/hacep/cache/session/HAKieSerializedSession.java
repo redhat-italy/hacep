@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static it.redhat.hacep.cache.session.JDGExternalizerIDs.HASerializerSessionID;
 import static org.infinispan.commons.util.Util.asSet;
@@ -48,7 +49,8 @@ public class HAKieSerializedSession implements DeltaAware {
     private final Executor executor;
     private final DroolsConfiguration droolsConfiguration;
 
-    private CountDownLatch latch = new CountDownLatch(0);
+    private AtomicBoolean saving = new AtomicBoolean(false);
+    private volatile CountDownLatch latch = new CountDownLatch(0);
 
     private byte[] session;
     private transient long size = 0;
@@ -65,17 +67,21 @@ public class HAKieSerializedSession implements DeltaAware {
         buffer.offer(f);
         size++;
         if (this.needToSave()) {
-            this.createSafePoint();
+            this.createSnapshot();
         }
     }
 
+    public void forceSnapshot() {
+        createSnapshot();
+    }
+
     public HAKieSession rebuild() {
-        this.waitSafePoint();
+        this.waitForSnapshot();
         return new HAKieSession(droolsConfiguration, buildSession());
     }
 
-    private void waitSafePoint() {
-        if (isSaving()) {
+    private void waitForSnapshot() {
+        if (saving.get()) {
             try {
                 latch.await();
             } catch (InterruptedException e) {
@@ -85,28 +91,28 @@ public class HAKieSerializedSession implements DeltaAware {
     }
 
     private boolean needToSave() {
-        return (!isSaving() && (size > droolsConfiguration.getMaxBufferSize()));
+        return (size > droolsConfiguration.getMaxBufferSize());
     }
 
-    private void createSafePoint() {
-        if (isSaving()) {
-            throw new IllegalStateException("slim session already active");
+    private void createSnapshot() {
+        if (saving.compareAndSet(false, true)) {
+            latch = new CountDownLatch(1);
+            executor.execute(() -> {
+                KieSession localSession = null;
+                try {
+                    printSessionSize("Start consuming buffer");
+                    localSession = buildSession();
+                    session = serializer.writeObject(localSession);
+                    printSessionSize("Buffer empty");
+                } catch (Exception e) {
+                    logger.error("Unexpected exception", e);
+                } finally {
+                    SessionUtils.dispose(localSession);
+                    saving.set(false);
+                    latch.countDown();
+                }
+            });
         }
-        latch = new CountDownLatch(1);
-        executor.execute(() -> {
-            KieSession localSession = null;
-            try {
-                printSessionSize("Start consuming buffer");
-                localSession = buildSession();
-                session = serializer.writeObject(localSession);
-                printSessionSize("Buffer empty");
-            } catch (Exception e) {
-                logger.error("Unexpected exception", e);
-            } finally {
-                SessionUtils.dispose(localSession);
-            }
-            latch.countDown();
-        });
     }
 
     private void printSessionSize(String message) {
@@ -123,14 +129,16 @@ public class HAKieSerializedSession implements DeltaAware {
         } else {
             localSession = droolsConfiguration.getKieSession();
         }
-        droolsConfiguration.getReplayChannels().forEach(localSession::registerChannel);
-        while (!buffer.isEmpty()) {
-            Fact fact = buffer.remove();
-            SessionUtils.advanceClock(localSession, fact);
-            localSession.insert(fact);
+        if (!buffer.isEmpty()) {
+            droolsConfiguration.getReplayChannels().forEach(localSession::registerChannel);
+            while (!buffer.isEmpty()) {
+                Fact fact = buffer.remove();
+                SessionUtils.advanceClock(localSession, fact);
+                localSession.insert(fact);
+            }
+            size = 0;
+            localSession.fireAllRules();
         }
-        size = 0;
-        localSession.fireAllRules();
         droolsConfiguration.getChannels().forEach(localSession::registerChannel);
         return localSession;
     }
@@ -143,10 +151,6 @@ public class HAKieSerializedSession implements DeltaAware {
     @Override
     public void commit() {
         throw new IllegalStateException("Delta not expected on HAKieSerializedSession");
-    }
-
-    private boolean isSaving() {
-        return latch.getCount() > 0;
     }
 
     public static class HASerializedSessionExternalizer implements AdvancedExternalizer<HAKieSerializedSession> {
@@ -173,8 +177,8 @@ public class HAKieSerializedSession implements DeltaAware {
 
         @Override
         public void writeObject(ObjectOutput output, HAKieSerializedSession object) throws IOException {
-            output.writeInt(object.session!=null?object.session.length:0);
-            if(object.session!=null) {
+            output.writeInt(object.session != null ? object.session.length : 0);
+            if (object.session != null) {
                 output.write(object.session);
             }
             output.writeObject(object.buffer);
@@ -184,7 +188,7 @@ public class HAKieSerializedSession implements DeltaAware {
         public HAKieSerializedSession readObject(ObjectInput input) throws IOException, ClassNotFoundException {
             HAKieSerializedSession haKieSerializedSession = new HAKieSerializedSession(droolsConfiguration, serializer, executor);
             int len = input.readInt();
-            if(len>0) {
+            if (len > 0) {
                 haKieSerializedSession.session = new byte[len];
                 input.read(haKieSerializedSession.session);
             }

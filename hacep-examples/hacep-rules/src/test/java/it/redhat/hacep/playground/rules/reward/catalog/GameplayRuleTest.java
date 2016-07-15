@@ -45,12 +45,12 @@ public class GameplayRuleTest {
     
     @Before
     public void setupTest() throws Exception {
-        session = kieContainer.newKieSession(KSESSION_NAME);
-        session.registerChannel(SysoutChannel.CHANNEL_ID, new SysoutChannel());
-        session.registerChannel(AuditChannel.CHANNEL_ID, new AuditChannel());
-        rulesFired = new RulesFiredAgendaEventListener();
-        session.addEventListener(rulesFired);
-        clock = session.getSessionClock();
+        this.session = kieContainer.newKieSession(KSESSION_NAME);
+        this.session.registerChannel(SysoutChannel.CHANNEL_ID, new SysoutChannel());
+        this.session.registerChannel(AuditChannel.CHANNEL_ID, new AuditChannel());
+        this.rulesFired = new RulesFiredAgendaEventListener();
+        this.session.addEventListener(rulesFired);
+        this.clock = session.getSessionClock();
     }
     
     @Test
