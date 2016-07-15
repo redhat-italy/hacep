@@ -17,7 +17,7 @@
   -->
 
 <kmodule xmlns="http://jboss.org/kie/6.0.0/kmodule">
-    <kbase name="hacep-core-rules-test" equalsBehavior="equality" eventProcessingMode="stream">
+    <kbase name="hacep-core-rules-test" default="true" equalsBehavior="equality" eventProcessingMode="stream">
         <ksession name="hacep-core-session-test" default="true" type="stateful" clockType="pseudo"/>
     </kbase>
 </kmodule>

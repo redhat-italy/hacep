@@ -29,12 +29,15 @@ public class GameplayRule1Test {
 
     @BeforeClass
     public static void init() throws Exception {
-        kieBase = TestUtils.setupKieBase("rules/reward-catalogue.drl", "rules/reward-catalogue-rule1.drl");
+        kieBase = KieAPITestUtils.setupKieBase("rules/reward-catalogue.drl", "rules/reward-catalogue-rule1.drl");
     }
 
     @Before
     public void setupTest() throws Exception {
-        this.session = TestUtils.buildKieSession(kieBase);
+        this.session = KieAPITestUtils.buildKieSession(kieBase);
+        this.session.registerChannel(SysoutChannel.CHANNEL_ID, new SysoutChannel());
+        this.session.registerChannel(AuditChannel.CHANNEL_ID, new AuditChannel());
+
         this.rulesFired = new RulesFiredAgendaEventListener();
         this.session.addEventListener(rulesFired);
         this.clock = this.session.getSessionClock();

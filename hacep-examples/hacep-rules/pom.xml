@@ -14,6 +14,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>it.redhat.jdg</groupId>
+			<artifactId>hacep-commons-test</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>it.redhat.jdg.examples</groupId>
 			<artifactId>hacep-model</artifactId>
 		</dependency>
