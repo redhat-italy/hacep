@@ -67,6 +67,10 @@
 
         <!--TEST -->
         <dependency>
+            <groupId>it.redhat.jdg</groupId>
+            <artifactId>hacep-commons-test</artifactId>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>

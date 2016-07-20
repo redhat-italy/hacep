@@ -17,11 +17,13 @@
 
 package it.redhat.hacep.cluster;
 
-import it.redhat.hacep.cluster.KieBaseContainerTest;
 import it.redhat.hacep.configuration.DroolsConfiguration;
 import it.redhat.hacep.model.KeyBuilder;
+import it.redhat.hacep.playground.rules.reward.catalog.KieAPITestUtils;
+import org.drools.compiler.kproject.ReleaseIdImpl;
 import org.kie.api.KieBase;
 import org.kie.api.runtime.Channel;
+import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 
 import java.util.HashMap;
@@ -31,17 +33,24 @@ public class TestDroolsConfiguration implements DroolsConfiguration {
 
     private final Map<String, Channel> channels = new HashMap<>();
     private final Map<String, Channel> replayChannels = new HashMap<>();
-    private KieBaseContainerTest kieBaseContainerTest;
     private KieBase kieBase;
     private int maxBufferSize;
+    private final KieContainer kieContainer;
 
     public TestDroolsConfiguration() {
-        kieBaseContainerTest = new KieBaseContainerTest();
         try {
-            kieBase = kieBaseContainerTest.setupKieBase("rules/simple-rule.drl");
+            ReleaseIdImpl releaseId = new ReleaseIdImpl("it.redhat.jdg", "rules", "2.0.0");
+            kieContainer = KieAPITestUtils.setupKieContainer(releaseId, "pom/pom-2.0.0.xml", "rules/simple-rule.drl");
+            kieBase = kieContainer.getKieBase();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void upgradeContainer() {
+        ReleaseIdImpl releaseId = new ReleaseIdImpl("it.redhat.jdg", "rules", "2.0.0");
+        KieAPITestUtils.setupKieContainer(releaseId, "pom/pom-2.0.0.xml", "rules/simple-rule_modified.drl");
+        kieContainer.updateToVersion(releaseId);
     }
 
     public void registerChannel(String name, Channel channel, Channel replay) {
@@ -56,7 +65,7 @@ public class TestDroolsConfiguration implements DroolsConfiguration {
     @Override
     public KieSession getKieSession() {
         try {
-            return kieBaseContainerTest.newKieSession(kieBase);
+            return KieAPITestUtils.buildKieSession(kieBase);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

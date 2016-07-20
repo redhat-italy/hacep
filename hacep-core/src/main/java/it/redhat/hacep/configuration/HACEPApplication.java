@@ -22,12 +22,10 @@ import it.redhat.hacep.cache.listeners.SessionListenerPost;
 import it.redhat.hacep.cache.listeners.SessionListenerPre;
 import it.redhat.hacep.cache.session.KieSessionSaver;
 import it.redhat.hacep.configuration.annotations.HACEPCacheManager;
-import it.redhat.hacep.configuration.annotations.HACEPCamelContext;
 import it.redhat.hacep.configuration.annotations.HACEPFactCache;
 import it.redhat.hacep.configuration.annotations.HACEPSessionCache;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
-import org.apache.camel.CamelContext;
 import org.infinispan.Cache;
 import org.infinispan.manager.DefaultCacheManager;
 
@@ -50,8 +48,7 @@ public class HACEPApplication {
     private Cache<Key, Object> sessionCache;
 
     @Inject
-    @HACEPCamelContext
-    private CamelContext camelContext;
+    private RouterManager routerManager;
 
     @Inject
     private KieSessionSaver kieSessionSaver;
@@ -62,10 +59,10 @@ public class HACEPApplication {
     public void start() {
         try {
             this.factCache.addListener(new FactListenerPost(this.kieSessionSaver));
-            this.sessionCache.addListener(new SessionListenerPre(this.camelContext));
-            this.sessionCache.addListener(new SessionListenerPost(this.camelContext));
+            this.sessionCache.addListener(new SessionListenerPre(this.routerManager));
+            this.sessionCache.addListener(new SessionListenerPost(this.routerManager));
 
-            this.camelContext.start();
+            this.routerManager.start();
             this.manager.start();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -74,11 +71,19 @@ public class HACEPApplication {
 
     public void stop() {
         try {
-            this.camelContext.stop();
+            this.routerManager.stop();
             this.manager.stop();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void suspend() {
+        this.routerManager.suspend();
+    }
+
+    public void resume() {
+        this.routerManager.resume();
     }
 
     public Cache<Key, Fact> getFactCache() {
@@ -89,7 +94,4 @@ public class HACEPApplication {
         return manager;
     }
 
-    public CamelContext getCamelContext() {
-        return camelContext;
-    }
 }

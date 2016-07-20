@@ -15,17 +15,15 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.cluster;
+package it.redhat.hacep.playground.rules.reward.catalog;
 
+import org.drools.compiler.kproject.ReleaseIdImpl;
 import org.drools.core.ClockType;
 import org.drools.core.io.impl.ClassPathResource;
 import org.kie.api.KieBase;
 import org.kie.api.KieBaseConfiguration;
 import org.kie.api.KieServices;
-import org.kie.api.builder.KieBuilder;
-import org.kie.api.builder.KieFileSystem;
-import org.kie.api.builder.KieRepository;
-import org.kie.api.builder.Message;
+import org.kie.api.builder.*;
 import org.kie.api.conf.EventProcessingOption;
 import org.kie.api.io.Resource;
 import org.kie.api.runtime.KieContainer;
@@ -34,48 +32,54 @@ import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.conf.ClockTypeOption;
 import org.kie.internal.KnowledgeBaseFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+public class KieAPITestUtils {
 
-public class KieBaseContainerTest {
-
-    private static final String DATE_PATTERN = "yyyy-MM-dd";
-    private static final String SIMPLE_DATA_FORMAT_GLOBAL_NAME = "sdf";
-    private List<String> rules = new ArrayList<>();
-
-
-    public KieSession newKieSession(KieBase kieBase) throws Exception {
+    public static KieSession buildKieSession(KieBase kieBase) {
         KieSessionConfiguration sessionConf = KnowledgeBaseFactory.newKnowledgeSessionConfiguration();
         sessionConf.setOption(ClockTypeOption.get(ClockType.PSEUDO_CLOCK.getId()));
         KieSession session = kieBase.newKieSession(sessionConf, null);
         return session;
     }
 
-    public KieBase setupKieBase(String... resources) throws Exception {
-        KieServices ks = KieServices.Factory.get();
-        KieBaseConfiguration config = ks.newKieBaseConfiguration();
+
+    public static KieBase setupKieBase(String... resources) throws Exception {
+        ReleaseIdImpl releaseId = new ReleaseIdImpl("it.redhat.jdg", "rules", "1.0.0");
+        KieContainer kieContainer = setupKieContainer(releaseId, "pom/pom-1.0.0.xml", resources);
+
+        KieBaseConfiguration config = KieServices.Factory.get().newKieBaseConfiguration();
         config.setOption(EventProcessingOption.STREAM);
-        KieFileSystem kfs = ks.newKieFileSystem();
-        KieRepository kr = ks.getRepository();
+
+        return kieContainer.getKieBase();
+    }
+
+    public static KieContainer setupKieContainer(ReleaseId releaseId, String pom, String... resources) {
+        KieServices kieServices = KieServices.Factory.get();
+
+        KieFileSystem kfs = kieServices.newKieFileSystem();
+
+        Resource pomResource = new ClassPathResource(pom);
+        kfs.write("pom.xml", pomResource);
+
+        Resource kmodule = new ClassPathResource("kmodule/kmodule.xml");
+        kfs.write("src/main/resources/META-INF/kmodule.xml", kmodule);
 
         for (String res : resources) {
             Resource resource = new ClassPathResource(res);
             kfs.write("src/main/resources/" + res, resource);
         }
 
-        KieBuilder kb = ks.newKieBuilder(kfs);
+        KieBuilder kb = kieServices.newKieBuilder(kfs);
         kb.buildAll();
         hasErrors(kb);
 
-        KieContainer kc = ks.newKieContainer(kr.getDefaultReleaseId());
+        KieContainer kc = kieServices.newKieContainer(releaseId);
 
-        return kc.newKieBase(config);
+        return kc;
     }
 
-    private static void hasErrors(KieBuilder kbuilder) throws Exception {
+    private static void hasErrors(KieBuilder kbuilder) {
         if (kbuilder.getResults().hasMessages(Message.Level.ERROR)) {
             throw new RuntimeException("Build errors\n" + kbuilder.getResults().toString());
         }
     }
-
 }

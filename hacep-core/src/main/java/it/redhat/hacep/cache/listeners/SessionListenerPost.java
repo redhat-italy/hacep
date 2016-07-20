@@ -17,8 +17,7 @@
 
 package it.redhat.hacep.cache.listeners;
 
-import it.redhat.hacep.configuration.CamelConfiguration;
-import org.apache.camel.CamelContext;
+import it.redhat.hacep.configuration.RouterManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
@@ -28,21 +27,16 @@ import org.slf4j.LoggerFactory;
 @Listener(primaryOnly = true, observation = Listener.Observation.POST)
 public class SessionListenerPost {
     private static final Logger logger = LoggerFactory.getLogger(SessionListenerPost.class);
-    private final CamelContext camelContext;
+    private final RouterManager routerManager;
 
-    public SessionListenerPost(CamelContext camelContext) {
-        this.camelContext = camelContext;
+    public SessionListenerPost(RouterManager routerManager) {
+        this.routerManager = routerManager;
     }
 
     @DataRehashed
     public void rehash(DataRehashedEvent event) {
         logger.info("Rehashing FINISHED for cache " + event.getCache());
-        try {
-            logger.info("Resuming route " + CamelConfiguration.CAMEL_ROUTE);
-            camelContext.resumeRoute(CamelConfiguration.CAMEL_ROUTE);
-        } catch (Exception e) {
-            logger.error("Error suspending camel route.", e);
-        }
+        this.routerManager.resume();
     }
 
 }
