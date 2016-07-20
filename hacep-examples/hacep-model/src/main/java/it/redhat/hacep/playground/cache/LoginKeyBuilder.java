@@ -8,6 +8,6 @@ public class LoginKeyBuilder implements KeyBuilder<UserEvent, String> {
 
     @Override
     public Key<String> extractFromFact(UserEvent fact) {
-        return new GameplayKey(String.valueOf(fact.getId()), String.valueOf(fact.getUsr()));
+        return new LoginKey(String.valueOf(fact.getId()), String.valueOf(fact.getUsr()));
     }
 }
