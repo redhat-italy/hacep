@@ -1,0 +1,26 @@
+== Prerequisites
+
+In order to guarantee idem-potency, some prerequisites applies to the Rules in the Knowledge Base, in order to fit for application on this architecture.
+
+. Rule shall be purely based on the inputs coming from the Infinispan grid, and not from other external systems.
++
+Example anti-pattern: in the LHS, using a JDBC connection in the Conditional Element `from` to cycle over the results coming from a RDBMS.
++
+This is because external systems may not behave like "pure functions" hence at subsequent direct invocation from replica nodes, may return for the same inputs, different results.
+
+. Rule behavior shall be deterministic.
++
+Example anti-pattern: using rules to model a FSM which at a certain state, will transition to another state based on a random value.
++
+This is because replica node may diverge leading to an inconsistent total or partial replica.
+
+. On the RHS, rules shall interact directly on the Drools channel only.
++
+This is indeed to ensure that all side-effects on the replica nodes are silenced correctly.
++
+Example anti-pattern: sending email directly from the RHS.
++
+Another example anti-pattern: perform persistence of some facts from the Working Memory using Hibernate on the RHS, and once committed to the DB, retrieve the version value to be updated on the original fact in the Working Memory, in order to keep manually the optimistic locking.
++
+All these anti-patterns can be avoided by refactoring the implementation logic on the RHS, for instance by wrapping the "intention" with a message object which will be submitted to the Drools channel, so for the "intention" to be executed only on the receiving-end of the channel.
+For instance, instead of calling the Hibernate `persist`/`merge` on the RHS, wrap the message "Persist these values" and submit it on the channel; on the receiving-end, a dedicated listener will be the only one dedicated to actually perform the intention.
