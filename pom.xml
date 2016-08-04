@@ -70,7 +70,7 @@
             <properties>
                 <version.org.infinispan>6.4.0.Final-redhat-4</version.org.infinispan>
                 <version.org.jboss.fuse>6.2.1.redhat-084</version.org.jboss.fuse>
-                <version.org.jboss.bom.brms>6.2.0.GA-redhat-1</version.org.jboss.bom.brms>
+                <version.org.jboss.bom.brms>6.3.0.GA-redhat-3</version.org.jboss.bom.brms>
                 <version.org.jboss.bom.eap>6.4.5.GA</version.org.jboss.bom.eap>
             </properties>
             <dependencyManagement>
