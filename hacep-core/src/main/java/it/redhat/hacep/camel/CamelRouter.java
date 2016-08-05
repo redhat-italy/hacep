@@ -15,12 +15,11 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.configuration.impl;
+package it.redhat.hacep.camel;
 
-import it.redhat.hacep.camel.Putter;
 import it.redhat.hacep.configuration.DroolsConfiguration;
 import it.redhat.hacep.configuration.JmsConfiguration;
-import it.redhat.hacep.configuration.RouterManager;
+import it.redhat.hacep.configuration.Router;
 import it.redhat.hacep.configuration.annotations.HACEPCamelContext;
 import it.redhat.hacep.configuration.annotations.HACEPFactCache;
 import it.redhat.hacep.model.Fact;
@@ -38,9 +37,9 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
-public class CamelRouterManager implements RouterManager {
+public class CamelRouter implements Router {
 
-    private final static Logger log = LoggerFactory.getLogger(CamelRouterManager.class);
+    private final static Logger log = LoggerFactory.getLogger(CamelRouter.class);
 
     public static final String CAMEL_ROUTE = "facts";
 
@@ -56,7 +55,7 @@ public class CamelRouterManager implements RouterManager {
 
     private CamelContext camelContext;
 
-    public CamelRouterManager() {
+    public CamelRouter() {
     }
 
     @Override
@@ -79,7 +78,7 @@ public class CamelRouterManager implements RouterManager {
 
     @Override
     public void suspend() {
-        log.info("Suspending route " + CamelRouterManager.CAMEL_ROUTE);
+        log.info("Suspending route " + CamelRouter.CAMEL_ROUTE);
         try {
             camelContext.suspendRoute(CAMEL_ROUTE);
         } catch (Exception e) {
@@ -89,7 +88,7 @@ public class CamelRouterManager implements RouterManager {
 
     @Override
     public void resume() {
-        log.info("Resuming route " + CamelRouterManager.CAMEL_ROUTE);
+        log.info("Resuming route " + CamelRouter.CAMEL_ROUTE);
         try {
             camelContext.resumeRoute(CAMEL_ROUTE);
         } catch (Exception e) {

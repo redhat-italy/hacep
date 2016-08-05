@@ -17,14 +17,14 @@
 
 package it.redhat.hacep.configuration;
 
-public interface RouterManager {
+public interface Router {
     /**
-     * Start camel context.
+     * Start context.
      */
     void start();
 
     /**
-     * Stop camel context.
+     * Stop context.
      */
     void stop();
 

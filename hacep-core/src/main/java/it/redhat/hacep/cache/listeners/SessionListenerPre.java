@@ -17,7 +17,7 @@
 
 package it.redhat.hacep.cache.listeners;
 
-import it.redhat.hacep.configuration.RouterManager;
+import it.redhat.hacep.configuration.Router;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
@@ -28,16 +28,16 @@ import org.slf4j.LoggerFactory;
 public class SessionListenerPre {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionListenerPre.class);
-    private final RouterManager routerManager;
+    private final Router router;
 
-    public SessionListenerPre(RouterManager routerManager) {
-        this.routerManager = routerManager;
+    public SessionListenerPre(Router router) {
+        this.router = router;
     }
 
     @DataRehashed
     public void rehash(DataRehashedEvent event) {
         logger.info("Rehashing STARTED for cache " + event.getCache());
-        this.routerManager.suspend();
+        this.router.suspend();
     }
 
 }
