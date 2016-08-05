@@ -19,6 +19,7 @@ package it.redhat.hacep.cache.session;
 
 import it.redhat.hacep.cache.session.utils.SessionUtils;
 import it.redhat.hacep.configuration.DroolsConfiguration;
+import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
 import org.infinispan.atomic.Delta;
 import org.infinispan.atomic.DeltaAware;
@@ -33,6 +34,7 @@ import java.io.ObjectOutput;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
 
 import static org.infinispan.commons.util.Util.asSet;
 
@@ -41,17 +43,28 @@ public class HAKieSession implements DeltaAware {
     private final static Logger logger = LoggerFactory.getLogger(HAKieSession.class);
 
     private final DroolsConfiguration droolsConfiguration;
+    private final KieSessionByteArraySerializer serializer;
+    private final Executor executor;
 
-    private KieSession session;
+    protected KieSession session;
     private Queue<Fact> buffer = new ConcurrentLinkedQueue<>();
 
-    public HAKieSession(DroolsConfiguration droolsConfiguration) {
+    public HAKieSession(DroolsConfiguration droolsConfiguration, KieSessionByteArraySerializer serializer, Executor executor) {
         this.droolsConfiguration = droolsConfiguration;
+        this.serializer = serializer;
+        this.executor = executor;
     }
 
-    public HAKieSession(DroolsConfiguration droolsConfiguration, KieSession session) {
-        this.droolsConfiguration = droolsConfiguration;
+    public HAKieSession(DroolsConfiguration droolsConfiguration, KieSessionByteArraySerializer serializer, Executor executor, KieSession session) {
+        this(droolsConfiguration, serializer, executor);
         this.session = session;
+    }
+
+    public final HAKieSerializedSession wrapWithSerializedSession() {
+        if (session != null) {
+            return new HAKieSerializedSession(droolsConfiguration, serializer, executor, serializer.writeObject(session));
+        }
+        return new HAKieSerializedSession(droolsConfiguration, serializer, executor);
     }
 
     public void insert(Fact fact) {
@@ -110,9 +123,14 @@ public class HAKieSession implements DeltaAware {
     public static class HASessionExternalizer implements AdvancedExternalizer<HAKieSession> {
 
         private final DroolsConfiguration droolsConfiguration;
+        private final KieSessionByteArraySerializer serializer;
+        private final Executor executor;
 
-        public HASessionExternalizer(DroolsConfiguration droolsConfiguration) {
+        public HASessionExternalizer(DroolsConfiguration droolsConfiguration, KieSessionByteArraySerializer serializer,
+                                     Executor executor) {
             this.droolsConfiguration = droolsConfiguration;
+            this.serializer = serializer;
+            this.executor = executor;
         }
 
         @Override
@@ -127,16 +145,26 @@ public class HAKieSession implements DeltaAware {
 
         @Override
         public void writeObject(ObjectOutput output, HAKieSession object) throws IOException {
-            output.writeObject(object.session);
+            if (object.session != null) {
+                byte[] buffer = serializer.writeObject(object.session);
+                output.writeInt(buffer.length);
+                output.write(buffer);
+            } else {
+                output.writeInt(0);
+            }
             object.buffer.clear();
         }
 
         @Override
         public HAKieSession readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-            HAKieSession haKieSession = new HAKieSession(droolsConfiguration);
-            haKieSession.session = (KieSession) input.readObject();
-            droolsConfiguration.getChannels().forEach(haKieSession.session::registerChannel);
-            return haKieSession;
+            int len = input.readInt();
+            if (len > 0) {
+                byte[] buffer = new byte[len];
+                input.read(buffer);
+                return new HAKieSerializedSession(droolsConfiguration, serializer, executor, buffer);
+            } else {
+                return new HAKieSerializedSession(droolsConfiguration, serializer, executor);
+            }
         }
     }
 }

@@ -15,21 +15,19 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.model;
+package it.redhat.hacep.configuration.annotations;
 
-public class SessionKey extends Key<String> {
+import javax.inject.Qualifier;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-    public SessionKey(String group) {
-        super(group);
-    }
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-    @Override
-    public String getId() {
-        return getGroup();
-    }
-
-    @Override
-    public String toString() {
-        return "Session::Group::" + getGroup();
-    }
+@Qualifier
+@Target({TYPE, METHOD, PARAMETER, FIELD})
+@Retention(RUNTIME)
+@Documented
+public @interface HACEPExecutorService {
 }

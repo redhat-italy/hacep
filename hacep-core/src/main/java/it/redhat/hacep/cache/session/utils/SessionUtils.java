@@ -33,6 +33,9 @@ public class SessionUtils {
         SessionPseudoClock clock = kieSession.getSessionClock();
         long gts = fact.getInstant().toEpochMilli();
         long current = clock.getCurrentTime();
+        if (gts < current) {
+            logger.warn(String.format("Moving clock backwards. New Clock is [%s], current was [%s]", gts, current));
+        }
         clock.advanceTime(gts - current, TimeUnit.MILLISECONDS);
     }
 

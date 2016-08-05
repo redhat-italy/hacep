@@ -45,7 +45,18 @@ public class HAKieSessionDeltaFact implements Delta {
         if (d == null) {
             throw new IllegalStateException();
         }
-        HAKieSerializedSession haSession = (HAKieSerializedSession) d;
+
+        HAKieSerializedSession haSession;
+        if (HAKieSerializedSession.class.isAssignableFrom(d.getClass())) {
+            haSession = (HAKieSerializedSession) d;
+        } else {
+            if (HAKieSession.class.isAssignableFrom(d.getClass())) {
+                haSession = ((HAKieSession) d).wrapWithSerializedSession();
+            } else {
+                // This should never happen
+                throw new IllegalArgumentException("Class [" + d.getClass() + "]");
+            }
+        }
         haSession.add(fact);
         return haSession;
     }

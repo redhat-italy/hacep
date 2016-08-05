@@ -18,7 +18,10 @@
 package it.redhat.hacep.cache.session;
 
 import it.redhat.hacep.configuration.DroolsConfiguration;
+import it.redhat.hacep.configuration.annotations.HACEPExecutorService;
+import it.redhat.hacep.configuration.annotations.HACEPKieSessionSerializer;
 import it.redhat.hacep.configuration.annotations.HACEPSessionCache;
+import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.model.SessionKey;
@@ -29,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
 
 public class KieSessionSaver {
 
@@ -42,6 +46,14 @@ public class KieSessionSaver {
     private Cache<Key, Object> sessionCache;
 
     @Inject
+    @HACEPKieSessionSerializer
+    private KieSessionByteArraySerializer serializer;
+
+    @Inject
+    @HACEPExecutorService
+    private ExecutorService executorService;
+
+    @Inject
     private DroolsConfiguration droolsConfiguration;
 
     public KieSessionSaver insert(Key key, Fact fact) {
@@ -51,7 +63,7 @@ public class KieSessionSaver {
             HAKieSession haKieSession;
             Object value = sessionCache.get(sessionKey);
             if (value == null) {
-                haKieSession = new HAKieSession(droolsConfiguration);
+                haKieSession = new HAKieSession(droolsConfiguration, serializer, executorService);
                 sessionCache.put(sessionKey, haKieSession);
             } else if (HAKieSerializedSession.class.isAssignableFrom(value.getClass())) {
                 haKieSession = ((HAKieSerializedSession) value).rebuild();
