@@ -39,7 +39,7 @@ public class Putter {
     }
 
     public void put(Fact fact) {
-        logger.debug("Start processing gameplay fact");
+        logger.debug("Putting event in the grid");
         if (cache != null) {
             cache.put(keyBuilder.extractFromFact(fact), fact, -1, TimeUnit.MILLISECONDS, 500, TimeUnit.MILLISECONDS);
         }
