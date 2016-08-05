@@ -119,7 +119,7 @@
         <profile>
             <id>community</id>
             <properties>
-                <version.org.infinispan>8.2.2.Final</version.org.infinispan>
+                <version.org.infinispan>8.2.3.Final</version.org.infinispan>
                 <version.org.drools.bom>6.4.0.Final</version.org.drools.bom>
                 <version.org.jboss.bom>1.0.7.Final</version.org.jboss.bom>
                 <version.org.apache.camel>2.15.1</version.org.apache.camel>
