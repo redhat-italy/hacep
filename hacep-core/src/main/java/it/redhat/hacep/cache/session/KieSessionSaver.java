@@ -76,7 +76,6 @@ public class KieSessionSaver {
             sessionCache.put(sessionKey, haKieSession);
             audit.info(key + " | " + fact + " | COD_24 | fact inserted");
         }
-        return this;
     }
 
     private boolean isANewSession(Object value) {
