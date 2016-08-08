@@ -17,7 +17,6 @@
 
 package it.redhat.hacep.cache.session;
 
-import it.redhat.hacep.cache.session.utils.SessionUtils;
 import it.redhat.hacep.configuration.DroolsConfiguration;
 import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
@@ -112,7 +111,7 @@ public class HAKieSerializedSession extends HAKieSession {
                 } catch (Exception e) {
                     LOGGER.error("Unexpected exception", e);
                 } finally {
-                    SessionUtils.dispose(localSession);
+                    this.dispose(localSession);
                     saving.set(false);
                     latch.countDown();
                 }
@@ -138,7 +137,7 @@ public class HAKieSerializedSession extends HAKieSession {
             droolsConfiguration.getReplayChannels().forEach(localSession::registerChannel);
             while (!buffer.isEmpty()) {
                 Fact fact = buffer.remove();
-                SessionUtils.advanceClock(localSession, fact);
+                this.advanceClock(localSession, fact);
                 localSession.insert(fact);
             }
             size = 0;
