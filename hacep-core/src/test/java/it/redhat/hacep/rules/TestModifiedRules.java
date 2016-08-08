@@ -36,7 +36,7 @@ public class TestModifiedRules extends AbstractClusterTest {
 
     private static TestDroolsConfiguration droolsConfiguration = new TestDroolsConfiguration();
 
-    private static KieSessionByteArraySerializer serializer = new KieSessionByteArraySerializer(droolsConfiguration, false);
+    private static KieSessionByteArraySerializer serializer = new KieSessionByteArraySerializer(droolsConfiguration);
 
     private static ExecutorService executorService = Executors.newFixedThreadPool(4);
 

@@ -17,7 +17,6 @@
 
 package it.redhat.hacep.drools;
 
-import it.redhat.hacep.compressor.Compressor;
 import it.redhat.hacep.configuration.DroolsConfiguration;
 import org.kie.api.KieBase;
 import org.kie.api.marshalling.Marshaller;
@@ -35,13 +34,10 @@ public class KieSessionByteArraySerializer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("it.redhat.hacep");
 
-    private final Compressor compressor = new Compressor();
-    private final boolean compressed;
     private final DroolsConfiguration droolsConfiguration;
 
-    public KieSessionByteArraySerializer(DroolsConfiguration droolsConfiguration, boolean compressed) {
+    public KieSessionByteArraySerializer(DroolsConfiguration droolsConfiguration) {
         this.droolsConfiguration = droolsConfiguration;
-        this.compressed = compressed;
     }
 
     public byte[] writeObject(KieSession kieSession) {
@@ -58,13 +54,7 @@ public class KieSessionByteArraySerializer {
             marshaller.marshall(outputStream, kieSession);
 
             byte[] bytes = outputStream.toByteArray();
-            int uncompressedSize = bytes.length;
-            if (compressed) {
-                bytes = compressor.compress(bytes);
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("Size of session is: " + bytes.length + "  [" + uncompressedSize + "]");
-                }
-            }
+
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("Size of session is: " + bytes.length);
             }
@@ -86,11 +76,8 @@ public class KieSessionByteArraySerializer {
         ObjectInputStream ois = null;
         ByteArrayInputStream inputStream = null;
         try {
-            if (compressed) {
-                inputStream = new ByteArrayInputStream(compressor.decompress(serializedKieSession));
-            } else {
-                inputStream = new ByteArrayInputStream(serializedKieSession);
-            }
+
+            inputStream = new ByteArrayInputStream(serializedKieSession);
             ois = new ObjectInputStream(inputStream);
             KieSessionConfiguration kieSessionConfiguration = (KieSessionConfiguration) ois.readObject();
             Marshaller marshaller = createSerializableMarshaller(droolsConfiguration.getKieBase());

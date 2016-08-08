@@ -56,7 +56,7 @@ public abstract class AbstractClusterTest {
 
     private DefaultCacheManager clusteredCacheManager(CacheMode mode, int owners) {
         ExecutorService executorService = Executors.newFixedThreadPool(4);
-        KieSessionByteArraySerializer serializer = new KieSessionByteArraySerializer(getKieBaseConfiguration(), false);
+        KieSessionByteArraySerializer serializer = new KieSessionByteArraySerializer(getKieBaseConfiguration());
 
         GlobalConfiguration glob = new GlobalConfigurationBuilder().clusteredDefault()
                 .transport().addProperty("configurationFile", System.getProperty("jgroups.configuration", "jgroups-test-tcp.xml"))

@@ -66,7 +66,7 @@ public class DataGridConfiguration {
     @PostConstruct
     private void build() {
         executorService = Executors.newFixedThreadPool(4);
-        serializer = new KieSessionByteArraySerializer(droolsConfiguration, getSessionCompression());
+        serializer = new KieSessionByteArraySerializer(droolsConfiguration);
 
         GlobalConfiguration globalConfiguration = new GlobalConfigurationBuilder().clusteredDefault()
                 .transport().addProperty("configurationFile", System.getProperty("jgroups.configuration", "jgroups-tcp.xml"))
@@ -142,14 +142,6 @@ public class DataGridConfiguration {
             return Integer.valueOf(System.getProperty("grid.owners", "2"));
         } catch (IllegalArgumentException e) {
             return 2;
-        }
-    }
-
-    private boolean getSessionCompression() {
-        try {
-            return Boolean.valueOf(System.getProperty("session.compression", "false"));
-        } catch (IllegalArgumentException e) {
-            return false;
         }
     }
 
