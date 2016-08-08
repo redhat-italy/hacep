@@ -62,12 +62,13 @@ public class KieSessionSaver {
         synchronized (getLock(sessionKey.toString())) {
             HAKieSession haKieSession;
             Object value = sessionCache.get(sessionKey);
-            if (value == null) {
+            if (isANewSession(value)) {
                 haKieSession = new HAKieSession(droolsConfiguration, serializer, executorService);
                 sessionCache.put(sessionKey, haKieSession);
-            } else if (HAKieSerializedSession.class.isAssignableFrom(value.getClass())) {
+            } else if (isASerializedSession(value)) {
                 haKieSession = ((HAKieSerializedSession) value).rebuild();
             } else {
+                // is a local KieSession
                 haKieSession = (HAKieSession) value;
             }
             haKieSession.insert(fact);
@@ -76,6 +77,14 @@ public class KieSessionSaver {
             audit.info(key + " | " + fact + " | COD_24 | fact inserted");
         }
         return this;
+    }
+
+    private boolean isANewSession(Object value) {
+        return (value == null);
+    }
+
+    private boolean isASerializedSession(Object value) {
+        return HAKieSerializedSession.class.isAssignableFrom(value.getClass());
     }
 
     //@todo must be evaluated. In production code something like [1] or use infinispan locking (verifying that everything happens locally)
