@@ -91,25 +91,7 @@ public class HAKieSession implements DeltaAware {
     public void commit() {
         lastFact = null;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof HAKieSession)) return false;
-
-        HAKieSession haKieSession = (HAKieSession) o;
-
-        return (session != null ? session.equals(haKieSession.session) : haKieSession.session == null) &&
-                this.lastFact.equals(haKieSession.lastFact);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = session != null ? session.hashCode() : 0;
-        result = 31 * result + lastFact.hashCode();
-        return result;
-    }
-
+    
     @Override
     protected void finalize() throws Throwable {
         if (session != null) {
