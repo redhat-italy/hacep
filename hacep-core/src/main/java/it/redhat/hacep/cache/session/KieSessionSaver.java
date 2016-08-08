@@ -37,7 +37,6 @@ import java.util.concurrent.ExecutorService;
 public class KieSessionSaver {
 
     private static final Logger logger = LoggerFactory.getLogger(KieSessionSaver.class);
-    private static final Logger audit = LoggerFactory.getLogger("audit.redhat.hacep");
 
     private final ConcurrentMap<String, Object> locks = new ConcurrentHashMap<>();
 
@@ -58,7 +57,7 @@ public class KieSessionSaver {
 
     public void insert(Key key, Fact fact) {
         SessionKey sessionKey = new SessionKey(key.getGroup());
-        audit.info(key + " | " + fact + " | COD_21 | starting to insert fact");
+        logger.debug( "Getting session for fact: " + fact + ", key: " + sessionKey);
         synchronized (getLock(sessionKey.toString())) {
             HAKieSession haKieSession;
             Object value = sessionCache.get(sessionKey);
@@ -71,18 +70,23 @@ public class KieSessionSaver {
                 // is a local KieSession
                 haKieSession = (HAKieSession) value;
             }
+
+            logger.debug( "Insert fact: " + fact);
             haKieSession.insert(fact);
-            audit.info(key + " | " + fact + " | COD_23 | rules invoked");
+
+            logger.debug( "Put back HAKieSession in the grid for key: " + sessionKey);
             sessionCache.put(sessionKey, haKieSession);
-            audit.info(key + " | " + fact + " | COD_24 | fact inserted");
+            logger.debug( "Done saving HAKieSession for key: " + sessionKey);
         }
     }
 
     private boolean isANewSession(Object value) {
+        logger.debug( "Session doesn't exist, must create a new session");
         return (value == null);
     }
 
     private boolean isASerializedSession(Object value) {
+        logger.debug( "Is a serialized session, must rebuild");
         return HAKieSerializedSession.class.isAssignableFrom(value.getClass());
     }
 
