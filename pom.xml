@@ -196,6 +196,11 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>it.redhat.jdg</groupId>
+                <artifactId>hacep-core-camel</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>it.redhat.jdg.examples</groupId>
                 <artifactId>hacep-model</artifactId>
                 <version>${project.version}</version>
