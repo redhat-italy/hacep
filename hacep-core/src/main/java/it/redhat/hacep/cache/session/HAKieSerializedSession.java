@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static it.redhat.hacep.cache.session.JDGExternalizerIDs.HASerializerSessionID;
 import static org.infinispan.commons.util.Util.asSet;
 
-public class HAKieSerializedSession implements DeltaAware {
+public class HAKieSerializedSession extends HAKieSession {
 
     private final static Logger logger = LoggerFactory.getLogger(HAKieSerializedSession.class);
 
@@ -52,16 +52,22 @@ public class HAKieSerializedSession implements DeltaAware {
     private AtomicBoolean saving = new AtomicBoolean(false);
     private volatile CountDownLatch latch = new CountDownLatch(0);
 
-    private byte[] session;
+    private byte[] session = null;
     private transient long size = 0;
     private Queue<Fact> buffer = new ConcurrentLinkedQueue<>();
 
     public HAKieSerializedSession(DroolsConfiguration droolsConfiguration, KieSessionByteArraySerializer serializer, Executor executor) {
-        this.serializer = serializer;
+        super(droolsConfiguration, serializer, executor);
         this.droolsConfiguration = droolsConfiguration;
+        this.serializer = serializer;
         this.executor = executor;
     }
 
+    public HAKieSerializedSession(DroolsConfiguration droolsConfiguration, KieSessionByteArraySerializer serializer,
+                                  Executor executor, byte[] session) {
+        this(droolsConfiguration, serializer, executor);
+        this.session = session;
+    }
 
     public void add(Fact f) {
         buffer.offer(f);
@@ -77,7 +83,7 @@ public class HAKieSerializedSession implements DeltaAware {
 
     public HAKieSession rebuild() {
         this.waitForSnapshot();
-        return new HAKieSession(droolsConfiguration, buildSession());
+        return new HAKieSession(droolsConfiguration, serializer, executor, buildSession());
     }
 
     private void waitForSnapshot() {
@@ -141,6 +147,11 @@ public class HAKieSerializedSession implements DeltaAware {
         }
         droolsConfiguration.getChannels().forEach(localSession::registerChannel);
         return localSession;
+    }
+
+    @Override
+    public void insert(Fact fact) {
+        throw new IllegalStateException("Insert a new fact is not expected on HAKieSerializedSession");
     }
 
     @Override

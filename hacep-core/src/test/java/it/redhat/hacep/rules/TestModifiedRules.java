@@ -6,6 +6,7 @@ import it.redhat.hacep.cluster.AbstractClusterTest;
 import it.redhat.hacep.cluster.TestDroolsConfiguration;
 import it.redhat.hacep.cluster.TestFact;
 import it.redhat.hacep.configuration.DroolsConfiguration;
+import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.model.SessionKey;
@@ -21,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -32,6 +35,10 @@ public class TestModifiedRules extends AbstractClusterTest {
     private final static Logger logger = LoggerFactory.getLogger(TestModifiedRules.class);
 
     private static TestDroolsConfiguration droolsConfiguration = new TestDroolsConfiguration();
+
+    private static KieSessionByteArraySerializer serializer = new KieSessionByteArraySerializer(droolsConfiguration, false);
+
+    private static ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     @Mock
     private Channel replayChannel;
@@ -51,7 +58,7 @@ public class TestModifiedRules extends AbstractClusterTest {
         Cache<Key, Object> cache2 = startDistSyncNode(2).getCache();
 
         Key key = new SessionKey("2");
-        HAKieSession session1 = new HAKieSession(droolsConfiguration);
+        HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
 
         cache1.put(key, session1);
 

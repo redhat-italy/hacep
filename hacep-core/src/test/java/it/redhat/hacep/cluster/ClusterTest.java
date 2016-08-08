@@ -20,6 +20,7 @@ package it.redhat.hacep.cluster;
 import it.redhat.hacep.cache.session.HAKieSerializedSession;
 import it.redhat.hacep.cache.session.HAKieSession;
 import it.redhat.hacep.configuration.DroolsConfiguration;
+import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.model.SessionKey;
@@ -36,6 +37,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -46,6 +49,10 @@ public class ClusterTest extends AbstractClusterTest {
     private final static Logger logger = LoggerFactory.getLogger(ClusterTest.class);
 
     private static TestDroolsConfiguration droolsConfiguration = new TestDroolsConfiguration();
+
+    private static KieSessionByteArraySerializer serializer = new KieSessionByteArraySerializer(droolsConfiguration, false);
+
+    private static ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     @Mock
     private Channel replayChannel;
@@ -79,7 +86,7 @@ public class ClusterTest extends AbstractClusterTest {
         reset(replayChannel);
 
         Key key = new SessionKey("1");
-        HAKieSession session1 = new HAKieSession(droolsConfiguration);
+        HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
 
         cache1.put(key, session1);
         Object serializedSessionCopy = cache2.get(key);
@@ -106,7 +113,7 @@ public class ClusterTest extends AbstractClusterTest {
         Cache<Key, Object> cache2 = startDistSyncNode(2).getCache();
 
         Key key = new SessionKey("2");
-        HAKieSession session1 = new HAKieSession(droolsConfiguration);
+        HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
 
         cache1.put(key, session1);
 
@@ -165,7 +172,7 @@ public class ClusterTest extends AbstractClusterTest {
         reset(replayChannel, additionsChannel);
 
         Key key = new SessionKey("3");
-        HAKieSession session1 = new HAKieSession(droolsConfiguration);
+        HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
 
         cache1.put(key, session1);
 
@@ -217,7 +224,7 @@ public class ClusterTest extends AbstractClusterTest {
         reset(replayChannel, additionsChannel);
 
         Key key = new SessionKey("3");
-        HAKieSession session1 = new HAKieSession(droolsConfiguration);
+        HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
 
         cache1.put(key, session1);
 
@@ -248,7 +255,7 @@ public class ClusterTest extends AbstractClusterTest {
 
         reset(replayChannel, additionsChannel);
 
-        HAKieSession session2 = (HAKieSession) serializedSessionCopy;
+        HAKieSession session2 = ((HAKieSerializedSession) serializedSessionCopy).rebuild();
 
         session2.insert(generateFactTenSecondsAfter(1L, 40L));
 

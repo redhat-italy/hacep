@@ -18,7 +18,6 @@
 package it.redhat.hacep.cluster;
 
 
-import it.redhat.hacep.cache.externalizers.KieSessionExternalizer;
 import it.redhat.hacep.cache.session.HAKieSerializedSession;
 import it.redhat.hacep.cache.session.HAKieSession;
 import it.redhat.hacep.cache.session.HAKieSessionDeltaEmpty;
@@ -64,8 +63,7 @@ public abstract class AbstractClusterTest {
                 .clusterName("HACEP")
                 .globalJmxStatistics().allowDuplicateDomains(true).enable()
                 .serialization()
-                .addAdvancedExternalizer(new KieSessionExternalizer(serializer))
-                .addAdvancedExternalizer(new HAKieSession.HASessionExternalizer(getKieBaseConfiguration()))
+                .addAdvancedExternalizer(new HAKieSession.HASessionExternalizer(getKieBaseConfiguration(), serializer, executorService))
                 .addAdvancedExternalizer(new HAKieSerializedSession.HASerializedSessionExternalizer(getKieBaseConfiguration(), serializer, executorService))
                 .addAdvancedExternalizer(new HAKieSessionDeltaEmpty.HASessionDeltaEmptyExternalizer(getKieBaseConfiguration(), serializer, executorService))
                 .addAdvancedExternalizer(new HAKieSessionDeltaFact.HASessionDeltaFactExternalizer())
