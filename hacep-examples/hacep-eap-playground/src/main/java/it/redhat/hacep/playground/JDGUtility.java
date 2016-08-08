@@ -25,14 +25,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class JDGUtility {
+
+    private final static Logger log = LoggerFactory.getLogger(JDGUtility.class);
 
     public Set<String> valuesFromKeys(Cache<Key, Object> cache) {
         return valuesFromKeys(cache, e -> true);
@@ -40,26 +41,39 @@ public class JDGUtility {
 
     public Set<String> localValuesFromKeys(Cache<Key, Object> cache) {
         DistributionManager distributionManager = cache.getAdvancedCache().getDistributionManager();
-        return valuesFromKeys(cache, e -> distributionManager.getLocality(e.getKey()).isLocal());
+        return valuesFromKeys(cache, k -> distributionManager.getLocality(k).isLocal());
     }
 
     public Set<String> primaryValuesFromKeys(Cache<Key, Object> cache) {
         DistributionManager distributionManager = cache.getAdvancedCache().getDistributionManager();
         Address address = cache.getCacheManager().getAddress();
-        return valuesFromKeys(cache, e -> distributionManager.getPrimaryLocation(e.getKey()).equals(address));
+        return valuesFromKeys(cache, k -> distributionManager.getPrimaryLocation(k).equals(address));
     }
 
     public Set<String> replicaValuesFromKeys(Cache<Key, Object> cache) {
         DistributionManager distributionManager = cache.getAdvancedCache().getDistributionManager();
         Address address = cache.getCacheManager().getAddress();
-        return valuesFromKeys(cache, e -> distributionManager.getLocality(e.getKey()).isLocal() && distributionManager.getPrimaryLocation(e.getKey()).equals(address));
+        return valuesFromKeys(cache, k -> distributionManager.getLocality(k).isLocal() && !distributionManager.getPrimaryLocation(k).equals(address));
+    }
+
+    public Map<Key, List<Address>> getKeysAddresses(Cache<Key, Object> cache) {
+        DistributionManager distributionManager = cache.getAdvancedCache().getDistributionManager();
+        Map<Key, List<Address>> response = new HashMap<>();
+        for(Key k : cache.keySet()) {
+            response.put(k, distributionManager.locate(k));
+        }
+        return response;
     }
 
     private Set<String> valuesFromKeys(Cache<Key, Object> cache,
-                                       Predicate<Map.Entry<Key, Object>> predicate) {
-        return cache.entrySet().stream()
-                .filter(predicate)
-                .map(e -> e.getKey() + " " + e.getValue())
-                .collect(Collectors.toSet());
+                                       Predicate<Key> predicate) {
+        Set<String> response = new HashSet<>();
+        for(Key k : cache.keySet()) {
+            if(predicate.test(k)) {
+                response.add(k + " " + cache.get(k));
+            }
+        }
+        return response;
     }
+
 }
