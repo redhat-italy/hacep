@@ -15,12 +15,41 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.model;
+package it.redhat.hacep.playground.cache;
 
-import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
 
-public interface KeyBuilder<F extends Fact, T> {
+import java.util.Objects;
 
-    Key<T> extractFromFact(F fact);
+public class UserEventKey extends Key<String> {
+
+    private String id;
+
+    public UserEventKey(String id, String group) {
+        super(group);
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String toString() {
+        return id + "::" + getGroup();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UserEventKey)) return false;
+        if (!super.equals(o)) return false;
+        UserEventKey userEventKey = (UserEventKey) o;
+        return Objects.equals(id, userEventKey.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), id);
+    }
+
 }

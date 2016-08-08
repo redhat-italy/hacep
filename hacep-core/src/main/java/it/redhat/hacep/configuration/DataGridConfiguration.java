@@ -41,11 +41,15 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @ApplicationScoped
 public class DataGridConfiguration {
 
     private final static Logger log = LoggerFactory.getLogger(DataGridConfiguration.class);
+
+    private static final String FACT_CACHE_NAME = "fact";
+    private static final String SESSION_CACHE_NAME = "session";
 
     private DefaultCacheManager manager;
 
@@ -64,7 +68,7 @@ public class DataGridConfiguration {
         executorService = Executors.newFixedThreadPool(4);
         serializer = new KieSessionByteArraySerializer(droolsConfiguration, getSessionCompression());
 
-        GlobalConfiguration glob = new GlobalConfigurationBuilder().clusteredDefault()
+        GlobalConfiguration globalConfiguration = new GlobalConfigurationBuilder().clusteredDefault()
                 .transport().addProperty("configurationFile", System.getProperty("jgroups.configuration", "jgroups-tcp.xml"))
                 .clusterName("HACEP")
                 .globalJmxStatistics().allowDuplicateDomains(true).enable()
@@ -86,21 +90,25 @@ public class DataGridConfiguration {
             configurationBuilder.clustering().cacheMode(cacheMode);
         }
 
-        Configuration loc = configurationBuilder.build();
+        Configuration defaultConfiguration = configurationBuilder.build();
 
-        this.manager = new DefaultCacheManager(glob, loc, false);
+        ConfigurationBuilder factCacheConfigurationBuilder = new ConfigurationBuilder().read(defaultConfiguration);
+        factCacheConfigurationBuilder.expiration().maxIdle(500, TimeUnit.MILLISECONDS);
+
+        this.manager = new DefaultCacheManager(globalConfiguration, defaultConfiguration, false);
+        this.manager.defineConfiguration(FACT_CACHE_NAME, factCacheConfigurationBuilder.build());
     }
 
     @Produces
     @HACEPFactCache
     public Cache<Key, Fact> getFactCache() {
-        return this.manager.getCache("fact", true);
+        return this.manager.getCache(FACT_CACHE_NAME, true);
     }
 
     @Produces
     @HACEPSessionCache
     public Cache<Key, Object> getSessionCache() {
-        return this.manager.getCache("session", true);
+        return this.manager.getCache(SESSION_CACHE_NAME, true);
     }
 
     @Produces

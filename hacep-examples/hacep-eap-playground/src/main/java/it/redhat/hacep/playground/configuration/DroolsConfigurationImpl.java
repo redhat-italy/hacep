@@ -17,11 +17,9 @@
 
 package it.redhat.hacep.playground.configuration;
 
-import it.redhat.hacep.playground.cache.GameplayKeyBuilder;
 import it.redhat.hacep.configuration.DroolsConfiguration;
-import it.redhat.hacep.model.KeyBuilder;
-import it.redhat.hacep.playground.drools.channels.AuditChannel;
 import it.redhat.hacep.drools.channels.NullChannel;
+import it.redhat.hacep.playground.drools.channels.AuditChannel;
 import it.redhat.hacep.playground.drools.channels.SysoutChannel;
 import org.kie.api.KieBase;
 import org.kie.api.KieServices;
@@ -90,11 +88,6 @@ public class DroolsConfigurationImpl implements DroolsConfiguration {
         } catch (IllegalArgumentException e) {
             return 1000;
         }
-    }
-
-    @Override
-    public KeyBuilder getKeyBuilder() {
-        return new GameplayKeyBuilder();
     }
 
 }

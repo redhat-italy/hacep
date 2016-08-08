@@ -17,7 +17,6 @@
 
 package it.redhat.hacep.configuration;
 
-import it.redhat.hacep.model.KeyBuilder;
 import org.kie.api.KieBase;
 import org.kie.api.runtime.Channel;
 import org.kie.api.runtime.KieSession;
@@ -36,5 +35,4 @@ public interface DroolsConfiguration {
 
     int getMaxBufferSize();
 
-    KeyBuilder getKeyBuilder();
 }

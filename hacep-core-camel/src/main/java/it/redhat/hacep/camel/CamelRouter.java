@@ -121,7 +121,7 @@ public class CamelRouter implements Router {
                 @Override
                 public void configure() throws Exception {
                     from("direct:putInGrid")
-                            .bean(new Putter(droolsConfiguration.getKeyBuilder(), factCache), "put(${body})");
+                            .bean(new Putter(factCache), "put(${body})");
                 }
             });
         } catch (Exception e) {

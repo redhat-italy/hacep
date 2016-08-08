@@ -23,4 +23,6 @@ import java.time.Instant;
 public interface Fact extends Serializable {
 
     Instant getInstant();
+
+    Key extractKey();
 }
