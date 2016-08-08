@@ -40,7 +40,7 @@ import static org.infinispan.commons.util.Util.asSet;
 
 public class HAKieSession implements DeltaAware {
 
-    private final static Logger logger = LoggerFactory.getLogger(HAKieSession.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(HAKieSession.class);
 
     private final DroolsConfiguration droolsConfiguration;
     private final KieSessionByteArraySerializer serializer;

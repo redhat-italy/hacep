@@ -19,22 +19,22 @@ package it.redhat.hacep.playground.console.commands.dto;
 
 public class SessionDataObjectInformation {
 
-  private String name;
-  private NodeType nodeType;
+    private String name;
+    private NodeType nodeType;
 
-  public SessionDataObjectInformation() {
-  }
+    public SessionDataObjectInformation() {
+    }
 
-  public SessionDataObjectInformation(String name, NodeType nodeType) {
-    this.name = name;
-    this.nodeType = nodeType;
-  }
+    public SessionDataObjectInformation(String name, NodeType nodeType) {
+        this.name = name;
+        this.nodeType = nodeType;
+    }
 
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public NodeType getNodeType() {
-    return nodeType;
-  }
+    public NodeType getNodeType() {
+        return nodeType;
+    }
 }

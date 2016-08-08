@@ -27,14 +27,16 @@ import java.util.concurrent.TimeUnit;
 
 public class SessionUtils {
 
-    private final static Logger logger = LoggerFactory.getLogger(SessionUtils.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(SessionUtils.class);
 
     public static void advanceClock(KieSession kieSession, Fact fact) {
         SessionPseudoClock clock = kieSession.getSessionClock();
         long gts = fact.getInstant().toEpochMilli();
         long current = clock.getCurrentTime();
         if (gts < current) {
-            logger.warn(String.format("Moving clock backwards. New Clock is [%s], current was [%s]", gts, current));
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn(String.format("Moving clock backwards. New Clock is [%s], current was [%s]", gts, current));
+            }
         }
         clock.advanceTime(gts - current, TimeUnit.MILLISECONDS);
     }
@@ -44,7 +46,7 @@ public class SessionUtils {
             try {
                 localSession.dispose();
             } catch (Exception e) {
-                logger.error("Unexpected exception", e);
+                LOGGER.error("Unexpected exception", e);
             }
         }
     }

@@ -39,7 +39,7 @@ import javax.inject.Inject;
 
 public class CamelRouter implements Router {
 
-    private final static Logger log = LoggerFactory.getLogger(CamelRouter.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(CamelRouter.class);
 
     public static final String CAMEL_ROUTE = "facts";
 
@@ -78,7 +78,9 @@ public class CamelRouter implements Router {
 
     @Override
     public void suspend() {
-        log.info("Suspending route " + CamelRouter.CAMEL_ROUTE);
+        if(LOGGER.isInfoEnabled()) {
+            LOGGER.info("Suspending route " + CamelRouter.CAMEL_ROUTE);
+        }
         try {
             camelContext.suspendRoute(CAMEL_ROUTE);
         } catch (Exception e) {
@@ -88,7 +90,9 @@ public class CamelRouter implements Router {
 
     @Override
     public void resume() {
-        log.info("Resuming route " + CamelRouter.CAMEL_ROUTE);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Resuming route " + CamelRouter.CAMEL_ROUTE);
+        }
         try {
             camelContext.resumeRoute(CAMEL_ROUTE);
         } catch (Exception e) {
@@ -125,7 +129,7 @@ public class CamelRouter implements Router {
                 }
             });
         } catch (Exception e) {
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
     }
 

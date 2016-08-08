@@ -33,7 +33,7 @@ import java.util.stream.StreamSupport;
 
 public class ReSTUI implements UI {
 
-    private final static Logger log = LoggerFactory.getLogger(ReSTUI.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(ReSTUI.class);
 
     @Inject
     private Instance<ConsoleCommand> commands;
@@ -69,7 +69,9 @@ public class ReSTUI implements UI {
 
     @Override
     public void printUsage() {
-        log.info("Start print usage");
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Start print usage");
+        }
         StreamSupport.stream(commands.spliterator(), true)
                 .sorted(new ConsoleCommandComparator())
                 .forEachOrdered(c -> {

@@ -29,7 +29,7 @@ import java.util.List;
 
 public class Playground {
 
-    private static Logger log = LoggerFactory.getLogger(Playground.class.getName());
+    private static Logger LOGGER = LoggerFactory.getLogger(Playground.class.getName());
 
     private final HACEPApplication application;
 

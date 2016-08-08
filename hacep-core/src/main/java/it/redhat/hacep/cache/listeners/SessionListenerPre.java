@@ -27,7 +27,8 @@ import org.slf4j.LoggerFactory;
 @Listener(primaryOnly = true, observation = Listener.Observation.PRE)
 public class SessionListenerPre {
 
-    private static final Logger logger = LoggerFactory.getLogger(SessionListenerPre.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SessionListenerPre.class);
+    
     private final Router router;
 
     public SessionListenerPre(Router router) {
@@ -36,7 +37,9 @@ public class SessionListenerPre {
 
     @DataRehashed
     public void rehash(DataRehashedEvent event) {
-        logger.info("Rehashing STARTED for cache " + event.getCache());
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Rehashing STARTED for cache " + event.getCache());
+        }
         this.router.suspend();
     }
 

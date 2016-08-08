@@ -33,7 +33,8 @@ import java.io.*;
 
 public class KieSessionByteArraySerializer {
 
-    private static final Logger logger = LoggerFactory.getLogger("it.redhat.hacep");
+    private static final Logger LOGGER = LoggerFactory.getLogger("it.redhat.hacep");
+
     private final Compressor compressor = new Compressor();
     private final boolean compressed;
     private final DroolsConfiguration droolsConfiguration;
@@ -60,21 +61,26 @@ public class KieSessionByteArraySerializer {
             int uncompressedSize = bytes.length;
             if (compressed) {
                 bytes = compressor.compress(bytes);
-                logger.info("Size of session is: " + bytes.length + "  [" + uncompressedSize + "]");
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("Size of session is: " + bytes.length + "  [" + uncompressedSize + "]");
+                }
             }
-            logger.info("Size of session is: " + bytes.length);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("Size of session is: " + bytes.length);
+            }
             return bytes;
         } catch (IOException ioe) {
             String errorMessage = "Unable to marshall KieSession.";
-            logger.error(errorMessage, ioe);
+            LOGGER.error(errorMessage, ioe);
             throw new RuntimeException(errorMessage, ioe);
         }
     }
 
     public KieSession readSession(byte[] serializedKieSession) {
-
         if (serializedKieSession == null) {
-            logger.warn("[KieSessionByteArraySerializer] Unable to serialize NULL KieSessions");
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn("[KieSessionByteArraySerializer] Unable to serialize NULL KieSessions");
+            }
             return null;
         }
         ObjectInputStream ois = null;
@@ -91,7 +97,7 @@ public class KieSessionByteArraySerializer {
             KieSession kieSession = marshaller.unmarshall(inputStream, kieSessionConfiguration, null);
             return kieSession;
         } catch (Exception e) {
-            logger.error("Error when reading serialized session", e);
+            LOGGER.error("Error when reading serialized session", e);
             throw new RuntimeException(e);
         } finally {
             if (ois != null) {

@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 @Listener(primaryOnly = true, observation = Listener.Observation.POST)
 public class FactListenerPost {
 
-    private static final Logger logger = LoggerFactory.getLogger(KieSessionSaver.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(KieSessionSaver.class);
 
     private final KieSessionSaver saver;
 
@@ -41,13 +41,17 @@ public class FactListenerPost {
     public void eventReceived(CacheEntryCreatedEvent event) {
         Object key = event.getKey();
         Object value = event.getValue();
-        logger.debug("Event received: (" + key + ", " + value + ")");
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Event received: (" + key + ", " + value + ")");
+        }
         if (isAnHACEPEvent(key, value)) {
-            logger.warn("Event is not HACEP compliant: (" + key + ", " + value + ")");
+            LOGGER.warn("Event is not HACEP compliant: (" + key + ", " + value + ")");
             return;
         }
         saver.insert((Key) key, (Fact) value);
-        logger.debug("Chain complete for: (" + key + ", " + value + ")");
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Chain complete for: (" + key + ", " + value + ")");
+        }
     }
 
     private boolean isAnHACEPEvent(Object key, Object value) {

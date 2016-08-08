@@ -46,7 +46,7 @@ import java.util.concurrent.TimeUnit;
 @ApplicationScoped
 public class DataGridConfiguration {
 
-    private final static Logger log = LoggerFactory.getLogger(DataGridConfiguration.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(DataGridConfiguration.class);
 
     private static final String FACT_CACHE_NAME = "fact";
     private static final String SESSION_CACHE_NAME = "session";

@@ -27,6 +27,7 @@ import java.util.Iterator;
 public class AddressConsoleCommand implements ConsoleCommand {
 
     private static final String COMMAND_NAME = "address";
+    
     private final HACEPApplication application;
 
     @Inject

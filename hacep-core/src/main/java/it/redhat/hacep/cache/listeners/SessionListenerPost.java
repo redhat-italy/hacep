@@ -26,7 +26,9 @@ import org.slf4j.LoggerFactory;
 
 @Listener(primaryOnly = true, observation = Listener.Observation.POST)
 public class SessionListenerPost {
-    private static final Logger logger = LoggerFactory.getLogger(SessionListenerPost.class);
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SessionListenerPost.class);
+
     private final Router router;
 
     public SessionListenerPost(Router router) {
@@ -35,7 +37,9 @@ public class SessionListenerPost {
 
     @DataRehashed
     public void rehash(DataRehashedEvent event) {
-        logger.info("Rehashing FINISHED for cache " + event.getCache());
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Rehashing FINISHED for cache " + event.getCache());
+        }
         this.router.resume();
     }
 

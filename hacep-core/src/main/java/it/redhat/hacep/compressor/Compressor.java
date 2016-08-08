@@ -28,7 +28,7 @@ import java.util.zip.Inflater;
 
 public class Compressor {
 
-    private static final Logger logger = LoggerFactory.getLogger("it.redhat.hacep");
+    private static final Logger LOGGER = LoggerFactory.getLogger("it.redhat.hacep");
 
     public byte[] compress(byte[] data) throws IOException {
         Deflater deflater = new Deflater();
@@ -42,8 +42,10 @@ public class Compressor {
         }
         outputStream.close();
         byte[] output = outputStream.toByteArray();
-        logger.debug("Original: " + data.length / 1024 + " Kb");
-        logger.debug("Compressed: " + output.length / 1024 + " Kb");
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Original: " + data.length / 1024 + " Kb");
+            LOGGER.debug("Compressed: " + output.length / 1024 + " Kb");
+        }
         return output;
     }
 
@@ -58,8 +60,10 @@ public class Compressor {
         }
         outputStream.close();
         byte[] output = outputStream.toByteArray();
-        logger.debug("Original: " + data.length);
-        logger.debug("Compressed: " + output.length);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Original: " + data.length);
+            LOGGER.debug("Compressed: " + output.length);
+        }
         return output;
     }
 }

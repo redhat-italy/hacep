@@ -22,10 +22,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class NullChannel implements Channel {
-    private static final Logger logger = LoggerFactory.getLogger(NullChannel.class);
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NullChannel.class);
 
     @Override
     public void send(Object object) {
-        logger.info(String.format("Send object [%s] to null channel", object));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(String.format("Send object [%s] to null channel", object));
+        }
     }
 }

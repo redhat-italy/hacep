@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 public class JDGUtility {
 
-    private final static Logger log = LoggerFactory.getLogger(JDGUtility.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(JDGUtility.class);
 
     public Set<String> valuesFromKeys(Cache<Key, Object> cache) {
         return valuesFromKeys(cache, e -> true);

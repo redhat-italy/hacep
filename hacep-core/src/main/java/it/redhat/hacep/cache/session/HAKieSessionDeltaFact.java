@@ -32,7 +32,7 @@ import java.util.Set;
 
 public class HAKieSessionDeltaFact implements Delta {
 
-    private final static Logger logger = LoggerFactory.getLogger(HAKieSessionDeltaFact.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(HAKieSessionDeltaFact.class);
 
     private final Fact fact;
 

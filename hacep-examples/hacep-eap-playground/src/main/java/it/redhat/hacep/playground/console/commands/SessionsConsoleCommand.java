@@ -35,7 +35,7 @@ import java.util.*;
 
 public class SessionsConsoleCommand implements ConsoleCommand {
 
-    private final static Logger log = LoggerFactory.getLogger(ReSTUI.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(ReSTUI.class);
 
     private static final String COMMAND_NAME = "sessions";
 
@@ -56,15 +56,21 @@ public class SessionsConsoleCommand implements ConsoleCommand {
 
     @Override
     public boolean execute(UI console, Iterator<String> args) throws IllegalParametersException {
-        log.info("Start execute command 'sessions'");
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Start execute command 'sessions'");
+        }
         Map<Address, List<SessionDataObjectInformation>> sessions = new HashMap<>();
 
         for (Map.Entry<Key, List<Address>> entry : jdgUtility.getKeysAddresses(sessionCache).entrySet()) {
-            log.info("Key [" + entry.getKey() + "] List{" + entry.getValue() + "}");
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("Key [" + entry.getKey() + "] List{" + entry.getValue() + "}");
+            }
             List<Address> addresses = entry.getValue() != null ? entry.getValue() : Collections.emptyList();
             for (int i = 0; i < addresses.size(); i++) {
                 boolean isPrimary = (i == 0);
-                log.info("Key [" + entry.getKey() + "] Address{" + addresses.get(i) + "] isPrimary [" + isPrimary + "]");
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("Key [" + entry.getKey() + "] Address{" + addresses.get(i) + "] isPrimary [" + isPrimary + "]");
+                }
                 sessions.compute(addresses.get(i), (a, l) -> {
                     if (l == null) {
                         l = new ArrayList<>();

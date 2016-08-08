@@ -22,7 +22,6 @@ import it.redhat.hacep.configuration.DroolsConfiguration;
 import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
 import org.infinispan.atomic.Delta;
-import org.infinispan.atomic.DeltaAware;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.kie.api.runtime.KieSession;
 import org.slf4j.Logger;
@@ -43,7 +42,7 @@ import static org.infinispan.commons.util.Util.asSet;
 
 public class HAKieSerializedSession extends HAKieSession {
 
-    private final static Logger logger = LoggerFactory.getLogger(HAKieSerializedSession.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(HAKieSerializedSession.class);
 
     private final KieSessionByteArraySerializer serializer;
     private final Executor executor;
@@ -111,7 +110,7 @@ public class HAKieSerializedSession extends HAKieSession {
                     session = serializer.writeObject(localSession);
                     printSessionSize("Buffer empty");
                 } catch (Exception e) {
-                    logger.error("Unexpected exception", e);
+                    LOGGER.error("Unexpected exception", e);
                 } finally {
                     SessionUtils.dispose(localSession);
                     saving.set(false);
@@ -122,9 +121,9 @@ public class HAKieSerializedSession extends HAKieSession {
     }
 
     private void printSessionSize(String message) {
-        if (logger.isDebugEnabled()) {
+        if (LOGGER.isDebugEnabled()) {
             int sessionSize = this.session != null ? this.session.length : 0;
-            logger.debug(message + " - Size [" + sessionSize + "] - Buffer [" + size + "]");
+            LOGGER.debug(message + " - Size [" + sessionSize + "] - Buffer [" + size + "]");
         }
     }
 

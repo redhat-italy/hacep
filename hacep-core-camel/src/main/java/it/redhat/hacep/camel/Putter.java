@@ -23,11 +23,9 @@ import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.TimeUnit;
-
 public class Putter {
 
-    private static final Logger logger = LoggerFactory.getLogger(Putter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Putter.class);
 
     private final Cache<Key, Fact> cache;
 
@@ -36,7 +34,9 @@ public class Putter {
     }
 
     public void put(Fact fact) {
-        logger.debug("Putting event in the grid");
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Putting event in the grid");
+        }
         if (cache != null) {
             cache.put(fact.extractKey(), fact);
         }

@@ -58,7 +58,9 @@ public class DroolsConfigurationImpl implements DroolsConfiguration {
         replayChannels.put(SysoutChannel.CHANNEL_ID, new NullChannel());
         replayChannels.put(AuditChannel.CHANNEL_ID, new NullChannel());
 
-        logger.info("[Kie Container] successfully initialized.");
+        if (logger.isInfoEnabled()) {
+            logger.info("[Kie Container] successfully initialized.");
+        }
     }
 
     @Override

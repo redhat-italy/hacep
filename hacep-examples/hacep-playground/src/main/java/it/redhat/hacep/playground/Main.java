@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 public class Main {
 
-    private static Logger log = LoggerFactory.getLogger(Main.class.getName());
+    private static Logger LOGGER = LoggerFactory.getLogger(Main.class.getName());
 
     public static void main(String[] args) throws Exception {
         Weld weld = new Weld();

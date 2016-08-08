@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @ApplicationScoped
 public class DroolsConfigurationImpl implements DroolsConfiguration {
 
-    private static final Logger logger = LoggerFactory.getLogger(DroolsConfigurationImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DroolsConfigurationImpl.class);
 
     private final Map<String, Channel> channels = new ConcurrentHashMap<>();
     private final Map<String, Channel> replayChannels = new ConcurrentHashMap<>();
@@ -58,7 +58,9 @@ public class DroolsConfigurationImpl implements DroolsConfiguration {
         replayChannels.put(SysoutChannel.CHANNEL_ID, new NullChannel());
         replayChannels.put(AuditChannel.CHANNEL_ID, new NullChannel());
 
-        logger.info("[Kie Container] successfully initialized.");
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("[Kie Container] successfully initialized.");
+        }
     }
 
     @Override

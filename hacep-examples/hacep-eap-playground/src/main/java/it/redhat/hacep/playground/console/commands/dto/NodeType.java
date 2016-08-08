@@ -19,5 +19,5 @@ package it.redhat.hacep.playground.console.commands.dto;
 
 public enum NodeType {
 
-  PRIMARY, REPLICA;
+    PRIMARY, REPLICA;
 }
