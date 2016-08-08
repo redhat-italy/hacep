@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static it.redhat.hacep.cache.session.JDGExternalizerIDs.HASerializerSessionID;
 import static org.infinispan.commons.util.Util.asSet;
@@ -46,6 +47,7 @@ public class HAKieSerializedSession extends HAKieSession {
     private final Executor executor;
     private final DroolsConfiguration droolsConfiguration;
 
+    private AtomicBoolean saving = new AtomicBoolean(false);
     private volatile CountDownLatch latch = new CountDownLatch(0);
 
     private byte[] session = null;
@@ -73,8 +75,25 @@ public class HAKieSerializedSession extends HAKieSession {
         }
     }
 
-    public void forceSnapshot() {
-        createSnapshot();
+    public void createSnapshot() {
+        if (saving.compareAndSet(false, true)) {
+            latch = new CountDownLatch(1);
+            executor.execute(() -> {
+                KieSession localSession = null;
+                try {
+                    printSessionSize("Start consuming buffer");
+                    localSession = buildSession();
+                    session = serializer.writeObject(localSession);
+                    printSessionSize("Buffer empty");
+                } catch (Exception e) {
+                    LOGGER.error("Unexpected exception", e);
+                } finally {
+                    dispose(localSession);
+                    saving.set(false);
+                    latch.countDown();
+                }
+            });
+        }
     }
 
     public HAKieSession rebuild() {
@@ -83,36 +102,17 @@ public class HAKieSerializedSession extends HAKieSession {
     }
 
     private void waitForSnapshot() {
-
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        if (saving.get()) {
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
-
     }
 
     private boolean needToSave() {
         return (size > droolsConfiguration.getMaxBufferSize());
-    }
-
-    private void createSnapshot() {
-        latch = new CountDownLatch(1);
-        executor.execute(() -> {
-            KieSession localSession = null;
-            try {
-                printSessionSize("Start consuming buffer");
-                localSession = buildSession();
-                session = serializer.writeObject(localSession);
-                printSessionSize("Buffer empty");
-            } catch (Exception e) {
-                LOGGER.error("Unexpected exception", e);
-            } finally {
-                dispose(localSession);
-                latch.countDown();
-            }
-        });
-
     }
 
     private void printSessionSize(String message) {

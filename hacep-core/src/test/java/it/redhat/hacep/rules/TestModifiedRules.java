@@ -85,7 +85,7 @@ public class TestModifiedRules extends AbstractClusterTest {
         reset(replayChannel, additionsChannel);
 
 
-        ((HAKieSerializedSession) serializedSessionCopy).forceSnapshot();
+        ((HAKieSerializedSession) serializedSessionCopy).createSnapshot();
         HAKieSession session2 = ((HAKieSerializedSession) serializedSessionCopy).rebuild();
 
         droolsConfiguration.upgradeContainer();
