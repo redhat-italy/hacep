@@ -56,7 +56,7 @@ public class KieSessionSaver {
     @Inject
     private DroolsConfiguration droolsConfiguration;
 
-    public KieSessionSaver insert(Key key, Fact fact) {
+    public void insert(Key key, Fact fact) {
         SessionKey sessionKey = new SessionKey(key.getGroup());
         audit.info(key + " | " + fact + " | COD_21 | starting to insert fact");
         synchronized (getLock(sessionKey.toString())) {
