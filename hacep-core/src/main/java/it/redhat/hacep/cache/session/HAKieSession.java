@@ -74,7 +74,7 @@ public class HAKieSession implements DeltaAware {
             droolsConfiguration.getChannels().forEach(session::registerChannel);
         }
         lastFact = fact;
-        this.advanceClock(session, fact);
+        advanceClock(session, fact);
         session.insert(fact);
         session.fireAllRules();
     }
@@ -113,13 +113,13 @@ public class HAKieSession implements DeltaAware {
     @Override
     protected void finalize() throws Throwable {
         if (session != null) {
-            this.dispose(session);
+            dispose(session);
             session = null;
         }
         super.finalize();
     }
 
-    protected static void advanceClock(KieSession kieSession, Fact fact) {
+    static void advanceClock(KieSession kieSession, Fact fact) {
         SessionPseudoClock clock = kieSession.getSessionClock();
         long gts = fact.getInstant().toEpochMilli();
         long current = clock.getCurrentTime();
@@ -131,7 +131,7 @@ public class HAKieSession implements DeltaAware {
         clock.advanceTime(gts - current, TimeUnit.MILLISECONDS);
     }
 
-    protected static void dispose(KieSession localSession) {
+    static void dispose(KieSession localSession) {
         if (localSession != null) {
             try {
                 localSession.dispose();

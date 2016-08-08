@@ -111,7 +111,7 @@ public class HAKieSerializedSession extends HAKieSession {
                 } catch (Exception e) {
                     LOGGER.error("Unexpected exception", e);
                 } finally {
-                    this.dispose(localSession);
+                    dispose(localSession);
                     saving.set(false);
                     latch.countDown();
                 }
@@ -137,7 +137,7 @@ public class HAKieSerializedSession extends HAKieSession {
             droolsConfiguration.getReplayChannels().forEach(localSession::registerChannel);
             while (!buffer.isEmpty()) {
                 Fact fact = buffer.remove();
-                this.advanceClock(localSession, fact);
+                advanceClock(localSession, fact);
                 localSession.insert(fact);
             }
             size = 0;
