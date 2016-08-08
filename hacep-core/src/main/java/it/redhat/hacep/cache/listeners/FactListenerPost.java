@@ -41,17 +41,15 @@ public class FactListenerPost {
     public void eventReceived(CacheEntryCreatedEvent event) {
         Object key = event.getKey();
         Object value = event.getValue();
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Event received: (" + key + ", " + value + ")");
-        }
+        if (LOGGER.isDebugEnabled()) LOGGER.debug("Event received: (" + key + ", " + value + ")");
+
         if (isAnHACEPEvent(key, value)) {
             LOGGER.warn("Event is not HACEP compliant: (" + key + ", " + value + ")");
             return;
         }
         saver.insert((Key) key, (Fact) value);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Chain complete for: (" + key + ", " + value + ")");
-        }
+        if (LOGGER.isDebugEnabled()) LOGGER.debug("Chain complete for: (" + key + ", " + value + ")");
+
     }
 
     private boolean isAnHACEPEvent(Object key, Object value) {

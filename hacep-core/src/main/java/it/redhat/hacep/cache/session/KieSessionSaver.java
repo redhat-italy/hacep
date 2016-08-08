@@ -57,9 +57,8 @@ public class KieSessionSaver {
 
     public void insert(Key key, Fact fact) {
         SessionKey sessionKey = new SessionKey(key.getGroup());
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Getting session for fact: " + fact + ", key: " + sessionKey);
-        }
+        if (LOGGER.isDebugEnabled()) LOGGER.debug("Getting session for fact: " + fact + ", key: " + sessionKey);
+
         synchronized (getLock(sessionKey.toString())) {
             HAKieSession haKieSession;
             Object value = sessionCache.get(sessionKey);
@@ -73,32 +72,24 @@ public class KieSessionSaver {
                 haKieSession = (HAKieSession) value;
             }
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Insert fact: " + fact);
-            }
+            if (LOGGER.isDebugEnabled()) LOGGER.debug("Insert fact: " + fact);
             haKieSession.insert(fact);
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Put back HAKieSession in the grid for key: " + sessionKey);
-            }
+            if (LOGGER.isDebugEnabled()) LOGGER.debug("Put back HAKieSession in the grid for key: " + sessionKey);
+
             sessionCache.put(sessionKey, haKieSession);
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Done saving HAKieSession for key: " + sessionKey);
-            }
+            if (LOGGER.isDebugEnabled()) LOGGER.debug("Done saving HAKieSession for key: " + sessionKey);
+
         }
     }
 
     private boolean isANewSession(Object value) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Session doesn't exist, must create a new session");
-        }
+        if (LOGGER.isDebugEnabled()) LOGGER.debug("Session doesn't exist, must create a new session");
         return (value == null);
     }
 
     private boolean isASerializedSession(Object value) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Is a serialized session, must rebuild");
-        }
+        if (LOGGER.isDebugEnabled()) LOGGER.debug("Is a serialized session, must rebuild");
         return HAKieSerializedSession.class.isAssignableFrom(value.getClass());
     }
 
