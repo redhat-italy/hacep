@@ -17,24 +17,25 @@
 
 package it.redhat.hacep.playground.console.commands.dto;
 
-public class SessionDataObjectInformation {
+import java.util.List;
 
-    private String name;
-    private NodeType nodeType;
+public class HACEPNode {
+    private String address;
+    private List<SessionData> sessions;
 
-    public SessionDataObjectInformation() {
+    public HACEPNode() {
     }
 
-    public SessionDataObjectInformation(String name, NodeType nodeType) {
-        this.name = name;
-        this.nodeType = nodeType;
+    public HACEPNode(String address, List<SessionData> sessions) {
+        this.address = address;
+        this.sessions = sessions;
     }
 
-    public String getName() {
-        return name;
+    public String getAddress() {
+        return address;
     }
 
-    public NodeType getNodeType() {
-        return nodeType;
+    public List<SessionData> getSessions() {
+        return sessions;
     }
 }

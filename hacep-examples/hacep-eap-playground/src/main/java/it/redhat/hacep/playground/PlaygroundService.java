@@ -28,7 +28,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
-@ApplicationPath("/")
+@ApplicationPath("/services")
 @Path("/")
 public class PlaygroundService extends Application {
 

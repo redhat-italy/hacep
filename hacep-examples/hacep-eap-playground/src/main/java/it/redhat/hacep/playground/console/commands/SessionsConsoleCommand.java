@@ -17,21 +17,25 @@
 
 package it.redhat.hacep.playground.console.commands;
 
+import it.redhat.hacep.configuration.annotations.HACEPCacheManager;
 import it.redhat.hacep.configuration.annotations.HACEPSessionCache;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.playground.JDGUtility;
 import it.redhat.hacep.playground.console.ReSTUI;
 import it.redhat.hacep.playground.console.UI;
+import it.redhat.hacep.playground.console.commands.dto.HACEPNode;
 import it.redhat.hacep.playground.console.commands.dto.NodeType;
-import it.redhat.hacep.playground.console.commands.dto.SessionDataObjectInformation;
+import it.redhat.hacep.playground.console.commands.dto.SessionData;
 import it.redhat.hacep.playground.console.support.IllegalParametersException;
 import org.infinispan.Cache;
+import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SessionsConsoleCommand implements ConsoleCommand {
 
@@ -41,6 +45,10 @@ public class SessionsConsoleCommand implements ConsoleCommand {
 
     @Inject
     private JDGUtility jdgUtility;
+
+    @Inject
+    @HACEPCacheManager
+    private DefaultCacheManager manager;
 
     @Inject
     @HACEPSessionCache
@@ -56,33 +64,33 @@ public class SessionsConsoleCommand implements ConsoleCommand {
 
     @Override
     public boolean execute(UI console, Iterator<String> args) throws IllegalParametersException {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Start execute command 'sessions'");
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Start execute command 'sessions'");
         }
-        Map<Address, List<SessionDataObjectInformation>> sessions = new HashMap<>();
 
+        Map<Address, List<SessionData>> sessions = new HashMap<>();
+        manager.getMembers().stream().forEach(a -> sessions.put(a, new ArrayList<>()));
         for (Map.Entry<Key, List<Address>> entry : jdgUtility.getKeysAddresses(sessionCache).entrySet()) {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("Key [" + entry.getKey() + "] List{" + entry.getValue() + "}");
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Key [" + entry.getKey() + "] List{" + entry.getValue() + "}");
             }
             List<Address> addresses = entry.getValue() != null ? entry.getValue() : Collections.emptyList();
             for (int i = 0; i < addresses.size(); i++) {
                 boolean isPrimary = (i == 0);
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("Key [" + entry.getKey() + "] Address{" + addresses.get(i) + "] isPrimary [" + isPrimary + "]");
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Key [" + entry.getKey() + "] Address{" + addresses.get(i) + "] isPrimary [" + isPrimary + "]");
                 }
                 sessions.compute(addresses.get(i), (a, l) -> {
-                    if (l == null) {
-                        l = new ArrayList<>();
-                    }
-                    SessionDataObjectInformation object = new SessionDataObjectInformation(entry.getKey().toString(), isPrimary ? NodeType.PRIMARY : NodeType.REPLICA);
+                    SessionData object = new SessionData(entry.getKey().toString(), isPrimary ? NodeType.PRIMARY : NodeType.REPLICA);
                     l.add(object);
                     return l;
                 });
             }
         }
 
-        console.print(sessions);
+        console.print(sessions.entrySet().stream()
+                .map(e -> new HACEPNode(e.getKey().toString(), e.getValue()))
+                .collect(Collectors.toList()));
         return true;
     }
 

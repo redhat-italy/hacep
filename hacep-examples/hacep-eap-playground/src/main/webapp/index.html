@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>Document</title>
+    <style>
+        body {
+            background-color: papayawhip;
+        }
+
+        .hideBlock {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<svg>
+    <g class="paths"></g>
+    <g class="clusters"></g>
+    <g class="nodes"></g>
+</svg>
+
+<script src="js/stomp.js"></script>
+<script src="js/d3.js"></script>
+<script src="js/d3-scale-chromatic.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/d3.functions.js"></script>
+<script>
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+    var centerY = height / 2;
+    var centerX = width / 2;
+
+    var positionLink = function (d) {
+        if (!isNumeric(d.target.x)) {
+            return d3.select(this).attr("d");
+        }
+        return "M" + d.source.x + "," + d.source.y + " " + d.target.x + "," + d.target.y;
+    };
+
+    var translate = function (d) {
+        return "translate(" + d.x + "," + d.y + ")";
+    };
+
+    var svg = d3.select("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+    var simulation = d3.forceSimulation()
+            .force("link", d3.forceLink().id(D3Functions.getKey).distance(40).strength(2))
+            .force("collide", d3.forceCollide(D3Functions.getR).iterations(8))
+            .force("charge", d3.forceManyBody())
+            .force("y", d3.forceY(centerY).strength(0))
+            .force("x", d3.forceX(centerX).strength(0))
+            .on("tick", function () {
+                svg.selectAll("g.paths path").attr("d", positionLink);
+                svg.selectAll("g.nodes g").attr("transform", translate);
+                svg.selectAll("g.clusters g").attr("transform", translate);
+                simulation.force("y").strength(D3Functions.strengthByDistance(centerY, 4, D3Functions.getAttrY));
+                simulation.force("x").strength(D3Functions.strengthByDistance(centerX, 4, D3Functions.getAttrX));
+            })
+            .on("end", function () {
+                this.restart();
+            });
+
+    document.onkeypress = function (event) {
+        if ((event.keyCode === 114) || (event.keyCode === 82)) {
+            svg.select("g.paths").selectAll("path")
+                    .filter(function (d) {
+                        return !d.target.data.primary;
+                    })
+                    .classed("hideBlock", function () {
+                        return !d3.select(this).classed("hideBlock");
+                    });
+            svg.select("g.nodes").selectAll("g")
+                    .filter(function (d) {
+                        return !d.data.primary;
+                    })
+                    .classed("hideBlock", function () {
+                        return !d3.select(this).classed("hideBlock");
+                    });
+        }
+    };
+
+    var dragstarted = function () {
+        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        d3.event.subject.fx = d3.event.subject.x;
+        d3.event.subject.fy = d3.event.subject.y;
+    };
+    var dragged = function () {
+        d3.event.subject.fx = d3.event.x;
+        d3.event.subject.fy = d3.event.y;
+    };
+    var dragended = function () {
+        if (!d3.event.active) simulation.alphaTarget(0);
+        if (D3Functions.isSessionLevel(d3.event.subject)) {
+            d3.event.subject.fx = null;
+            d3.event.subject.fy = null;
+        }
+    };
+
+    var merge = function (nodes) {
+        return function (d) {
+            var node = nodes.find(function (n) {
+                return D3Functions.getKey(d) === D3Functions.getKey(n);
+            });
+            if (typeof node !== "undefined") {
+                for (var i in d) {
+                    if (typeof node[i] === "undefined") {
+                        node[i] = d[i];
+                    }
+                }
+                for (var i in d.data) {
+                    if (typeof node.data[i] === "undefined") {
+                        node.data[i] = d.data[i];
+                    }
+                }
+            }
+        };
+    };
+
+    function drawClusters(clusters) {
+        svg.select("g.clusters").selectAll("g").data().forEach(merge(clusters));
+        var keys = clusters.map(D3Functions.getKey);
+        var clusterPosition = d3.scaleBand().range([-Math.PI / 2, Math.PI / 2]).domain(keys);
+        var clusterSVG = svg.select("g.clusters").selectAll("g").data(clusters, D3Functions.getKey);
+        clusterSVG.exit().remove();
+
+        var group = clusterSVG.enter()
+                .append("g")
+                .attr("class", "cluster")
+                .attr("transform", function (d) {
+                    d.x = centerX + ((centerX * 1 / 3) * Math.sin(clusterPosition(D3Functions.getKey(d))));
+                    d.y = centerY + ((centerY * 1 / 3) * Math.cos(clusterPosition(D3Functions.getKey(d))));
+                    d.fx = d.x;
+                    d.fy = d.y;
+                    return "translate(" + d.x + "," + d.y + ")";
+                })
+                .call(d3.drag()
+                        .on("start", dragstarted)
+                        .on("drag", dragged)
+                        .on("end", dragended));
+
+        group.append("circle")
+                .attr("fill", d3.rgb("black"))
+                .attr("r", 5);
+
+    }
+
+    var arc = d3.arc()
+            .innerRadius(function (d) {
+                return D3Functions.getR(d) - 3;
+            })
+            .outerRadius(function (d) {
+                return D3Functions.getR(d) + 3;
+            })
+            .startAngle(0)
+            .endAngle(function (d) {
+                return (D3Functions.getPoints(d) / 100) * (2 * Math.PI);
+            });
+
+    function drawNodes(nodes) {
+        svg.select("g.nodes").selectAll("g").data().forEach(merge(nodes));
+
+        var nodesPosition = d3.scaleLinear().range([-Math.PI, Math.PI]).domain([0, nodes.length - 1]);
+
+        var nodesSVG = svg.select("g.nodes").selectAll("g").data(nodes, D3Functions.getKey);
+
+        nodesSVG.exit().remove();
+        var group = nodesSVG.enter()
+                .append("g")
+                .attr("class", "node");
+
+        group
+                .attr("transform", function (d, i) {
+                    d.x = d.parent.x + (80 * Math.sin(nodesPosition(i)));
+                    d.y = d.parent.y + (80 * Math.cos(nodesPosition(i)));
+
+                    return "translate(" + d.x + "," + d.y + ")";
+                })
+                .call(d3.drag()
+                        .on("start", dragstarted)
+                        .on("drag", dragged)
+                        .on("end", dragended));
+
+        group.append("circle")
+                .attr("fill", D3Functions.getColorByName)
+                .transition()
+                .duration(750)
+                .ease(d3.easeQuad)
+                .attr("r", D3Functions.getR);
+
+        group.append("text")
+                .attr("dy", ".3em")
+                .style("text-anchor", "middle");
+
+        group.append("path");
+
+        var circleGroup = svg.select("g.nodes").selectAll("g circle").data(nodes, D3Functions.getKey);
+        circleGroup
+                .filter(function (d) {
+                    return !d.event;
+                })
+                .transition()
+                .duration(750)
+                .ease(d3.easeQuad)
+                .attr("r", D3Functions.getR);
+
+        circleGroup
+                .filter(function (d) {
+                    return d.event;
+                })
+                .each(function (d) {
+                    d.event = false;
+                })
+                .transition()
+                .duration(750)
+                .ease(d3.easeBounce)
+                .attr("r", D3Functions.getR)
+                .attr("fill", D3Functions.getColorByName);
+
+        var pathGroup = svg.select("g.nodes").selectAll("g path").data(nodes, D3Functions.getKey);
+        pathGroup
+                .attr("fill", function (d) {
+                    return D3Functions.getColorByName(d).darker(0.5);
+                })
+                .attr("d", arc);
+
+        var textGroup = svg.select("g.nodes").selectAll("g text").data(nodes, D3Functions.getKey);
+        textGroup.text(D3Functions.getLevel);
+    }
+
+    function drawLinks(links) {
+        var linkSVG = svg.select("g.paths").selectAll("path")
+                .data(links, D3Functions.getLinkTargetKey);
+        linkSVG.exit().remove();
+        linkSVG.enter().append("path")
+                .attr("class", "link")
+                .style("stroke", "black");
+
+        linkSVG.merge(linkSVG)
+                .attr("d", positionLink);
+    }
+
+    function rewardEvent(event) {
+        var data = svg.select("g.nodes").selectAll("g").data();
+        var element = data.filter(function (d) {
+            return d.data.primary && (D3Functions.getName(d) === event.name);
+        });
+        if (element.length == 1) {
+            element[0].data.points = event.points;
+            element[0].data.level = event.level;
+            element[0].event = true;
+            drawNodes(data);
+        }
+    }
+
+    function reload(_) {
+        var url = "/hacep-playground/services/execute/sessions";
+        d3.json(url, function (error, root) {
+            if (error) throw error;
+
+            var tree = d3
+                    .hierarchy({"sessions": root}, function (d) {
+                        return d.sessions;
+                    })
+                    .sort(function (a, b) {
+                        return a.depth - b.depth;
+                    });
+
+            var links = tree.links().filter(function (d) {
+                return d.source.depth > 0;
+            });
+            var nodes = tree
+                    .descendants()
+                    .filter(function (d) {
+                        return d.depth > 0;
+                    })
+                    .map(function (d) {
+                        if (d.depth === 1) {
+                            d.data.key = d.data.address;
+                            d.data.cluster = d.data.address;
+                            d.data.name = d.data.address;
+                            d.data.radius = 20;
+                        }
+                        return d;
+                    })
+                    .map(function (d) {
+                        if (d.depth === 2) {
+                            d.data.cluster = d.parent.data.key;
+                            d.data.key = d.data.name + "_" + d.data.nodeType;
+                            if (D3Functions.isPrimary(d)) {
+                                d.data.primary = true;
+                                d.data.radius = 10;
+                            } else {
+                                d.data.primary = false;
+                                d.data.radius = 5;
+                            }
+                        }
+                        return d;
+                    });
+
+            drawClusters(nodes.filter(D3Functions.isClusterLevel));
+            drawNodes(nodes.filter(D3Functions.isSessionLevel));
+            drawLinks(links);
+
+            simulation.force("link").links(links);
+            simulation.nodes(nodes);
+            simulation.alphaTarget(0.01).restart();
+        });
+    }
+
+
+    var items = [];
+
+    reload();
+    setInterval(reload, 1000);
+
+    var receive = function (message) {
+        var msg = JSON.parse(message.body);
+        var event = {
+            "name": "Session::Group::" + msg.playerId,
+            "points": msg.points * 10,
+            "level": msg.level
+        };
+        console.log(event);
+        rewardEvent(event);
+    };
+    var client = Stomp.client("ws://localhost:61614/stomp", "v10.stomp");
+    client.heartbeat = {
+        outgoing: 0,
+        incoming: 0
+    };
+
+    client.connect("admin", "admin",
+            function () {
+                client.subscribe("PPL_EVENTS", receive, {priority: 9});
+            }
+    );
+
+</script>
+</body>
+</html>
