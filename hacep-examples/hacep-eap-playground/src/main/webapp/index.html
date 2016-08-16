@@ -84,20 +84,27 @@
 
     var dragstarted = function () {
         if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        d3.event.subject = d3.select(this).data()[0];
         d3.event.subject.fx = d3.event.subject.x;
         d3.event.subject.fy = d3.event.subject.y;
     };
     var dragged = function () {
+        d3.event.subject = d3.select(this).data()[0];
         d3.event.subject.fx = d3.event.x;
         d3.event.subject.fy = d3.event.y;
     };
     var dragended = function () {
         if (!d3.event.active) simulation.alphaTarget(0);
+        d3.event.subject = d3.select(this).data()[0];
         if (D3Functions.isSessionLevel(d3.event.subject)) {
             d3.event.subject.fx = null;
             d3.event.subject.fy = null;
         }
     };
+    var draggable = d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended);
 
     var merge = function (nodes) {
         return function (d) {
@@ -136,10 +143,7 @@
                     d.fy = d.y;
                     return "translate(" + d.x + "," + d.y + ")";
                 })
-                .call(d3.drag()
-                        .on("start", dragstarted)
-                        .on("drag", dragged)
-                        .on("end", dragended));
+                .call(draggable);
 
         group.append("circle")
                 .attr("fill", d3.rgb("black"))
