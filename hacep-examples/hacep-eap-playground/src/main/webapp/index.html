@@ -327,10 +327,9 @@
             "points": msg.points * 10,
             "level": msg.level
         };
-        console.log(event);
         rewardEvent(event);
     };
-    var client = Stomp.client("ws://localhost:61614/stomp", "v10.stomp");
+    var client = Stomp.client("ws://localhost:61614/stomp", "v11.stomp");
     client.heartbeat = {
         outgoing: 0,
         incoming: 0
@@ -338,7 +337,7 @@
 
     client.connect("admin", "admin",
             function () {
-                client.subscribe("PPL_EVENTS", receive, {priority: 9});
+                client.subscribe("events", receive, {priority: 9});
             }
     );
 

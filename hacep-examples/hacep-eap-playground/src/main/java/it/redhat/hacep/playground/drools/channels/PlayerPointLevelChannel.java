@@ -32,7 +32,7 @@ public class PlayerPointLevelChannel implements Channel {
     public static final String CHANNEL_ID = "playerPointsLevel";
     private static final Logger LOGGER = LoggerFactory.getLogger("it.redhat.hacep.logger");
 
-    public static final String queueName = "PPL_EVENTS";
+    public static final String queueName = "events";
 
     @Inject
     private JmsConfiguration jmsConfiguration;
