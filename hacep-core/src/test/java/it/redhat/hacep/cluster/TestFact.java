@@ -18,6 +18,7 @@
 package it.redhat.hacep.cluster;
 
 import it.redhat.hacep.model.Fact;
+import it.redhat.hacep.model.Key;
 
 import java.time.Instant;
 
@@ -44,5 +45,10 @@ public class TestFact implements Fact {
     @Override
     public Instant getInstant() {
         return instant;
+    }
+
+    @Override
+    public Key extractKey() {
+        return null;
     }
 }

@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 
 public class TextUI implements UI {
 
-    private final static Logger log = LoggerFactory.getLogger(TextUI.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(TextUI.class);
 
     private final Map<Pattern, ConsoleCommand> commands = new HashMap<Pattern, ConsoleCommand>();
 

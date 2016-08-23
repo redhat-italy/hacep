@@ -24,66 +24,68 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class ReSTUI implements UI {
 
-    private final static Logger log = LoggerFactory.getLogger(ReSTUI.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(ReSTUI.class);
 
     @Inject
     private Instance<ConsoleCommand> commands;
 
-    private ByteArrayOutputStream os = new ByteArrayOutputStream(1024);
-    private PrintWriter out = new PrintWriter(os);
+    private List<Object> content = new ArrayList<>();
 
     @Override
     public void print(Object message) {
-        out.print(message);
+        content.add(message);
     }
 
     @Override
     public void println(Object message) {
-        out.println(message);
+        content.add(message);
+        content.add("\n");
     }
 
     @Override
     public void print(String message) {
-        out.print(message);
+        content.add(message);
     }
 
     @Override
     public void println(String message) {
-        out.print(message);
+        content.add(message);
+        content.add("\n");
     }
 
     @Override
     public void println() {
-        out.println();
+        content.add("\n");
     }
 
     @Override
     public void printUsage() {
-        log.info("Start print usage");
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Start print usage");
+        }
         StreamSupport.stream(commands.spliterator(), true)
                 .sorted(new ConsoleCommandComparator())
                 .forEachOrdered(c -> {
                     c.usage(this);
-                    out.println();out.println();
+                    println();
+                    println();
                 });
     }
 
     @Override
     public String toString() {
-        try {
-            out.flush();
-            return os.toString();
-        } finally {
-            os.reset();
-        }
+        return content.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining());
     }
 
     @Override
@@ -102,4 +104,14 @@ public class ReSTUI implements UI {
                 .findFirst();
     }
 
+    public Object getContent() {
+        if (content.size() == 1) {
+            return content.get(0);
+        }
+        return this.toString();
+    }
+
+    public void clear() {
+        content.clear();
+    }
 }

@@ -15,26 +15,26 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.configuration;
+package it.redhat.hacep.playground.console.commands.dto;
 
-public interface RouterManager {
-    /**
-     * Start camel context.
-     */
-    void start();
+public class SessionData {
 
-    /**
-     * Stop camel context.
-     */
-    void stop();
+    private String name;
+    private NodeType nodeType;
 
-    /**
-     * Suspend the route responsible for the messages ingestion.
-     */
-    void suspend();
+    public SessionData() {
+    }
 
-    /**
-     * Resume the route responsible for the messages ingestion.
-     */
-    void resume();
+    public SessionData(String name, NodeType nodeType) {
+        this.name = name;
+        this.nodeType = nodeType;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public NodeType getNodeType() {
+        return nodeType;
+    }
 }

@@ -15,16 +15,27 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.playground.cache;
+package it.redhat.hacep.playground.console.commands.dto;
 
-import it.redhat.hacep.model.Key;
-import it.redhat.hacep.model.KeyBuilder;
-import it.redhat.hacep.playground.rules.model.UserEvent;
+import java.util.List;
 
-public class LoginKeyBuilder implements KeyBuilder<UserEvent, String> {
+public class HACEPNode {
+    private String address;
+    private List<SessionData> sessions;
 
-    @Override
-    public Key<String> extractFromFact(UserEvent fact) {
-        return new GameplayKey(String.valueOf(fact.getId()), String.valueOf(fact.getUsr()));
+    public HACEPNode() {
+    }
+
+    public HACEPNode(String address, List<SessionData> sessions) {
+        this.address = address;
+        this.sessions = sessions;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public List<SessionData> getSessions() {
+        return sessions;
     }
 }

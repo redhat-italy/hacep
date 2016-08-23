@@ -24,11 +24,13 @@ import org.slf4j.LoggerFactory;
 public class SysoutChannel implements Channel {
     
     public static final String CHANNEL_ID = "outcomes";
-    private static final Logger logger = LoggerFactory.getLogger("it.redhat.hacep.logger");
+    private static final Logger LOGGER = LoggerFactory.getLogger("it.redhat.hacep.logger");
 
     @Override
     public void send(Object object) {
-        logger.info("=============================>" + object);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("=============================>" + object);
+        }
     }
 
 }

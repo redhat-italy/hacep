@@ -17,6 +17,9 @@
 
 package it.redhat.hacep.playground.rules.model;
 
+import it.redhat.hacep.model.Key;
+import it.redhat.hacep.playground.cache.UserEventKey;
+
 import java.time.Instant;
 
 public class LogoutEvent extends UserEvent {
@@ -25,4 +28,8 @@ public class LogoutEvent extends UserEvent {
         super(id, usr, instant);
     }
 
+    @Override
+    public Key extractKey() {
+        return new UserEventKey(String.valueOf(this.getId()), String.valueOf(this.getUsr()));
+    }
 }

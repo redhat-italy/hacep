@@ -15,16 +15,26 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.playground.cache;
+package it.redhat.hacep.configuration;
 
-import it.redhat.hacep.model.KeyBuilder;
-import it.redhat.hacep.model.Key;
-import it.redhat.hacep.playground.rules.model.Gameplay;
+public interface Router {
+    /**
+     * Start context.
+     */
+    void start();
 
-public class GameplayKeyBuilder implements KeyBuilder<Gameplay, String> {
+    /**
+     * Stop context.
+     */
+    void stop();
 
-    @Override
-    public Key<String> extractFromFact(Gameplay fact) {
-        return new GameplayKey(String.valueOf(fact.getId()), String.valueOf(fact.getPlayerId()));
-    }
+    /**
+     * Suspend the route responsible for the messages ingestion.
+     */
+    void suspend();
+
+    /**
+     * Resume the route responsible for the messages ingestion.
+     */
+    void resume();
 }

@@ -18,6 +18,8 @@
 package it.redhat.hacep.playground.rules.model;
 
 import it.redhat.hacep.model.Fact;
+import it.redhat.hacep.model.Key;
+import it.redhat.hacep.playground.cache.GameplayKey;
 
 import java.time.Instant;
 import java.util.Date;
@@ -42,6 +44,11 @@ public class Gameplay implements Fact {
     @Override
     public Instant getInstant() {
         return timestamp.toInstant();
+    }
+
+    @Override
+    public Key extractKey() {
+        return new GameplayKey(String.valueOf(id), String.valueOf(playerId));
     }
 
     public long getId() {

@@ -21,12 +21,21 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
             <artifactId>hacep-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>it.redhat.jdg</groupId>
+            <artifactId>hacep-core-camel</artifactId>
+        </dependency>
+        <dependency>
             <groupId>it.redhat.jdg.examples</groupId>
             <artifactId>hacep-model</artifactId>
         </dependency>
         <dependency>
             <groupId>it.redhat.jdg.examples</groupId>
             <artifactId>hacep-rules</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.3.1</version>
         </dependency>
 
         <!--TEST -->

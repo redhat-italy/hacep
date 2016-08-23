@@ -17,11 +17,11 @@
 
 package it.redhat.hacep.playground.configuration;
 
-import it.redhat.hacep.playground.cache.GameplayKeyBuilder;
 import it.redhat.hacep.configuration.DroolsConfiguration;
-import it.redhat.hacep.model.KeyBuilder;
-import it.redhat.hacep.playground.drools.channels.AuditChannel;
+import it.redhat.hacep.configuration.JmsConfiguration;
 import it.redhat.hacep.drools.channels.NullChannel;
+import it.redhat.hacep.playground.drools.channels.AuditChannel;
+import it.redhat.hacep.playground.drools.channels.PlayerPointLevelChannel;
 import it.redhat.hacep.playground.drools.channels.SysoutChannel;
 import org.kie.api.KieBase;
 import org.kie.api.KieServices;
@@ -31,7 +31,9 @@ import org.kie.api.runtime.KieSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -49,18 +51,32 @@ public class DroolsConfigurationImpl implements DroolsConfiguration {
     private static final String KSESSION_RULES = "hacep-sessions";
     private static final String KBASE_NAME = "hacep-rules";
 
+    @Inject
+    private SysoutChannel sysoutChannel;
+    @Inject
+    private AuditChannel auditChannel;
+    @Inject
+    private PlayerPointLevelChannel playerPointLevelChannel;
+
     public DroolsConfigurationImpl() {
         KieServices kieServices = KieServices.Factory.get();
         kieContainer = kieServices.getKieClasspathContainer();
         kieBase = kieContainer.getKieBase(KBASE_NAME);
 
-        channels.put(SysoutChannel.CHANNEL_ID, new SysoutChannel());
-        channels.put(AuditChannel.CHANNEL_ID, new AuditChannel());
+        if (logger.isInfoEnabled()) {
+            logger.info("[Kie Container] successfully initialized.");
+        }
+    }
+
+    @PostConstruct
+    public void registerChannels() {
+        channels.put(SysoutChannel.CHANNEL_ID, sysoutChannel);
+        channels.put(AuditChannel.CHANNEL_ID, auditChannel);
+        channels.put(PlayerPointLevelChannel.CHANNEL_ID, playerPointLevelChannel);
 
         replayChannels.put(SysoutChannel.CHANNEL_ID, new NullChannel());
         replayChannels.put(AuditChannel.CHANNEL_ID, new NullChannel());
-
-        logger.info("[Kie Container] successfully initialized.");
+        replayChannels.put(PlayerPointLevelChannel.CHANNEL_ID, new NullChannel());
     }
 
     @Override
@@ -90,11 +106,6 @@ public class DroolsConfigurationImpl implements DroolsConfiguration {
         } catch (IllegalArgumentException e) {
             return 1000;
         }
-    }
-
-    @Override
-    public KeyBuilder getKeyBuilder() {
-        return new GameplayKeyBuilder();
     }
 
 }

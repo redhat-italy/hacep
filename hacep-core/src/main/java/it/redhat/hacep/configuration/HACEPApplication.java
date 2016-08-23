@@ -48,7 +48,7 @@ public class HACEPApplication {
     private Cache<Key, Object> sessionCache;
 
     @Inject
-    private RouterManager routerManager;
+    private Router router;
 
     @Inject
     private KieSessionSaver kieSessionSaver;
@@ -59,10 +59,10 @@ public class HACEPApplication {
     public void start() {
         try {
             this.factCache.addListener(new FactListenerPost(this.kieSessionSaver));
-            this.sessionCache.addListener(new SessionListenerPre(this.routerManager));
-            this.sessionCache.addListener(new SessionListenerPost(this.routerManager));
+            this.sessionCache.addListener(new SessionListenerPre(this.router));
+            this.sessionCache.addListener(new SessionListenerPost(this.router));
 
-            this.routerManager.start();
+            this.router.start();
             this.manager.start();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -71,7 +71,7 @@ public class HACEPApplication {
 
     public void stop() {
         try {
-            this.routerManager.stop();
+            this.router.stop();
             this.manager.stop();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -79,11 +79,11 @@ public class HACEPApplication {
     }
 
     public void suspend() {
-        this.routerManager.suspend();
+        this.router.suspend();
     }
 
     public void resume() {
-        this.routerManager.resume();
+        this.router.resume();
     }
 
     public Cache<Key, Fact> getFactCache() {

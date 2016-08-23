@@ -17,9 +17,9 @@
 
 package it.redhat.hacep.playground.console.commands;
 
-import it.redhat.hacep.playground.JDGUtility;
 import it.redhat.hacep.configuration.HACEPApplication;
 import it.redhat.hacep.model.Key;
+import it.redhat.hacep.playground.JDGUtility;
 import it.redhat.hacep.playground.console.UI;
 import it.redhat.hacep.playground.console.support.IllegalParametersException;
 import org.infinispan.Cache;

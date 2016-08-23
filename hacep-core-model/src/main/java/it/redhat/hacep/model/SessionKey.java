@@ -27,4 +27,9 @@ public class SessionKey extends Key<String> {
     public String getId() {
         return getGroup();
     }
+
+    @Override
+    public String toString() {
+        return "Session::Group::" + getGroup();
+    }
 }

@@ -58,6 +58,7 @@
         <module>hacep-commons-test</module>
         <module>hacep-core-model</module>
         <module>hacep-core</module>
+        <module>hacep-core-camel</module>
         <module>hacep-examples</module>
     </modules>
 
@@ -68,13 +69,21 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <version.org.infinispan>6.4.0.Final-redhat-4</version.org.infinispan>
+                <version.org.infinispan>8.3.0.Final-redhat-1</version.org.infinispan>
                 <version.org.jboss.fuse>6.2.1.redhat-084</version.org.jboss.fuse>
-                <version.org.jboss.bom.brms>6.2.0.GA-redhat-1</version.org.jboss.bom.brms>
+                <version.org.jboss.bom.brms>6.3.0.GA-redhat-3</version.org.jboss.bom.brms>
                 <version.org.jboss.bom.eap>6.4.5.GA</version.org.jboss.bom.eap>
             </properties>
             <dependencyManagement>
                 <dependencies>
+                    <dependency>
+                        <groupId>org.jboss.bom.eap</groupId>
+                        <artifactId>jboss-javaee-6.0-with-transactions</artifactId>
+                        <version>${version.org.jboss.bom.eap}</version>
+                        <type>pom</type>
+                        <scope>import</scope>
+                    </dependency>
+
                     <dependency>
                         <groupId>org.infinispan</groupId>
                         <artifactId>infinispan-bom</artifactId>
@@ -110,7 +119,7 @@
         <profile>
             <id>community</id>
             <properties>
-                <version.org.infinispan>8.2.2.Final</version.org.infinispan>
+                <version.org.infinispan>8.2.3.Final</version.org.infinispan>
                 <version.org.drools.bom>6.4.0.Final</version.org.drools.bom>
                 <version.org.jboss.bom>1.0.7.Final</version.org.jboss.bom>
                 <version.org.apache.camel>2.15.1</version.org.apache.camel>
@@ -118,6 +127,14 @@
             </properties>
             <dependencyManagement>
                 <dependencies>
+                    <dependency>
+                        <groupId>org.jboss.bom</groupId>
+                        <artifactId>jboss-javaee-6.0-with-transactions</artifactId>
+                        <version>${version.org.jboss.bom}</version>
+                        <type>pom</type>
+                        <scope>import</scope>
+                    </dependency>
+
                     <dependency>
                         <groupId>org.infinispan</groupId>
                         <artifactId>infinispan-bom</artifactId>
@@ -179,6 +196,11 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>it.redhat.jdg</groupId>
+                <artifactId>hacep-core-camel</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>it.redhat.jdg.examples</groupId>
                 <artifactId>hacep-model</artifactId>
                 <version>${project.version}</version>
@@ -187,12 +209,6 @@
                 <groupId>it.redhat.jdg.examples</groupId>
                 <artifactId>hacep-rules</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.transaction</groupId>
-                <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-                <version>1.0.0.Final</version>
             </dependency>
 
             <!--TEST-->
@@ -225,15 +241,38 @@
                 <artifactId>log4j</artifactId>
                 <version>${log4j.version}</version>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>7.0</version>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.jms</groupId>
+            <artifactId>jboss-jms-api_1.1_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.transaction</groupId>
+            <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.ejb</groupId>
+            <artifactId>jboss-ejb-api_3.1_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.ws.rs</groupId>
+            <artifactId>jboss-jaxrs-api_1.1_spec</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -281,6 +320,9 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.plugin.version}</version>
+                    <configuration>
+                        <argLine>-Djava.net.preferIPv4Stack=true</argLine>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

@@ -17,12 +17,10 @@
 
 package it.redhat.hacep.playground.configuration;
 
-import it.redhat.hacep.playground.cache.LoginKeyBuilder;
 import it.redhat.hacep.configuration.DroolsConfiguration;
-import it.redhat.hacep.playground.drools.channels.AuditChannel;
 import it.redhat.hacep.drools.channels.NullChannel;
+import it.redhat.hacep.playground.drools.channels.AuditChannel;
 import it.redhat.hacep.playground.drools.channels.SysoutChannel;
-import it.redhat.hacep.model.KeyBuilder;
 import org.kie.api.KieBase;
 import org.kie.api.KieServices;
 import org.kie.api.runtime.Channel;
@@ -38,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @ApplicationScoped
 public class DroolsConfigurationImpl implements DroolsConfiguration {
 
-    private static final Logger logger = LoggerFactory.getLogger(DroolsConfigurationImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DroolsConfigurationImpl.class);
 
     private final Map<String, Channel> channels = new ConcurrentHashMap<>();
     private final Map<String, Channel> replayChannels = new ConcurrentHashMap<>();
@@ -60,7 +58,9 @@ public class DroolsConfigurationImpl implements DroolsConfiguration {
         replayChannels.put(SysoutChannel.CHANNEL_ID, new NullChannel());
         replayChannels.put(AuditChannel.CHANNEL_ID, new NullChannel());
 
-        logger.info("[Kie Container] successfully initialized.");
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("[Kie Container] successfully initialized.");
+        }
     }
 
     @Override
@@ -90,11 +90,6 @@ public class DroolsConfigurationImpl implements DroolsConfiguration {
         } catch (IllegalArgumentException e) {
             return 1000;
         }
-    }
-
-    @Override
-    public KeyBuilder getKeyBuilder() {
-        return new LoginKeyBuilder();
     }
 
 }

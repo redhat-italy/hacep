@@ -18,7 +18,10 @@
 package it.redhat.hacep.cache.session;
 
 import it.redhat.hacep.configuration.DroolsConfiguration;
+import it.redhat.hacep.configuration.annotations.HACEPExecutorService;
+import it.redhat.hacep.configuration.annotations.HACEPKieSessionSerializer;
 import it.redhat.hacep.configuration.annotations.HACEPSessionCache;
+import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.model.SessionKey;
@@ -29,11 +32,11 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
 
 public class KieSessionSaver {
 
-    private static final Logger logger = LoggerFactory.getLogger(KieSessionSaver.class);
-    private static final Logger audit = LoggerFactory.getLogger("audit.redhat.hacep");
+    private static final Logger LOGGER = LoggerFactory.getLogger(KieSessionSaver.class);
 
     private final ConcurrentMap<String, Object> locks = new ConcurrentHashMap<>();
 
@@ -42,28 +45,52 @@ public class KieSessionSaver {
     private Cache<Key, Object> sessionCache;
 
     @Inject
+    @HACEPKieSessionSerializer
+    private KieSessionByteArraySerializer serializer;
+
+    @Inject
+    @HACEPExecutorService
+    private ExecutorService executorService;
+
+    @Inject
     private DroolsConfiguration droolsConfiguration;
 
-    public KieSessionSaver insert(Key key, Fact fact) {
+    public void insert(Key key, Fact fact) {
         SessionKey sessionKey = new SessionKey(key.getGroup());
-        audit.info(key + " | " + fact + " | COD_21 | starting to insert fact");
+        if (LOGGER.isDebugEnabled()) LOGGER.debug("Getting session for fact: " + fact + ", key: " + sessionKey);
+
         synchronized (getLock(sessionKey.toString())) {
             HAKieSession haKieSession;
             Object value = sessionCache.get(sessionKey);
-            if (value == null) {
-                haKieSession = new HAKieSession(droolsConfiguration);
+            if (isANewSession(value)) {
+                haKieSession = new HAKieSession(droolsConfiguration, serializer, executorService);
                 sessionCache.put(sessionKey, haKieSession);
-            } else if (HAKieSerializedSession.class.isAssignableFrom(value.getClass())) {
+            } else if (isASerializedSession(value)) {
                 haKieSession = ((HAKieSerializedSession) value).rebuild();
             } else {
+                // is a local KieSession
                 haKieSession = (HAKieSession) value;
             }
+
+            if (LOGGER.isDebugEnabled()) LOGGER.debug("Insert fact: " + fact);
             haKieSession.insert(fact);
-            audit.info(key + " | " + fact + " | COD_23 | rules invoked");
+
+            if (LOGGER.isDebugEnabled()) LOGGER.debug("Put back HAKieSession in the grid for key: " + sessionKey);
+
             sessionCache.put(sessionKey, haKieSession);
-            audit.info(key + " | " + fact + " | COD_24 | fact inserted");
+            if (LOGGER.isDebugEnabled()) LOGGER.debug("Done saving HAKieSession for key: " + sessionKey);
+
         }
-        return this;
+    }
+
+    private boolean isANewSession(Object value) {
+        if (LOGGER.isDebugEnabled()) LOGGER.debug("Session doesn't exist, must create a new session");
+        return (value == null);
+    }
+
+    private boolean isASerializedSession(Object value) {
+        if (LOGGER.isDebugEnabled()) LOGGER.debug("Is a serialized session, must rebuild");
+        return HAKieSerializedSession.class.isAssignableFrom(value.getClass());
     }
 
     //@todo must be evaluated. In production code something like [1] or use infinispan locking (verifying that everything happens locally)

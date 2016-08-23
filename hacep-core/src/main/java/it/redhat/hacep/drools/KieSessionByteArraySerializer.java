@@ -17,7 +17,6 @@
 
 package it.redhat.hacep.drools;
 
-import it.redhat.hacep.compressor.Compressor;
 import it.redhat.hacep.configuration.DroolsConfiguration;
 import org.kie.api.KieBase;
 import org.kie.api.marshalling.Marshaller;
@@ -33,14 +32,12 @@ import java.io.*;
 
 public class KieSessionByteArraySerializer {
 
-    private static final Logger logger = LoggerFactory.getLogger("it.redhat.hacep");
-    private final Compressor compressor = new Compressor();
-    private final boolean compressed;
+    private static final Logger LOGGER = LoggerFactory.getLogger("it.redhat.hacep");
+
     private final DroolsConfiguration droolsConfiguration;
 
-    public KieSessionByteArraySerializer(DroolsConfiguration droolsConfiguration, boolean compressed) {
+    public KieSessionByteArraySerializer(DroolsConfiguration droolsConfiguration) {
         this.droolsConfiguration = droolsConfiguration;
-        this.compressed = compressed;
     }
 
     public byte[] writeObject(KieSession kieSession) {
@@ -57,41 +54,37 @@ public class KieSessionByteArraySerializer {
             marshaller.marshall(outputStream, kieSession);
 
             byte[] bytes = outputStream.toByteArray();
-            int uncompressedSize = bytes.length;
-            if (compressed) {
-                bytes = compressor.compress(bytes);
-                logger.info("Size of session is: " + bytes.length + "  [" + uncompressedSize + "]");
+
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("Size of session is: " + bytes.length);
             }
-            logger.info("Size of session is: " + bytes.length);
             return bytes;
         } catch (IOException ioe) {
             String errorMessage = "Unable to marshall KieSession.";
-            logger.error(errorMessage, ioe);
+            LOGGER.error(errorMessage, ioe);
             throw new RuntimeException(errorMessage, ioe);
         }
     }
 
     public KieSession readSession(byte[] serializedKieSession) {
-
         if (serializedKieSession == null) {
-            logger.warn("[KieSessionByteArraySerializer] Unable to serialize NULL KieSessions");
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn("[KieSessionByteArraySerializer] Unable to serialize NULL KieSessions");
+            }
             return null;
         }
         ObjectInputStream ois = null;
         ByteArrayInputStream inputStream = null;
         try {
-            if (compressed) {
-                inputStream = new ByteArrayInputStream(compressor.decompress(serializedKieSession));
-            } else {
-                inputStream = new ByteArrayInputStream(serializedKieSession);
-            }
+
+            inputStream = new ByteArrayInputStream(serializedKieSession);
             ois = new ObjectInputStream(inputStream);
             KieSessionConfiguration kieSessionConfiguration = (KieSessionConfiguration) ois.readObject();
             Marshaller marshaller = createSerializableMarshaller(droolsConfiguration.getKieBase());
             KieSession kieSession = marshaller.unmarshall(inputStream, kieSessionConfiguration, null);
             return kieSession;
         } catch (Exception e) {
-            logger.error("Error when reading serialized session", e);
+            LOGGER.error("Error when reading serialized session", e);
             throw new RuntimeException(e);
         } finally {
             if (ois != null) {

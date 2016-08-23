@@ -15,41 +15,19 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.playground.cache;
+package it.redhat.hacep.configuration.annotations;
 
-import it.redhat.hacep.model.Key;
+import javax.inject.Qualifier;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-import java.util.Objects;
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-public class LoginKey extends Key<String> {
-
-    private String id;
-
-    public LoginKey(String id, String group) {
-        super(group);
-        this.id = id;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String toString() {
-        return id + "::" + getGroup();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof LoginKey)) return false;
-        if (!super.equals(o)) return false;
-        LoginKey gameplayKey = (LoginKey) o;
-        return Objects.equals(id, gameplayKey.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), id);
-    }
-
+@Qualifier
+@Target({TYPE, METHOD, PARAMETER, FIELD})
+@Retention(RUNTIME)
+@Documented
+public @interface HACEPKieSessionSerializer {
 }

@@ -19,29 +19,26 @@ package it.redhat.hacep.camel;
 
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
-import it.redhat.hacep.model.KeyBuilder;
 import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.TimeUnit;
-
 public class Putter {
 
-    private static final Logger logger = LoggerFactory.getLogger(Putter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Putter.class);
 
-    private final KeyBuilder keyBuilder;
     private final Cache<Key, Fact> cache;
 
-    public Putter(KeyBuilder keyBuilder, Cache<Key, Fact> cache) {
-        this.keyBuilder = keyBuilder;
+    public Putter(Cache<Key, Fact> cache) {
         this.cache = cache;
     }
 
     public void put(Fact fact) {
-        logger.debug("Start processing gameplay fact");
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Putting event in the grid");
+        }
         if (cache != null) {
-            cache.put(keyBuilder.extractFromFact(fact), fact, -1, TimeUnit.MILLISECONDS, 500, TimeUnit.MILLISECONDS);
+            cache.put(fact.extractKey(), fact);
         }
     }
 }

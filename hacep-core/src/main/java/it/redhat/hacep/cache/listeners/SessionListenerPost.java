@@ -17,7 +17,7 @@
 
 package it.redhat.hacep.cache.listeners;
 
-import it.redhat.hacep.configuration.RouterManager;
+import it.redhat.hacep.configuration.Router;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
@@ -26,17 +26,21 @@ import org.slf4j.LoggerFactory;
 
 @Listener(primaryOnly = true, observation = Listener.Observation.POST)
 public class SessionListenerPost {
-    private static final Logger logger = LoggerFactory.getLogger(SessionListenerPost.class);
-    private final RouterManager routerManager;
 
-    public SessionListenerPost(RouterManager routerManager) {
-        this.routerManager = routerManager;
+    private static final Logger LOGGER = LoggerFactory.getLogger(SessionListenerPost.class);
+
+    private final Router router;
+
+    public SessionListenerPost(Router router) {
+        this.router = router;
     }
 
     @DataRehashed
     public void rehash(DataRehashedEvent event) {
-        logger.info("Rehashing FINISHED for cache " + event.getCache());
-        this.routerManager.resume();
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Rehashing FINISHED for cache " + event.getCache());
+        }
+        this.router.resume();
     }
 
 }

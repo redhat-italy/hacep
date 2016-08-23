@@ -17,14 +17,11 @@
 
 package it.redhat.hacep.configuration;
 
-import it.redhat.hacep.cache.externalizers.KieSessionExternalizer;
 import it.redhat.hacep.cache.session.HAKieSerializedSession;
 import it.redhat.hacep.cache.session.HAKieSession;
 import it.redhat.hacep.cache.session.HAKieSessionDeltaEmpty;
 import it.redhat.hacep.cache.session.HAKieSessionDeltaFact;
-import it.redhat.hacep.configuration.annotations.HACEPCacheManager;
-import it.redhat.hacep.configuration.annotations.HACEPFactCache;
-import it.redhat.hacep.configuration.annotations.HACEPSessionCache;
+import it.redhat.hacep.configuration.annotations.*;
 import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
@@ -44,13 +41,21 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @ApplicationScoped
 public class DataGridConfiguration {
 
-    private final static Logger log = LoggerFactory.getLogger(DataGridConfiguration.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(DataGridConfiguration.class);
+
+    private static final String FACT_CACHE_NAME = "fact";
+    private static final String SESSION_CACHE_NAME = "session";
 
     private DefaultCacheManager manager;
+
+    private ExecutorService executorService;
+
+    private KieSessionByteArraySerializer serializer;
 
     @Inject
     private DroolsConfiguration droolsConfiguration;
@@ -60,16 +65,15 @@ public class DataGridConfiguration {
 
     @PostConstruct
     private void build() {
-        ExecutorService executorService = Executors.newFixedThreadPool(4);
-        KieSessionByteArraySerializer serializer = new KieSessionByteArraySerializer(droolsConfiguration, getSessionCompression());
+        executorService = Executors.newFixedThreadPool(4);
+        serializer = new KieSessionByteArraySerializer(droolsConfiguration);
 
-        GlobalConfiguration glob = new GlobalConfigurationBuilder().clusteredDefault()
+        GlobalConfiguration globalConfiguration = new GlobalConfigurationBuilder().clusteredDefault()
                 .transport().addProperty("configurationFile", System.getProperty("jgroups.configuration", "jgroups-tcp.xml"))
                 .clusterName("HACEP")
                 .globalJmxStatistics().allowDuplicateDomains(true).enable()
                 .serialization()
-                .addAdvancedExternalizer(new KieSessionExternalizer(serializer))
-                .addAdvancedExternalizer(new HAKieSession.HASessionExternalizer(droolsConfiguration))
+                .addAdvancedExternalizer(new HAKieSession.HASessionExternalizer(droolsConfiguration, serializer, executorService))
                 .addAdvancedExternalizer(new HAKieSerializedSession.HASerializedSessionExternalizer(droolsConfiguration, serializer, executorService))
                 .addAdvancedExternalizer(new HAKieSessionDeltaEmpty.HASessionDeltaEmptyExternalizer(droolsConfiguration, serializer, executorService))
                 .addAdvancedExternalizer(new HAKieSessionDeltaFact.HASessionDeltaFactExternalizer())
@@ -85,27 +89,44 @@ public class DataGridConfiguration {
         } else {
             configurationBuilder.clustering().cacheMode(cacheMode);
         }
-        Configuration loc = configurationBuilder.build();
 
-        this.manager = new DefaultCacheManager(glob, loc, false);
+        Configuration defaultConfiguration = configurationBuilder.build();
+
+        ConfigurationBuilder factCacheConfigurationBuilder = new ConfigurationBuilder().read(defaultConfiguration);
+        factCacheConfigurationBuilder.expiration().maxIdle(500, TimeUnit.MILLISECONDS);
+
+        this.manager = new DefaultCacheManager(globalConfiguration, defaultConfiguration, false);
+        this.manager.defineConfiguration(FACT_CACHE_NAME, factCacheConfigurationBuilder.build());
     }
 
     @Produces
     @HACEPFactCache
     public Cache<Key, Fact> getFactCache() {
-        return this.manager.getCache("fact", true);
+        return this.manager.getCache(FACT_CACHE_NAME, true);
     }
 
     @Produces
     @HACEPSessionCache
     public Cache<Key, Object> getSessionCache() {
-        return this.manager.getCache("session", true);
+        return this.manager.getCache(SESSION_CACHE_NAME, true);
     }
 
     @Produces
     @HACEPCacheManager
     public DefaultCacheManager getManager() {
         return manager;
+    }
+
+    @Produces
+    @HACEPKieSessionSerializer
+    public KieSessionByteArraySerializer getSerializer() {
+        return serializer;
+    }
+
+    @Produces
+    @HACEPExecutorService
+    public ExecutorService getExecutorService() {
+        return executorService;
     }
 
     private CacheMode getCacheMode() {
@@ -121,14 +142,6 @@ public class DataGridConfiguration {
             return Integer.valueOf(System.getProperty("grid.owners", "2"));
         } catch (IllegalArgumentException e) {
             return 2;
-        }
-    }
-
-    private boolean getSessionCompression() {
-        try {
-            return Boolean.valueOf(System.getProperty("session.compression", "false"));
-        } catch (IllegalArgumentException e) {
-            return false;
         }
     }
 

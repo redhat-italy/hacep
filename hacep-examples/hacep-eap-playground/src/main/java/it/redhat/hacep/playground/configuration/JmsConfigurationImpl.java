@@ -28,15 +28,15 @@ import javax.jms.ConnectionFactory;
 @ApplicationScoped
 public class JmsConfigurationImpl implements JmsConfiguration {
 
-    private static final Logger log = LoggerFactory.getLogger(JmsConfigurationImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JmsConfigurationImpl.class);
 
     @Resource(lookup = "java:/HACEPConnectionFactory")
     private ConnectionFactory connectionFactory;
 
     @Override
     public ConnectionFactory getConnectionFactory() {
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Provide connection factory [%s]", connectionFactory));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(String.format("Provide connection factory [%s]", connectionFactory));
         }
         return connectionFactory;
     }

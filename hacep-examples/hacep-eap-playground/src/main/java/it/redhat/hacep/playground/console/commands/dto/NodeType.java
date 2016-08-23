@@ -15,12 +15,9 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.model;
+package it.redhat.hacep.playground.console.commands.dto;
 
-import it.redhat.hacep.model.Fact;
-import it.redhat.hacep.model.Key;
+public enum NodeType {
 
-public interface KeyBuilder<F extends Fact, T> {
-
-    Key<T> extractFromFact(F fact);
+    PRIMARY, REPLICA;
 }

@@ -28,7 +28,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
-@ApplicationPath("/")
+@ApplicationPath("/services")
 @Path("/")
 public class PlaygroundService extends Application {
 
@@ -39,17 +39,21 @@ public class PlaygroundService extends Application {
     @Path("/execute/{command}")
     @Produces("application/json")
     public Response executeCommand(@PathParam("command") String commandName, @QueryParam("params") String params) {
-        Optional<ConsoleCommand> command = restUI.findByName(commandName);
-        if (command.isPresent()) {
-            if (params != null) {
-                command.get().execute(restUI, Arrays.asList(params.split(",")).iterator());
+        try {
+            Optional<ConsoleCommand> command = restUI.findByName(commandName);
+            if (command.isPresent()) {
+                if (params != null) {
+                    command.get().execute(restUI, Arrays.asList(params.split(",")).iterator());
+                } else {
+                    command.get().execute(restUI, Collections.emptyIterator());
+                }
             } else {
-                command.get().execute(restUI, Collections.emptyIterator());
+                restUI.printUsage();
             }
-        } else {
-            restUI.printUsage();
+            return Response.ok(restUI.getContent()).build();
+        } finally {
+            restUI.clear();
         }
-        return Response.ok(restUI.toString()).build();
     }
 
     @GET
