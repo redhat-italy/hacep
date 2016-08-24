@@ -26,7 +26,7 @@ public class UserEventKey extends Key<String> {
     private String id;
 
     public UserEventKey(String id, String group) {
-        super("UserEvent", group);
+        super("User", group);
         this.id = id;
     }
 
