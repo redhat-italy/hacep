@@ -24,13 +24,17 @@ import java.util.Objects;
 
 public abstract class Key<T> implements Serializable {
 
+    private String criteria;
     private String group;
 
-    public Key(String group) {
+    public Key(String criteria, String group) {
+        this.criteria = criteria;
         this.group = group;
     }
 
     public abstract T getId();
+
+    public String getCriteria() { return criteria; }
 
     @Group
     public final String getGroup() {
@@ -42,11 +46,12 @@ public abstract class Key<T> implements Serializable {
         if (this == o) return true;
         if (!(o instanceof Key)) return false;
         Key key = (Key) o;
-        return Objects.equals(group, key.group);
+        return Object.equals(criteria, key.criteria) &&
+                Objects.equals(group, key.group);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(group);
+        return Objects.hash(group, criteria);
     }
 }
