@@ -25,5 +25,7 @@ public interface Fact extends Serializable {
 
     Instant getInstant();
 
+    Fact forKey(Key key);
+
     Set<Key> extractKeys();
 }
