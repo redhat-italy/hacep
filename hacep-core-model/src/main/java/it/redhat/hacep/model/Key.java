@@ -46,7 +46,7 @@ public abstract class Key<T> implements Serializable {
         if (this == o) return true;
         if (!(o instanceof Key)) return false;
         Key key = (Key) o;
-        return Object.equals(criteria, key.criteria) &&
+        return Objects.equals(criteria, key.criteria) &&
                 Objects.equals(group, key.group);
     }
 
