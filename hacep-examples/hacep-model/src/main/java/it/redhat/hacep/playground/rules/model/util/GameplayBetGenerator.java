@@ -25,6 +25,8 @@ public class GameplayBetGenerator extends Generator<GameplayBet> {
 
     private long playerId;
 
+    private String gameName;
+
     private long amount;
 
 
@@ -38,6 +40,11 @@ public class GameplayBetGenerator extends Generator<GameplayBet> {
         return this;
     }
 
+    public GameplayBetGenerator gameName(String gameName) {
+        this.gameName = gameName;
+        return this;
+    }
+
     public GameplayBetGenerator amount(long amount) {
         this.amount = amount;
         return this;
@@ -45,6 +52,6 @@ public class GameplayBetGenerator extends Generator<GameplayBet> {
 
     @Override
     protected GameplayBet build(long ts) {
-        return new GameplayBetBuilder().id(id).playerId(playerId).amount(amount).timestamp(ts).build();
+        return new GameplayBetBuilder().id(id).playerId(playerId).gameName(gameName).amount(amount).timestamp(ts).build();
     }
 }
