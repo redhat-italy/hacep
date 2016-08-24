@@ -28,8 +28,4 @@ public class LogoutEvent extends UserEvent {
         super(id, usr, instant);
     }
 
-    @Override
-    public Key extractKey() {
-        return new UserEventKey(String.valueOf(this.getId()), String.valueOf(this.getUsr()));
-    }
 }

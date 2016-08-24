@@ -21,6 +21,8 @@ import it.redhat.hacep.model.Key;
 import it.redhat.hacep.playground.cache.UserEventKey;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 
 public class ChangePasswordEvent extends UserEvent {
@@ -45,11 +47,6 @@ public class ChangePasswordEvent extends UserEvent {
     @Override
     public Instant getInstant() {
         return null;
-    }
-
-    @Override
-    public Key extractKey() {
-        return new UserEventKey(String.valueOf(this.getId()), String.valueOf(this.getUsr()));
     }
 
 }

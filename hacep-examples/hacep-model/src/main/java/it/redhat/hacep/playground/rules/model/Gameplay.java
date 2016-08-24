@@ -61,7 +61,7 @@ public class Gameplay implements Fact {
 
     @Override
     public Fact forKey(Key key) {
-        this.factGroup = key.getGroup();
+        this.factGroup = key.getCriteria();
         return this;
     }
 

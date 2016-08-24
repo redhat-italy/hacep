@@ -40,9 +40,4 @@ public class LoginEvent extends UserEvent {
         return null;
     }
 
-    @Override
-    public Key extractKey() {
-        return new UserEventKey(String.valueOf(this.getId()), String.valueOf(this.getUsr()));
-    }
-
 }

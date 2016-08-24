@@ -26,7 +26,7 @@ public class GameNameKey extends Key<String> {
     private String id;
 
     public GameNameKey(String id, String gameName) {
-        super(gameName);
+        super("GameName", gameName);
         this.id = id;
     }
 
