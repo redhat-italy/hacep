@@ -51,6 +51,11 @@ public abstract class Key<T> implements Serializable {
     }
 
     @Override
+    public String toString() {
+        return "Key for " + this.criteria + " -> " + this.group;
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(group, criteria);
     }
