@@ -43,8 +43,8 @@ public class GameNameKey extends Key<String> {
         if (this == o) return true;
         if (!(o instanceof GameNameKey)) return false;
         if (!super.equals(o)) return false;
-        GameNameKey gameplayKey = (GameNameKey) o;
-        return Objects.equals(id, gameplayKey.id);
+        GameNameKey gameNameKey = (GameNameKey) o;
+        return Objects.equals(id, gameNameKey.id);
     }
 
     @Override

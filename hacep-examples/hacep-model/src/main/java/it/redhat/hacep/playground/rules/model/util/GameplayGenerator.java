@@ -25,6 +25,8 @@ public class GameplayGenerator extends Generator<Gameplay> {
 
     private long id = 0L;
 
+    private String gameName;
+
     public GameplayGenerator playerId(long playerId) {
         this.playerId = playerId;
         return this;
@@ -35,8 +37,13 @@ public class GameplayGenerator extends Generator<Gameplay> {
         return this;
     }
 
+    public GameplayGenerator gameName(String gameName) {
+        this.gameName = gameName;
+        return this;
+    }
+
     @Override
     protected Gameplay build(long ts) {
-        return new GameplayBuilder().playerId(playerId).id(id).timestamp(ts).build();
+        return new GameplayBuilder().playerId(playerId).id(id).gameName(gameName).timestamp(ts).build();
     }
 }

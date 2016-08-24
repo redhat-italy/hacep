@@ -27,8 +27,6 @@ public class GameplayBetBuilder {
 
     private Long id = new Long(0);
 
-    private String gameName;
-
     private Long amount;
 
     private Date timestamp;
@@ -43,11 +41,6 @@ public class GameplayBetBuilder {
         return this;
     }
 
-    public GameplayBetBuilder gameName(String gameName) {
-        this.gameName = gameName;
-        return this;
-    }
-
     public GameplayBetBuilder amount(Long amount) {
         this.amount = amount;
         return this;
@@ -59,7 +52,7 @@ public class GameplayBetBuilder {
     }
 
     public GameplayBet build() {
-        return new GameplayBet(id, playerId, timestamp, gameName, amount);
+        return new GameplayBet(id, playerId, timestamp, amount);
     }
 
 }

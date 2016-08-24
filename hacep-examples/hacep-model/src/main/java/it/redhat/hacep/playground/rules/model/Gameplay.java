@@ -19,11 +19,11 @@ package it.redhat.hacep.playground.rules.model;
 
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
+import it.redhat.hacep.playground.cache.GameNameKey;
 import it.redhat.hacep.playground.cache.GameplayKey;
 
 import java.time.Instant;
-import java.util.Date;
-import java.util.Objects;
+import java.util.*;
 
 public class Gameplay implements Fact {
 
@@ -33,11 +33,14 @@ public class Gameplay implements Fact {
 
     protected Long playerId;
 
+    protected String gameName;
+
     protected Date timestamp;
 
-    public Gameplay(long id, Long playerId, Date timestamp) {
+    public Gameplay(long id, Long playerId, String gameName, Date timestamp) {
         this.id = id;
         this.playerId = playerId;
+        this.gameName = gameName;
         this.timestamp = timestamp;
     }
 
@@ -47,8 +50,11 @@ public class Gameplay implements Fact {
     }
 
     @Override
-    public Key extractKey() {
-        return new GameplayKey(String.valueOf(id), String.valueOf(playerId));
+    public Set<Key> extractKeys() {
+        Set<Key> keys = new HashSet<>();
+        keys.add(new GameplayKey(String.valueOf(id), String.valueOf(playerId)));
+        keys.add(new GameNameKey(String.valueOf(id), gameName));
+        return keys;
     }
 
     public long getId() {
@@ -67,6 +73,10 @@ public class Gameplay implements Fact {
         this.playerId = playerId;
     }
 
+    public String getGameName() { return gameName; }
+
+    public void setGameName(String gameName) { this.gameName = gameName; }
+
     public Date getTimestamp() {
         return timestamp;
     }
@@ -82,12 +92,13 @@ public class Gameplay implements Fact {
         Gameplay gameplay = (Gameplay) o;
         return id == gameplay.id &&
                 Objects.equals(playerId, gameplay.playerId) &&
+                Objects.equals(gameName, gameplay.gameName) &&
                 Objects.equals(timestamp, gameplay.timestamp);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, playerId, timestamp);
+        return Objects.hash(id, playerId, gameName, timestamp);
     }
 
     @Override
@@ -95,6 +106,7 @@ public class Gameplay implements Fact {
         return "GamePlay{" +
                 "id=" + id +
                 ", playerId=" + playerId +
+                ", game=" + gameName +
                 ", timestamp=" + timestamp +
                 '}';
     }
