@@ -37,6 +37,8 @@ public class Gameplay implements Fact {
 
     protected Date timestamp;
 
+    protected String factGroup;
+
     public Gameplay(long id, Long playerId, String gameName, Date timestamp) {
         this.id = id;
         this.playerId = playerId;
@@ -55,6 +57,12 @@ public class Gameplay implements Fact {
         keys.add(new GameplayKey(String.valueOf(id), String.valueOf(playerId)));
         keys.add(new GameNameKey(String.valueOf(id), gameName));
         return keys;
+    }
+
+    @Override
+    public Fact forKey(Key key) {
+        this.factGroup = key.getGroup();
+        return this;
     }
 
     public long getId() {
@@ -76,6 +84,10 @@ public class Gameplay implements Fact {
     public String getGameName() { return gameName; }
 
     public void setGameName(String gameName) { this.gameName = gameName; }
+
+    public String getFactGroup() { return factGroup; }
+
+    public void setFactGroup() { this.factGroup = factGroup; }
 
     public Date getTimestamp() {
         return timestamp;
