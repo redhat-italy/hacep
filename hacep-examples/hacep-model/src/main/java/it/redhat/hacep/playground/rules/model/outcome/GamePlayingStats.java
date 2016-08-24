@@ -20,24 +20,35 @@ package it.redhat.hacep.playground.rules.model.outcome;
 public class GamePlayingStats {
 
     private String gameName;
-    private Integer amountPlayed;
-    private Integer numberOfPlays;
+    private Number amountPlayed;
+    private Number numberOfPlays;
+    private Number numberOfPlayers;
 
-    public GamePlayingStats(String gameName, Integer amountPlayed, Integer numberOfPlays) {
+    public GamePlayingStats(String gameName, Number amountPlayed, Number numberOfPlays, Number numberOfPlayers) {
         this.gameName = gameName;
         this.amountPlayed = amountPlayed;
         this.numberOfPlays = numberOfPlays;
+        this.numberOfPlayers = numberOfPlayers;
     }
 
     public String getGameName() {
         return gameName;
     }
 
-    public Integer getAmountPlayed() {
+    public Number getAmountPlayed() {
         return amountPlayed;
     }
 
-    public Integer getNumberOfPlays() {
-        return numberOfPlays;
+    public Number getNumberOfPlays()  { return numberOfPlays; }
+
+    public Number getNumberOfPlayers() { return numberOfPlayers; }
+
+    @Override
+    public String toString() {
+        return "GameStats: { Game: " + gameName
+                + ", Amount Played: " + amountPlayed
+                + ", Times Played: " + numberOfPlays
+                + ", Unique Players: " + numberOfPlayers;
     }
+
 }

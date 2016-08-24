@@ -17,6 +17,8 @@
 
 package it.redhat.hacep.playground.rules.model.util;
 
+import it.redhat.hacep.model.Key;
+import it.redhat.hacep.playground.cache.GameplayKey;
 import it.redhat.hacep.playground.rules.model.GameplayBet;
 
 public class GameplayBetGenerator extends Generator<GameplayBet> {
@@ -24,6 +26,8 @@ public class GameplayBetGenerator extends Generator<GameplayBet> {
     private long id = new Long(0);
 
     private long playerId;
+
+    private Key eventKey;
 
     private String gameName;
 
@@ -40,6 +44,11 @@ public class GameplayBetGenerator extends Generator<GameplayBet> {
         return this;
     }
 
+    public GameplayBetGenerator eventKey(Key eventKey) {
+        this.eventKey = eventKey;
+        return this;
+    }
+
     public GameplayBetGenerator gameName(String gameName) {
         this.gameName = gameName;
         return this;
@@ -52,6 +61,16 @@ public class GameplayBetGenerator extends Generator<GameplayBet> {
 
     @Override
     protected GameplayBet build(long ts) {
-        return new GameplayBetBuilder().id(id).playerId(playerId).gameName(gameName).amount(amount).timestamp(ts).build();
+        if (eventKey == null) {
+            eventKey= new GameplayKey(String.valueOf(id), String.valueOf(playerId));
+        }
+        return (GameplayBet) new GameplayBetBuilder()
+                .id(id)
+                .playerId(playerId)
+                .gameName(gameName)
+                .amount(amount)
+                .timestamp(ts)
+                .build()
+                .forKey(eventKey);
     }
 }
