@@ -18,10 +18,10 @@
 package it.redhat.hacep.playground.console.commands;
 
 import it.redhat.hacep.configuration.JmsConfiguration;
+import it.redhat.hacep.playground.MessageSender;
 import it.redhat.hacep.playground.console.UI;
 import it.redhat.hacep.playground.console.support.IllegalParametersException;
 import it.redhat.hacep.playground.rules.model.ChangePasswordEvent;
-import it.redhat.hacep.playground.event.send.Sender;
 
 import javax.inject.Inject;
 import java.time.ZonedDateTime;
@@ -35,6 +35,9 @@ public class ChangePasswordConsoleCommand implements ConsoleCommand {
 
     @Inject
     private JmsConfiguration jmsConfiguration;
+
+    @Inject
+    private MessageSender sender;
 
     @Override
     public String command() {
@@ -52,10 +55,7 @@ public class ChangePasswordConsoleCommand implements ConsoleCommand {
             Random rnd = new Random(System.currentTimeMillis());
 
             ChangePasswordEvent change = new ChangePasswordEvent(rnd.nextLong(), ZonedDateTime.now().toInstant(), usr, oldPwd, newPwd);
-
-            Sender sender = new Sender(jmsConfiguration.getConnectionFactory(), jmsConfiguration.getQueueName());
-            sender.send(change);
-
+            sender.send(jmsConfiguration.getQueueName(), change.getUsr(), change);
         } catch (NoSuchElementException e) {
             throw new IllegalParametersException("Expected usage: change <user> <oldpassword> <newpassword>");
         }

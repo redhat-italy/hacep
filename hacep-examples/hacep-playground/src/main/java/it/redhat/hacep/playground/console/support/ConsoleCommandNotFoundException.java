@@ -15,31 +15,11 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.playground.console.commands;
+package it.redhat.hacep.playground.console.support;
 
-import it.redhat.hacep.playground.console.UI;
-import it.redhat.hacep.playground.console.support.IllegalParametersException;
+public class ConsoleCommandNotFoundException extends RuntimeException {
 
-import java.util.Iterator;
-
-public class HelpConsoleCommand implements ConsoleCommand {
-
-    private static final String COMMAND_NAME = "help";
-
-    @Override
-    public String command() {
-        return COMMAND_NAME;
-    }
-
-    @Override
-    public boolean execute(UI console, Iterator<String> args) throws IllegalParametersException {
-        console.printUsage();
-        return true;
-    }
-
-    @Override
-    public void usage(UI console) {
-        console.println(COMMAND_NAME);
-        console.println("\t\tList of commands.");
+    public ConsoleCommandNotFoundException(String name) {
+        super(String.format("Console command %s not found", name));
     }
 }

@@ -24,6 +24,7 @@ import it.redhat.hacep.playground.console.support.IllegalParametersException;
 import it.redhat.hacep.model.Key;
 import org.infinispan.Cache;
 
+import javax.inject.Inject;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -32,6 +33,7 @@ public class GetConsoleCommand implements ConsoleCommand {
     private static final String COMMAND_NAME = "get";
     private final HACEPApplication application;
 
+    @Inject
     public GetConsoleCommand(HACEPApplication application) {
         this.application = application;
     }

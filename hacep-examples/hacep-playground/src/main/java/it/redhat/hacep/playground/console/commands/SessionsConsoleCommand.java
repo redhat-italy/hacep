@@ -21,7 +21,6 @@ import it.redhat.hacep.configuration.annotations.HACEPCacheManager;
 import it.redhat.hacep.configuration.annotations.HACEPSessionCache;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.playground.JDGUtility;
-import it.redhat.hacep.playground.console.ReSTUI;
 import it.redhat.hacep.playground.console.UI;
 import it.redhat.hacep.playground.console.commands.dto.HACEPNode;
 import it.redhat.hacep.playground.console.commands.dto.NodeType;
@@ -39,7 +38,7 @@ import java.util.stream.Collectors;
 
 public class SessionsConsoleCommand implements ConsoleCommand {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ReSTUI.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(SessionsConsoleCommand.class);
 
     private static final String COMMAND_NAME = "sessions";
 

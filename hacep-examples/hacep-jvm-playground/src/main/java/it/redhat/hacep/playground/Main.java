@@ -18,6 +18,7 @@
 package it.redhat.hacep.playground;
 
 import it.redhat.hacep.configuration.HACEPApplication;
+import it.redhat.hacep.playground.console.TextUI;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.slf4j.Logger;
@@ -31,9 +32,16 @@ public class Main {
         Weld weld = new Weld();
         WeldContainer container = weld.initialize();
 
-        HACEPApplication application = container.instance().select(HACEPApplication.class).get();
-        Playground playground = new Playground(application);
-        playground.start();
+        TextUI textUI = container.instance().select(TextUI.class).get();
+        printBanner();
+        textUI.start();
+    }
+
+    public static void printBanner() {
+        System.out.println("---------------------------------------");
+        System.out.println("                HACEP CLI");
+        System.out.println("---------------------------------------");
+        System.out.println();
     }
 
 }

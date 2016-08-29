@@ -211,6 +211,12 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>it.redhat.jdg.examples</groupId>
+                <artifactId>hacep-playground</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!--TEST-->
             <dependency>
                 <groupId>junit</groupId>
