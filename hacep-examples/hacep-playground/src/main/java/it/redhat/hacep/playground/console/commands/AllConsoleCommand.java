@@ -17,22 +17,26 @@
 
 package it.redhat.hacep.playground.console.commands;
 
-import it.redhat.hacep.playground.JDG;
+import it.redhat.hacep.playground.JDGUtility;
 import it.redhat.hacep.configuration.HACEPApplication;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.playground.console.UI;
 import it.redhat.hacep.playground.console.support.IllegalParametersException;
 import org.infinispan.Cache;
 
+import javax.inject.Inject;
 import java.util.Iterator;
 
 public class AllConsoleCommand implements ConsoleCommand {
 
     private static final String COMMAND_NAME = "all";
     private final HACEPApplication application;
+    private final JDGUtility jdgUtility;
 
-    public AllConsoleCommand(HACEPApplication application) {
+    @Inject
+    public AllConsoleCommand(HACEPApplication application, JDGUtility jdgUtility) {
         this.application = application;
+        this.jdgUtility = jdgUtility;
     }
 
     @Override
@@ -47,7 +51,7 @@ public class AllConsoleCommand implements ConsoleCommand {
         Cache<Key, Object> cache = application.getCacheManager().getCache(cacheName, false);
 
         if (cache != null) {
-            JDG.valuesFromKeys(cache).forEach(console::println);
+            jdgUtility.valuesFromKeys(cache).forEach(console::println);
             console.println(cacheName + " Cache Size: " + cache.size() + "\n");
         } else {
             console.println("Cache " + cacheName + " not existent");

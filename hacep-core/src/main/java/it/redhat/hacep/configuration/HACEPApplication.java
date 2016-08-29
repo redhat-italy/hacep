@@ -31,6 +31,7 @@ import org.infinispan.manager.DefaultCacheManager;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @ApplicationScoped
 public class HACEPApplication {
@@ -53,28 +54,35 @@ public class HACEPApplication {
     @Inject
     private KieSessionSaver kieSessionSaver;
 
+    private final AtomicBoolean started = new AtomicBoolean(false);
+
     public HACEPApplication() {
     }
 
     public void start() {
-        try {
-            this.factCache.addListener(new FactListenerPost(this.kieSessionSaver));
-            this.sessionCache.addListener(new SessionListenerPre(this.router));
-            this.sessionCache.addListener(new SessionListenerPost(this.router));
+        if (started.compareAndSet(false, true)) {
+            try {
+                this.factCache.addListener(new FactListenerPost(this.kieSessionSaver));
+                this.sessionCache.addListener(new SessionListenerPre(this.router));
+                this.sessionCache.addListener(new SessionListenerPost(this.router));
 
-            this.router.start();
-            this.manager.start();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+                this.router.start();
+                this.manager.start();
+            } catch (Exception e) {
+                started.set(false);
+                throw new RuntimeException(e);
+            }
         }
     }
 
     public void stop() {
-        try {
-            this.router.stop();
-            this.manager.stop();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (started.compareAndSet(true, false)) {
+            try {
+                this.router.stop();
+                this.manager.stop();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

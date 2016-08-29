@@ -17,6 +17,7 @@
         <module>hacep-rules</module>
         <module>hacep-perf-client</module>
         <module>hacep-playground</module>
+        <module>hacep-jvm-playground</module>
         <module>hacep-eap-playground</module>
     </modules>
 

@@ -28,7 +28,9 @@ public class SysoutChannel implements Channel {
 
     @Override
     public void send(Object object) {
-        LOGGER.info("=============================>" + object);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("=============================>" + object);
+        }
     }
 
 }

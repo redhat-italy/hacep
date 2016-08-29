@@ -18,10 +18,10 @@
 package it.redhat.hacep.playground.console.commands;
 
 import it.redhat.hacep.configuration.JmsConfiguration;
+import it.redhat.hacep.playground.MessageSender;
 import it.redhat.hacep.playground.console.UI;
 import it.redhat.hacep.playground.console.support.IllegalParametersException;
 import it.redhat.hacep.playground.rules.model.LoginEvent;
-import it.redhat.hacep.playground.event.send.Sender;
 
 import javax.inject.Inject;
 import java.time.ZonedDateTime;
@@ -36,6 +36,9 @@ public class LoginConsoleCommand implements ConsoleCommand {
     @Inject
     private JmsConfiguration jmsConfiguration;
 
+    @Inject
+    private MessageSender sender;
+
     @Override
     public String command() {
         return COMMAND_NAME;
@@ -48,9 +51,7 @@ public class LoginConsoleCommand implements ConsoleCommand {
             String pwd = args.next();
             Random rnd = new Random(System.currentTimeMillis());
             LoginEvent login = new LoginEvent(rnd.nextLong(), ZonedDateTime.now().toInstant(), usr, pwd);
-            Sender sender = new Sender(jmsConfiguration.getConnectionFactory(), jmsConfiguration.getQueueName());
-            sender.send(login);
-
+            sender.send(jmsConfiguration.getQueueName(), login.getUsr(), login);
         } catch (NoSuchElementException e) {
             throw new IllegalParametersException("Expected usage: login <user> <password>");
         }
