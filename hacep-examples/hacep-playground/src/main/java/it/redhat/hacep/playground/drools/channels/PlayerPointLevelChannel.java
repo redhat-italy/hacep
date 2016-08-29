@@ -17,15 +17,14 @@
 
 package it.redhat.hacep.playground.drools.channels;
 
-import com.google.gson.Gson;
 import it.redhat.hacep.configuration.JmsConfiguration;
+import it.redhat.hacep.playground.MessageSender;
 import it.redhat.hacep.playground.rules.model.outcome.PlayerPointLevel;
 import org.kie.api.runtime.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import javax.jms.*;
 
 public class PlayerPointLevelChannel implements Channel {
 
@@ -37,39 +36,14 @@ public class PlayerPointLevelChannel implements Channel {
     @Inject
     private JmsConfiguration jmsConfiguration;
 
+    @Inject
+    private MessageSender sender;
+
     @Override
     public void send(Object object) {
         if (object != null && object.getClass().isAssignableFrom(PlayerPointLevel.class)) {
             PlayerPointLevel ppl = (PlayerPointLevel) object;
-            Gson gson = new Gson();
-            String json = gson.toJson(object);
-            Connection connection = null;
-            Session session = null;
-            try {
-                connection = jmsConfiguration.getConnectionFactory().createConnection();
-                session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-                Queue destination = session.createQueue(queueName);
-                MessageProducer producer = session.createProducer(destination);
-                producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-
-                TextMessage message = session.createTextMessage(json);
-                message.setStringProperty("JMSXGroupID", String.format("P%05d", ppl.getPlayerId()));
-                producer.send(message);
-            } catch (JMSException e) {
-                LOGGER.error(e.getMessage(), e);
-            } finally {
-                if (session != null) try {
-                    session.close();
-                } catch (JMSException e) {
-                    LOGGER.warn(e.getMessage(), e);
-                }
-                if (connection != null) try {
-                    connection.close();
-                } catch (JMSException e) {
-                    LOGGER.warn(e.getMessage(), e);
-                }
-            }
-
+            sender.send(queueName, String.format("P%05d", ppl.getPlayerId()), ppl);
         } else {
             if (LOGGER.isWarnEnabled()) {
                 LOGGER.warn("Unrecognized object input for channel PlaeryLevelPoints [" + object + "]");
