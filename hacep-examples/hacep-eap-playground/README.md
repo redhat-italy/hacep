@@ -41,7 +41,7 @@ To be able to run our HACEP EAP Playground application, we need to configure the
 
 Before we can configure the EAP 7 platform, we first need to retrieve the JBoss A-MQ 6.2 Resource Adapter (RAR) from the JBoss A-MQ installation. This resource adapter is used to connect JBoss EAP to JBoss A-MQ through the EAP 7 JCA container.
 
-The RAR file can be found in `/opt/jboss/jboss-a-mq-6.2.0.redhat-133/extras/apache-activemq-5.11.0.redhat-621084-bin.zip`. Unzip this file in the `/tmp` directory. The RAR file can now be found at `/tmp/apache-activemq-5.11.0.redhat-621084/lib/optional/activemq-rar-5.11.0.redhat-621084.rar`. Copy this file to `/opt/jboss`.
+The RAR file can be found in `/opt/jboss/jboss-a-mq-6.2.1.redhat-084/extras/apache-activemq-5.11.0.redhat-621084-bin.zip`. Unzip this file in the `/tmp` directory. The RAR file can now be found at `/tmp/apache-activemq-5.11.0.redhat-621084/lib/optional/activemq-rar-5.11.0.redhat-621084.rar`. Copy this file to `/opt/jboss`.
 
 Start the `jboss-cli.sh` (Linux, Mac OS X) or `jboss-cli.bat` (Windows) CLI client located in the `/opt/jboss/jboss-eap-7.0/bin` directory. We can now configure our profile and server instances.
 
@@ -129,23 +129,3 @@ To demonstrate the HA characteristics of the platform you can stop and start nod
 ```
  /host=master/server-config=hacep-4:start
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
