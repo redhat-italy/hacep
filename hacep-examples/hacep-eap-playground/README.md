@@ -98,7 +98,7 @@ The platform is now fully configured and the HACEP EAP Playground application ca
 
 Deploying the application
 --------------------
-Before we can deploy the application, we first need to build it. This is explained in the *Build instruction* in the main `README.md` file of the project. After the libraries and applications have been built, we can deploy the application on the EAP 7 runtime. The WAR file to be deoloyed is located in your Maven (.m2) repository after you've built the project. On my machine, the location is `/Users/ddoyle/.m2/repository/it/redhat/jdg/examples/hacep-eap-playground/1.0-SNAPSHOT/hacep-eap-playground-1.0-SNAPSHOT.war`. Copy this WAR file to `/opt/jboss`.
+Before we can deploy the application, we first need to build it. This is explained in the *Build instruction* in the main `README.md` file of the project. After the libraries and applications have been built, we can deploy the application on the EAP 7 runtime. The WAR file to be deployed is located in your Maven (.m2) repository after you've built the project. On my machine, the location is `/Users/ddoyle/.m2/repository/it/redhat/jdg/examples/hacep-eap-playground/1.0-SNAPSHOT/hacep-eap-playground-1.0-SNAPSHOT.war`. Copy this WAR file to `/opt/jboss`.
 
 The application can be deployed to the `hacep` server-group with the following CLI command:
 ```
