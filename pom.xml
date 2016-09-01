@@ -65,9 +65,6 @@
     <profiles>
         <profile>
             <id>supported-GA</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <properties>
                 <version.org.infinispan>8.3.0.Final-redhat-1</version.org.infinispan>
                 <version.org.jboss.fuse>6.2.1.redhat-084</version.org.jboss.fuse>
@@ -118,6 +115,9 @@
         </profile>
         <profile>
             <id>community</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <properties>
                 <version.org.infinispan>8.2.3.Final</version.org.infinispan>
                 <version.org.drools.bom>6.4.0.Final</version.org.drools.bom>

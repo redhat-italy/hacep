@@ -5,9 +5,9 @@ import it.redhat.hacep.playground.rules.model.outcome.PlayerPointLevel;
 
 rule "User gains a point for each gameplay and every 10 points increases player level"
 when
-    $gamePlay : Gameplay($playerId : playerId) over window:length(1)
+    $gamePlay : Gameplay($playerId : playerId  && $gamePlayGroup: factGroup == "Player" ) over window:length(1)
     $numberOfTimes : Number()
-    				 from accumulate ($gamePlayCount : Gameplay($gamePlay.playerId == playerId) over window:time(30d),
+    				 from accumulate ($gamePlayCount : Gameplay($gamePlay.playerId == playerId && $gamePlay.factGroup == "Player") over window:time(30d),
     				 count($gamePlayCount))
 then
 	channels["playerPointsLevel"].send(new PlayerPointLevel(

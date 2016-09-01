@@ -27,6 +27,8 @@ public class GameplayBuilder {
 
     private long id;
 
+    private String gameName;
+
     private Date timestamp;
 
     public GameplayBuilder id(long id) {
@@ -39,13 +41,18 @@ public class GameplayBuilder {
         return this;
     }
 
+    public GameplayBuilder gameName(String gameName) {
+        this.gameName = gameName;
+        return this;
+    }
+
     public GameplayBuilder timestamp(long time) {
         this.timestamp = new Date(time);
         return this;
     }
 
     public Gameplay build() {
-        return new Gameplay(id, playerId, timestamp);
+        return new Gameplay(id, playerId, gameName, timestamp);
     }
 
 }

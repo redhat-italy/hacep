@@ -38,7 +38,8 @@ public class Putter {
             LOGGER.debug("Putting event in the grid");
         }
         if (cache != null) {
-            cache.put(fact.extractKey(), fact);
+            System.out.println("Insering Facts");
+            fact.extractKeys().forEach(key -> cache.put(key, fact.forKey(key)));
         }
     }
 }

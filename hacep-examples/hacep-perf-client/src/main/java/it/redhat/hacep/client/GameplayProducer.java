@@ -52,6 +52,7 @@ public class GameplayProducer {
             Gameplay fact = new GameplayBuilder()
                     .id(id)
                     .playerId(playerId)
+                    .gameName("Texas Holdem")
                     .timestamp(timestamp)
                     .build();
             System.out.print(".");

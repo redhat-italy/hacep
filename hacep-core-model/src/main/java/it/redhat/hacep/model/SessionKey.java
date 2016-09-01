@@ -20,7 +20,7 @@ package it.redhat.hacep.model;
 public class SessionKey extends Key<String> {
 
     public SessionKey(String group) {
-        super(group);
+        super("Session", group);
     }
 
     @Override

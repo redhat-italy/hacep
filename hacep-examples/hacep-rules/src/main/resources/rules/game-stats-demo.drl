@@ -1,0 +1,42 @@
+package it.redhat.hacep.playground.rules.reward.catalog;
+
+import java.util.HashMap;
+import it.redhat.hacep.playground.rules.model.GameplayBet;
+import it.redhat.hacep.playground.rules.model.outcome.GamePlayingStats;
+
+rule "Update a game stats over 30 days"
+when
+    $gamePlay : GameplayBet($gameName : gameName  && $gamePlayGroup: factGroup == "Game" ) over window:length(1)
+    $numberOfTimes : Number()
+    				 from accumulate (
+    				    GameplayBet($gamePlay.gameName == gameName) over window:time(30d),
+    				    count(1)
+    				 )
+    $amountPlayed : Number()
+        		    from accumulate (
+        			    GameplayBet($gamePlay.gameName == gameName) over window:time(30d),
+        				sum($gamePlay.getAmount())
+        			)
+    $uniquePlayers : Number()
+        		    from accumulate (
+        			    GameplayBet($playerId: playerId && $gamePlay.gameName == gameName) over window:time(30d),
+        		        init( HashMap uniquePlayers = new HashMap<Long, String>(); ),
+        			    action(
+        			     if (!uniquePlayers.containsKey($playerId)) {
+        			        uniquePlayers.put($playerId, $gamePlay.getGameName());
+        			      }
+        			    ),
+        			    reverse(
+        			        uniquePlayers.remove($playerId);
+        			     ),
+        			    result( uniquePlayers.size() )
+        		    )
+then
+	channels["gameStats"].send(new GamePlayingStats(
+	    $gameName,
+	    $amountPlayed,
+	    $numberOfTimes,
+	    $uniquePlayers)
+	);
+end
+

@@ -15,29 +15,41 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.playground.rules.model;
+package it.redhat.hacep.playground.cache;
 
 import it.redhat.hacep.model.Key;
-import it.redhat.hacep.playground.cache.UserEventKey;
 
-import java.time.Instant;
+import java.util.Objects;
 
-public class LoginEvent extends UserEvent {
+public class GameNameKey extends Key<String> {
 
-    private String pwd;
+    private String id;
 
-    public LoginEvent(long id, Instant instant, String usr, String pwd) {
-        super(id, usr, instant);
-        this.pwd = pwd;
+    public GameNameKey(String id, String gameName) {
+        super("Game", gameName);
+        this.id = id;
     }
 
-    public String getPwd() {
-        return pwd;
+    public String getId() {
+        return id;
+    }
+
+    public String toString() {
+        return id + "::" + getGroup();
     }
 
     @Override
-    public Instant getInstant() {
-        return null;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof GameNameKey)) return false;
+        if (!super.equals(o)) return false;
+        GameNameKey gameNameKey = (GameNameKey) o;
+        return Objects.equals(id, gameNameKey.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), id);
     }
 
 }

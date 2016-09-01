@@ -69,7 +69,11 @@ public class GameplayRule1Test {
 
         //generate 100 gameplay events within 30d window
         GameplayGenerator generator = new GameplayGenerator();
-        generator.playerId(100l).timestamp(System.currentTimeMillis(), 30, TimeUnit.DAYS).count(gameGenerated);
+        generator
+                .playerId(100l)
+                .gameName("Texas Holdem")
+                .timestamp(System.currentTimeMillis(), 30, TimeUnit.DAYS)
+                .count(gameGenerated);
         AtomicInteger counter = new AtomicInteger(1);
         Map<Integer, Integer> rulesFired = generator.generate().stream()
                 .map(this::insertGame)
@@ -90,7 +94,11 @@ public class GameplayRule1Test {
 
         //generate 100 gameplay events within 30d window
         GameplayGenerator generator = new GameplayGenerator();
-        generator.playerId(100l).timestamp(System.currentTimeMillis(), 60, TimeUnit.DAYS).count(gameGenerated);
+        generator
+                .playerId(100l)
+                .gameName("Texas Holdem")
+                .timestamp(System.currentTimeMillis(), 60, TimeUnit.DAYS)
+                .count(gameGenerated);
 
         AtomicInteger counter = new AtomicInteger(1);
         Map<Integer, Integer> rulesFired = generator.generate().stream()

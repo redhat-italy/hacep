@@ -26,8 +26,8 @@ public class GameplayBet extends Gameplay {
 
     private long amount;
 
-    public GameplayBet(long id, Long playerId, Date timestamp, long amount) {
-        super(id, playerId, timestamp);
+    public GameplayBet(long id, Long playerId, Date timestamp, String gameName, long amount) {
+        super(id, playerId, gameName, timestamp);
         this.amount = amount;
     }
 

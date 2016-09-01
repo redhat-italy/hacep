@@ -4,15 +4,17 @@ import it.redhat.hacep.playground.rules.model.Gameplay;
 
 rule "When a user plays a game T times for D consecutive Days"
 when
-    $g1 : Gameplay($playerId : playerId) over window:length(1)
+    $gamePlay : Gameplay($playerId : playerId && $gamePlayGroup: factGroup == "Player" ) over window:length(1)
     $numberOfTimes : Number(intValue == 50)
-                     from accumulate ($gamePlayCount : Gameplay($g1.playerId == playerId) over window:time( 7d ),
+                     from accumulate ($gamePlayCount : Gameplay($gamePlay.playerId == playerId) over window:time( 7d ),
                      count($gamePlayCount))
     $consecutivedays : Number (intValue == 7)
-                       from accumulate ($g2 : Gameplay($g1.playerId == playerId) over window:time( 7d ),
-                       consecutivedays(($g1.getTimestamp().getTime()) - ($g2.getTimestamp().getTime())))
+                       from accumulate ($g2 : Gameplay($gamePlay.playerId == playerId) over window:time( 7d ),
+                       consecutivedays(($gamePlay.getTimestamp().getTime()) - ($g2.getTimestamp().getTime())))
 then
-	channels["outcomes"].send($playerId + " plays game times in " + $consecutivedays + " days");
-	channels["audit"].send($g1.getId() + " | COD_32 | " + $g1.getPlayerId() + " | rule consequence.");
+	channels["outcomes"].send($gamePlayGroup + " -> " + $gamePlay.getGameName()
+	    + ": Player " + $playerId + " plays a game "
+	    + $numberOfTimes + " times in " + $consecutivedays + " days");
+	channels["audit"].send($gamePlay.getId() + " | COD_32 | " + $gamePlay.getPlayerId() + " | rule consequence.");
 end
 

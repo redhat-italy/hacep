@@ -17,9 +17,10 @@
 
 package it.redhat.hacep.playground.rules.reward.catalog;
 
+import it.redhat.hacep.playground.cache.GameNameKey;
 import it.redhat.hacep.playground.rules.model.Gameplay;
-import it.redhat.hacep.playground.rules.model.outcome.PlayerPointLevel;
-import it.redhat.hacep.playground.rules.model.util.GameplayGenerator;
+import it.redhat.hacep.playground.rules.model.outcome.GamePlayingStats;
+import it.redhat.hacep.playground.rules.model.util.GameplayBetGenerator;
 import org.drools.core.time.SessionPseudoClock;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,7 +41,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
-public class RewardPointLevelDemoTest {
+public class GameStatsDemoTest {
 
     private static KieBase kieBase;
 
@@ -54,14 +55,14 @@ public class RewardPointLevelDemoTest {
 
     @BeforeClass
     public static void init() throws Exception {
-        kieBase = KieAPITestUtils.setupKieBase("rules/reward-catalogue.drl", "rules/reward-point-level-demo.drl");
+        kieBase = KieAPITestUtils.setupKieBase("rules/reward-catalogue.drl", "rules/game-stats-demo.drl");
     }
 
     @Before
     public void setupTest() throws Exception {
         outcomes = mock(Channel.class);
         this.session = KieAPITestUtils.buildKieSession(kieBase);
-        this.session.registerChannel("playerPointsLevel", outcomes);
+        this.session.registerChannel("gameStats", outcomes);
 
         this.rulesFired = new RulesFiredAgendaEventListener();
         this.session.addEventListener(rulesFired);
@@ -69,38 +70,65 @@ public class RewardPointLevelDemoTest {
     }
 
     @Test
-    public void testUserGainPointsAndLevels() {
-        int gameGenerated = 202;
+    public void testGameStatsOutcome() {
+        int gamePlayer1Generated = 50;
+        int gamePlayer2Generated = 50;
+        int gamesGenerated = gamePlayer1Generated + gamePlayer2Generated;
+        long betAmount = 100;
 
         long now = System.currentTimeMillis();
         clock.advanceTime(now, TimeUnit.MILLISECONDS);
 
         reset(outcomes);
 
-        //generate 100 gameplay events within 30d window
-        GameplayGenerator generator = new GameplayGenerator();
-        generator
-                .playerId(100l)
+        GameplayBetGenerator generatorPlayer1 = new GameplayBetGenerator();
+
+        AtomicInteger counterPlayer1 = new AtomicInteger(1);
+
+        generatorPlayer1
+                .playerId(001l)
+                .eventKey(new GameNameKey("txshldm", "Texas Holdem"))
                 .gameName("Texas Holdem")
+                .amount(betAmount)
                 .timestamp(System.currentTimeMillis(), 30, TimeUnit.DAYS)
-                .count(gameGenerated);
-        AtomicInteger counter = new AtomicInteger(1);
-        Map<Integer, Integer> rulesFired = generator.generate().stream()
+                .count(gamePlayer1Generated);
+
+
+        Map<Integer, Integer> rulesFiredPlayer1 = generatorPlayer1.generate().stream()
                 .map(this::insertGame)
-                .collect(Collectors.toMap(i -> counter.getAndIncrement(), Function.identity()));
-        assertEquals(gameGenerated, rulesFired.size());
+                .collect(Collectors.toMap(i -> counterPlayer1.getAndIncrement(), Function.identity()));
 
-        ArgumentCaptor<PlayerPointLevel> pplCaptor = ArgumentCaptor.forClass(PlayerPointLevel.class);
-        verify(outcomes, times(gameGenerated)).send(pplCaptor.capture());
+        GameplayBetGenerator generatorPlayer2 = new GameplayBetGenerator();
+        AtomicInteger counterPlayer2 = new AtomicInteger(1);
 
-        List<PlayerPointLevel> capturedPPL = pplCaptor.getAllValues();
+        generatorPlayer2
+                .playerId(002l)
+                .eventKey(new GameNameKey("txshldm", "Texas Holdem"))
+                .gameName("Texas Holdem")
+                .amount(betAmount)
+                .timestamp(System.currentTimeMillis(), 30, TimeUnit.DAYS)
+                .count(gamePlayer2Generated);
 
-        Assert.assertEquals(gameGenerated, capturedPPL.size());
+        Map<Integer, Integer> rulesFiredPlayer2 = generatorPlayer2.generate().stream()
+                .map(this::insertGame)
+                .collect(Collectors.toMap(i -> counterPlayer2.getAndIncrement(), Function.identity()));
 
-        PlayerPointLevel playerPointLevel = capturedPPL.get(gameGenerated - 1);
-        System.out.println(playerPointLevel);
-        Assert.assertEquals(20, playerPointLevel.getLevel().intValue());
-        Assert.assertEquals(2, playerPointLevel.getPoints().intValue());
+        assertEquals(gamesGenerated, rulesFiredPlayer1.size() + rulesFiredPlayer2.size());
+
+        ArgumentCaptor<GamePlayingStats> pplCaptor = ArgumentCaptor.forClass(GamePlayingStats.class);
+        verify(outcomes, times(gamesGenerated)).send(pplCaptor.capture());
+
+        List<GamePlayingStats> capturedPPL = pplCaptor.getAllValues();
+
+        Assert.assertEquals(gamesGenerated, capturedPPL.size());
+
+        GamePlayingStats gamePlayingStats = capturedPPL.get(gamesGenerated - 1);
+
+        System.out.println(gamePlayingStats);
+
+        Assert.assertEquals(gamesGenerated, gamePlayingStats.getNumberOfPlays().intValue());
+        Assert.assertEquals(betAmount * gamesGenerated, gamePlayingStats.getAmountPlayed().intValue());
+        Assert.assertEquals(2, gamePlayingStats.getNumberOfPlayers().intValue());
     }
 
     private int insertGame(Gameplay g) {

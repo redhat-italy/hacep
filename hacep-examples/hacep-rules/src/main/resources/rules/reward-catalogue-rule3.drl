@@ -1,0 +1,16 @@
+package it.redhat.hacep.playground.rules.reward.catalog;
+
+import it.redhat.hacep.playground.rules.model.Gameplay;
+
+rule "When a user is the Nth player of a game in D Days"
+when
+    $gamePlay : Gameplay($gameName : gameName && $gamePlayGroup: factGroup == "Game" ) over window:length(1)
+    $numberOfTimes : Number( intValue == 100)
+    				 from accumulate ($gamePlayCount : Gameplay($gamePlay.gameName == gameName) over window:time( 30d ),
+    				 count($gamePlayCount))
+then
+	channels["outcomes"].send($gamePlayGroup + " -> Player " + $gamePlay.getPlayerId()
+	    + " made the 100th bet on game " + $gameName + " in 30 days");
+	channels["audit"].send($gamePlay.getId() + " | COD_33 | " + $gameName + " | rule consequence.");
+end
+

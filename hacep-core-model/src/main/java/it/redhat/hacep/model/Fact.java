@@ -19,10 +19,13 @@ package it.redhat.hacep.model;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Set;
 
 public interface Fact extends Serializable {
 
     Instant getInstant();
 
-    Key extractKey();
+    Fact forKey(Key key);
+
+    Set<Key> extractKeys();
 }

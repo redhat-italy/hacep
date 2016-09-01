@@ -17,6 +17,8 @@
 
 package it.redhat.hacep.playground.rules.model.util;
 
+import it.redhat.hacep.model.Key;
+import it.redhat.hacep.playground.cache.GameplayKey;
 import it.redhat.hacep.playground.rules.model.Gameplay;
 
 public class GameplayGenerator extends Generator<Gameplay> {
@@ -24,6 +26,10 @@ public class GameplayGenerator extends Generator<Gameplay> {
     private long playerId;
 
     private long id = 0L;
+
+    private String gameName;
+
+    private Key eventKey;
 
     public GameplayGenerator playerId(long playerId) {
         this.playerId = playerId;
@@ -35,8 +41,32 @@ public class GameplayGenerator extends Generator<Gameplay> {
         return this;
     }
 
+    public GameplayGenerator gameName(String gameName) {
+        this.gameName = gameName;
+        return this;
+    }
+
+    public GameplayGenerator eventKey(Key eventKey) {
+        this.eventKey = eventKey;
+        return this;
+    }
+
     @Override
     protected Gameplay build(long ts) {
-        return new GameplayBuilder().playerId(playerId).id(id).timestamp(ts).build();
+        Key gamePlayKey = new GameplayKey(String.valueOf(id), String.valueOf(playerId));
+        return build(ts, gamePlayKey);
+    }
+
+    protected Gameplay build(long ts, Key key) {
+        if (eventKey == null) {
+            eventKey= new GameplayKey(String.valueOf(id), String.valueOf(playerId));
+        }
+        return (Gameplay) new GameplayBuilder()
+                .playerId(playerId)
+                .id(id)
+                .gameName(gameName)
+                .timestamp(ts)
+                .build()
+                .forKey(eventKey);
     }
 }

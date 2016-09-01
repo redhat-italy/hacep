@@ -22,6 +22,8 @@ import it.redhat.hacep.model.Key;
 import it.redhat.hacep.playground.cache.UserEventKey;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 public class UserEvent implements Fact {
 
@@ -49,7 +51,12 @@ public class UserEvent implements Fact {
     }
 
     @Override
-    public Key extractKey() {
-        return new UserEventKey(String.valueOf(this.getId()), String.valueOf(this.getUsr()));
+    public Set<Key> extractKeys() {
+        Set<Key> keys = new HashSet<>();
+        keys.add(new UserEventKey(String.valueOf(this.getId()), String.valueOf(this.getUsr())));
+        return keys;
     }
+
+    @Override
+    public Fact forKey(Key key) {return this;}
 }
