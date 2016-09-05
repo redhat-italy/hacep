@@ -8,8 +8,6 @@ import it.redhat.hacep.cluster.TestFact;
 import it.redhat.hacep.configuration.DroolsConfiguration;
 import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
-import it.redhat.hacep.model.Key;
-import it.redhat.hacep.model.SessionKey;
 import org.infinispan.Cache;
 import org.junit.Assert;
 import org.junit.Test;
@@ -54,10 +52,10 @@ public class TestModifiedRules extends AbstractClusterTest {
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(10);
 
-        Cache<Key, Object> cache1 = startDistSyncNode(2).getCache();
-        Cache<Key, Object> cache2 = startDistSyncNode(2).getCache();
+        Cache<String, Object> cache1 = startDistSyncNode(2).getCache();
+        Cache<String, Object> cache2 = startDistSyncNode(2).getCache();
 
-        Key key = new SessionKey("2");
+        String key = "2";
         HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
 
         cache1.put(key, session1);
