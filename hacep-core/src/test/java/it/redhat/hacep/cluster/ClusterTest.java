@@ -23,7 +23,6 @@ import it.redhat.hacep.configuration.DroolsConfiguration;
 import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
-import it.redhat.hacep.model.SessionKey;
 import org.infinispan.Cache;
 import org.infinispan.manager.DefaultCacheManager;
 import org.junit.Assert;
@@ -80,12 +79,12 @@ public class ClusterTest extends AbstractClusterTest {
         System.out.println("Start test empty HASessionID");
         droolsConfiguration.setMaxBufferSize(10);
 
-        Cache<Key, Object> cache1 = startDistSyncNode(2).getCache();
-        Cache<Key, Object> cache2 = startDistSyncNode(2).getCache();
+        Cache<String, Object> cache1 = startDistSyncNode(2).getCache();
+        Cache<String, Object> cache2 = startDistSyncNode(2).getCache();
 
         reset(replayChannel);
 
-        Key key = new SessionKey("1");
+        String key = "1";
         HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
 
         cache1.put(key, session1);
@@ -109,10 +108,10 @@ public class ClusterTest extends AbstractClusterTest {
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(10);
 
-        Cache<Key, Object> cache1 = startDistSyncNode(2).getCache();
-        Cache<Key, Object> cache2 = startDistSyncNode(2).getCache();
+        Cache<String, Object> cache1 = startDistSyncNode(2).getCache();
+        Cache<String, Object> cache2 = startDistSyncNode(2).getCache();
 
-        Key key = new SessionKey("2");
+        String key = "2";
         HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
 
         cache1.put(key, session1);
@@ -166,12 +165,12 @@ public class ClusterTest extends AbstractClusterTest {
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(2);
 
-        Cache<Key, HAKieSession> cache1 = startDistSyncNode(2).getCache();
-        Cache<Key, HAKieSession> cache2 = startDistSyncNode(2).getCache();
+        Cache<String, HAKieSession> cache1 = startDistSyncNode(2).getCache();
+        Cache<String, HAKieSession> cache2 = startDistSyncNode(2).getCache();
 
         reset(replayChannel, additionsChannel);
 
-        Key key = new SessionKey("3");
+        String key = "3";
         HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
 
         cache1.put(key, session1);
@@ -219,11 +218,11 @@ public class ClusterTest extends AbstractClusterTest {
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(10);
 
-        Cache<Key, HAKieSession> cache1 = startDistSyncNode(2).getCache();
+        Cache<String, HAKieSession> cache1 = startDistSyncNode(2).getCache();
 
         reset(replayChannel, additionsChannel);
 
-        Key key = new SessionKey("3");
+        String key = "3";
         HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
 
         cache1.put(key, session1);

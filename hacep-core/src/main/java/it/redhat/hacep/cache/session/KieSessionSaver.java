@@ -24,7 +24,6 @@ import it.redhat.hacep.configuration.annotations.HACEPSessionCache;
 import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
-import it.redhat.hacep.model.SessionKey;
 import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +41,7 @@ public class KieSessionSaver {
 
     @Inject
     @HACEPSessionCache
-    private Cache<Key, Object> sessionCache;
+    private Cache<String, Object> sessionCache;
 
     @Inject
     @HACEPKieSessionSerializer
@@ -56,10 +55,11 @@ public class KieSessionSaver {
     private DroolsConfiguration droolsConfiguration;
 
     public void insert(Key key, Fact fact) {
-        SessionKey sessionKey = new SessionKey(key.getGroup());
-        if (LOGGER.isDebugEnabled()) LOGGER.debug("Getting session for fact: " + fact + ", key: " + sessionKey);
+        //SessionKey sessionKey = new SessionKey(key.getGroup());
+        String sessionKey = key.getGroup();
 
-        synchronized (getLock(sessionKey.toString())) {
+        if (LOGGER.isDebugEnabled()) LOGGER.debug("Getting session for fact: " + fact + ", key: " + sessionKey);
+        synchronized (getLock(sessionKey)) {
             HAKieSession haKieSession;
             Object value = sessionCache.get(sessionKey);
             if (isANewSession(value)) {
