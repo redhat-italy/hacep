@@ -17,7 +17,7 @@
 
 package it.redhat.hacep.playground.console.commands;
 
-import it.redhat.hacep.configuration.HACEPApplication;
+import it.redhat.hacep.configuration.HACEP;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.playground.JDGUtility;
 import it.redhat.hacep.playground.console.UI;
@@ -32,11 +32,11 @@ public class ReplicaConsoleCommand implements ConsoleCommand {
 
     private static final String COMMAND_NAME = "replica";
 
-    private final HACEPApplication application;
+    private final HACEP application;
     private final JDGUtility jdgUtility;
 
     @Inject
-    public ReplicaConsoleCommand(HACEPApplication application, JDGUtility jdgUtility) {
+    public ReplicaConsoleCommand(HACEP application, JDGUtility jdgUtility) {
         this.application = application;
         this.jdgUtility = jdgUtility;
     }

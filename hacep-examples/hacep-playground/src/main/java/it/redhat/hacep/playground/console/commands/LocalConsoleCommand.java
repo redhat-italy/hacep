@@ -17,7 +17,7 @@
 
 package it.redhat.hacep.playground.console.commands;
 
-import it.redhat.hacep.configuration.HACEPApplication;
+import it.redhat.hacep.configuration.HACEP;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.playground.JDGUtility;
 import it.redhat.hacep.playground.console.UI;
@@ -31,11 +31,11 @@ import java.util.Set;
 public class LocalConsoleCommand implements ConsoleCommand {
 
     private static final String COMMAND_NAME = "local";
-    private final HACEPApplication application;
+    private final HACEP application;
     private final JDGUtility jdgUtility;
 
     @Inject
-    public LocalConsoleCommand(HACEPApplication application, JDGUtility jdgUtility) {
+    public LocalConsoleCommand(HACEP application, JDGUtility jdgUtility) {
         this.application = application;
         this.jdgUtility = jdgUtility;
     }

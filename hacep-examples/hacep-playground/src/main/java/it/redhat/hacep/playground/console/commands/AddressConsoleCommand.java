@@ -17,7 +17,7 @@
 
 package it.redhat.hacep.playground.console.commands;
 
-import it.redhat.hacep.configuration.HACEPApplication;
+import it.redhat.hacep.configuration.HACEP;
 import it.redhat.hacep.playground.console.UI;
 import it.redhat.hacep.playground.console.support.IllegalParametersException;
 
@@ -28,10 +28,10 @@ public class AddressConsoleCommand implements ConsoleCommand {
 
     private static final String COMMAND_NAME = "address";
     
-    private final HACEPApplication application;
+    private final HACEP application;
 
     @Inject
-    public AddressConsoleCommand(HACEPApplication application) {
+    public AddressConsoleCommand(HACEP application) {
         this.application = application;
     }
 

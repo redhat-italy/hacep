@@ -15,30 +15,31 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.playground;
+package it.redhat.hacep.configuration;
 
-import it.redhat.hacep.configuration.HACEP;
+import it.redhat.hacep.model.Fact;
+import it.redhat.hacep.model.Key;
+import org.infinispan.Cache;
+import org.infinispan.manager.DefaultCacheManager;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.inject.Inject;
+public interface HACEP {
 
-@Startup
-@Singleton
-public class Application {
+    void start();
 
-    @Inject
-    private HACEP hacep;
+    void stop();
 
-    @PostConstruct
-    public void start() {
-        hacep.start();
-    }
+    void suspend();
 
-    @PreDestroy
-    public void stop() {
-        hacep.stop();
-    }
+    void resume();
+
+    void makeSnapshot();
+
+    void removeKey(Key key);
+
+    Cache<Key, Fact> getFactCache();
+
+    Cache<Key, Object> getSessionCache();
+
+    DefaultCacheManager getCacheManager();
+
 }

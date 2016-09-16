@@ -17,7 +17,6 @@
 
 package it.redhat.hacep.playground;
 
-import it.redhat.hacep.configuration.HACEPApplication;
 import it.redhat.hacep.playground.console.TextUI;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;

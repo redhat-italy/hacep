@@ -18,7 +18,7 @@
 package it.redhat.hacep.playground.console.commands;
 
 import it.redhat.hacep.playground.JDGUtility;
-import it.redhat.hacep.configuration.HACEPApplication;
+import it.redhat.hacep.configuration.HACEP;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.playground.console.UI;
 import it.redhat.hacep.playground.console.support.IllegalParametersException;
@@ -30,11 +30,11 @@ import java.util.Iterator;
 public class AllConsoleCommand implements ConsoleCommand {
 
     private static final String COMMAND_NAME = "all";
-    private final HACEPApplication application;
+    private final HACEP application;
     private final JDGUtility jdgUtility;
 
     @Inject
-    public AllConsoleCommand(HACEPApplication application, JDGUtility jdgUtility) {
+    public AllConsoleCommand(HACEP application, JDGUtility jdgUtility) {
         this.application = application;
         this.jdgUtility = jdgUtility;
     }

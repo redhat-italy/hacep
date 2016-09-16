@@ -34,7 +34,7 @@ import javax.inject.Inject;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @ApplicationScoped
-public class HACEPApplication {
+public class HACEPImpl implements HACEP {
 
     @Inject
     @HACEPCacheManager
@@ -56,9 +56,10 @@ public class HACEPApplication {
 
     private final AtomicBoolean started = new AtomicBoolean(false);
 
-    public HACEPApplication() {
+    public HACEPImpl() {
     }
 
+    @Override
     public void start() {
         if (started.compareAndSet(false, true)) {
             try {
@@ -75,6 +76,7 @@ public class HACEPApplication {
         }
     }
 
+    @Override
     public void stop() {
         if (started.compareAndSet(true, false)) {
             try {
@@ -86,18 +88,37 @@ public class HACEPApplication {
         }
     }
 
+    @Override
     public void suspend() {
         this.router.suspend();
     }
 
+    @Override
     public void resume() {
         this.router.resume();
     }
 
+    @Override
+    public void makeSnapshot() {
+
+    }
+
+    @Override
+    public void removeKey(Key key) {
+        sessionCache.remove(key);
+    }
+
+    @Override
     public Cache<Key, Fact> getFactCache() {
         return factCache;
     }
 
+    @Override
+    public Cache<Key, Object> getSessionCache() {
+        return sessionCache;
+    }
+
+    @Override
     public DefaultCacheManager getCacheManager() {
         return manager;
     }

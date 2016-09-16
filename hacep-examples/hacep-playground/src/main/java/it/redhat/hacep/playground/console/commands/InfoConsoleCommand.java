@@ -17,7 +17,7 @@
 
 package it.redhat.hacep.playground.console.commands;
 
-import it.redhat.hacep.configuration.HACEPApplication;
+import it.redhat.hacep.configuration.HACEP;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.playground.console.UI;
 import it.redhat.hacep.playground.console.support.IllegalParametersException;
@@ -32,10 +32,10 @@ public class InfoConsoleCommand implements ConsoleCommand {
 
     private static final String COMMAND_NAME = "info";
 
-    private final HACEPApplication application;
+    private final HACEP application;
 
     @Inject
-    public InfoConsoleCommand(HACEPApplication application) {
+    public InfoConsoleCommand(HACEP application) {
         this.application = application;
     }
 

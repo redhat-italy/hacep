@@ -18,7 +18,7 @@
 package it.redhat.hacep.playground.console.commands;
 
 import it.redhat.hacep.playground.cache.GameplayKey;
-import it.redhat.hacep.configuration.HACEPApplication;
+import it.redhat.hacep.configuration.HACEP;
 import it.redhat.hacep.playground.console.UI;
 import it.redhat.hacep.playground.console.support.IllegalParametersException;
 import it.redhat.hacep.model.Key;
@@ -31,10 +31,10 @@ import java.util.NoSuchElementException;
 public class GetConsoleCommand implements ConsoleCommand {
 
     private static final String COMMAND_NAME = "get";
-    private final HACEPApplication application;
+    private final HACEP application;
 
     @Inject
-    public GetConsoleCommand(HACEPApplication application) {
+    public GetConsoleCommand(HACEP application) {
         this.application = application;
     }
 

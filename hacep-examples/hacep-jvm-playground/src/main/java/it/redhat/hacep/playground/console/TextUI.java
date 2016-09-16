@@ -17,7 +17,7 @@
 
 package it.redhat.hacep.playground.console;
 
-import it.redhat.hacep.configuration.HACEPApplication;
+import it.redhat.hacep.configuration.HACEP;
 import it.redhat.hacep.playground.console.commands.ConsoleCommand;
 import it.redhat.hacep.playground.console.support.ConsoleCommandComparator;
 import it.redhat.hacep.playground.console.support.ConsoleCommandNotFoundException;
@@ -31,7 +31,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Scanner;
@@ -43,7 +42,7 @@ public class TextUI implements UI {
     private final static Logger LOGGER = LoggerFactory.getLogger(TextUI.class);
 
     @Inject
-    private HACEPApplication hacepApplication;
+    private HACEP hacep;
 
     @Inject
     private Instance<ConsoleCommand> commands;
@@ -58,7 +57,7 @@ public class TextUI implements UI {
 
     @Override
     public void start() throws IOException {
-        hacepApplication.start();
+        hacep.start();
         boolean keepRunning = true;
         while (keepRunning) {
             out.print("> ");
