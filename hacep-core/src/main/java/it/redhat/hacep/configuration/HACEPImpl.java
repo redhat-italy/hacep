@@ -24,13 +24,17 @@ import it.redhat.hacep.cache.session.KieSessionSaver;
 import it.redhat.hacep.configuration.annotations.HACEPCacheManager;
 import it.redhat.hacep.configuration.annotations.HACEPFactCache;
 import it.redhat.hacep.configuration.annotations.HACEPSessionCache;
+import it.redhat.hacep.distributed.Snapshotter;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
 import org.infinispan.Cache;
+import org.infinispan.distexec.DefaultExecutorService;
 import org.infinispan.manager.DefaultCacheManager;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @ApplicationScoped
@@ -100,7 +104,9 @@ public class HACEPImpl implements HACEP {
 
     @Override
     public void makeSnapshot() {
-
+        ExecutorService des = new DefaultExecutorService(sessionCache);
+        des.submit(new Snapshotter());
+        des.shutdown();
     }
 
     @Override

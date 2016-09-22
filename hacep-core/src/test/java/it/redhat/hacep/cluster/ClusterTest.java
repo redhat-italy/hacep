@@ -20,10 +20,12 @@ package it.redhat.hacep.cluster;
 import it.redhat.hacep.cache.session.HAKieSerializedSession;
 import it.redhat.hacep.cache.session.HAKieSession;
 import it.redhat.hacep.configuration.DroolsConfiguration;
+import it.redhat.hacep.distributed.Snapshotter;
 import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
 import org.infinispan.Cache;
+import org.infinispan.distexec.DefaultExecutorService;
 import org.infinispan.manager.DefaultCacheManager;
 import org.junit.Assert;
 import org.junit.Test;
@@ -209,6 +211,44 @@ public class ClusterTest extends AbstractClusterTest {
         System.out.println("End test HASessionID with max buffer 2");
         logger.info("End test HASessionID with max buffer 2");
     }
+
+    @Test
+    public void testDistributedSnapshots() {
+        logger.info("Start test Distributed Snapshots");
+        System.out.println("Start test Distributed Snapshots");
+
+        droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
+        droolsConfiguration.setMaxBufferSize(10);
+
+        Cache<String, HAKieSession> cache1 = startDistSyncNode(2).getCache();
+        Cache<String, HAKieSession> cache2 = startDistSyncNode(2).getCache();
+        Cache<String, HAKieSession> cache3 = startDistSyncNode(2).getCache();
+        Cache<String, HAKieSession> cache4 = startDistSyncNode(2).getCache();
+
+        reset(replayChannel, additionsChannel);
+
+        HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
+
+        cache1.put("1", session1);
+
+        session1.insert(generateFactTenSecondsAfter(1L, 10L));
+        cache1.put("1", session1);
+
+        session1.insert(generateFactTenSecondsAfter(1L, 20L));
+        cache1.put("1", session1);
+
+        session1.insert(generateFactTenSecondsAfter(1L, 30L));
+        cache1.put("1", session1);
+
+        ExecutorService des = new DefaultExecutorService(cache1);
+        des.submit(new Snapshotter());
+        des.shutdown();
+
+        System.out.println("End test Distributed Snapshots");
+        logger.info("End test Distributed Snapshots");
+
+    }
+
 
 
     @Test
