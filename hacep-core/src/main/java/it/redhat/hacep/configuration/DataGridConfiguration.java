@@ -31,6 +31,8 @@ import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.eviction.EvictionStrategy;
+import org.infinispan.eviction.EvictionType;
 import org.infinispan.manager.DefaultCacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,24 +81,47 @@ public class DataGridConfiguration {
                 .addAdvancedExternalizer(new HAKieSessionDeltaFact.HASessionDeltaFactExternalizer())
                 .build();
 
-        ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
+        ConfigurationBuilder commonConfigurationBuilder = new ConfigurationBuilder();
         CacheMode cacheMode = getCacheMode();
         if (cacheMode.isDistributed()) {
-            configurationBuilder
+            commonConfigurationBuilder
                     .clustering().cacheMode(cacheMode)
                     .hash().numOwners(getNumOwners())
                     .groups().enabled();
         } else {
-            configurationBuilder.clustering().cacheMode(cacheMode);
+            commonConfigurationBuilder.clustering().cacheMode(cacheMode);
         }
 
-        Configuration defaultConfiguration = configurationBuilder.build();
+        Configuration commonConfiguration = commonConfigurationBuilder.build();
+        this.manager = new DefaultCacheManager(globalConfiguration, commonConfiguration, false);
 
-        ConfigurationBuilder factCacheConfigurationBuilder = new ConfigurationBuilder().read(defaultConfiguration);
-        factCacheConfigurationBuilder.expiration().maxIdle(500, TimeUnit.MILLISECONDS);
+        ConfigurationBuilder factCacheConfigurationBuilder = new ConfigurationBuilder().read(commonConfiguration);
 
-        this.manager = new DefaultCacheManager(globalConfiguration, defaultConfiguration, false);
+        factCacheConfigurationBuilder
+                .expiration()
+                .maxIdle(factsExpiration(), TimeUnit.MILLISECONDS);
+
+        ConfigurationBuilder sessionCacheConfigurationBuilder = new ConfigurationBuilder().read(commonConfiguration);
+
+        if (persistence()) {
+            sessionCacheConfigurationBuilder
+                    .persistence()
+                    .passivation(isPassivated())
+                    .addSingleFileStore()
+                    .shared(shared())
+                    .preload(preload())
+                    .fetchPersistentState(fetchPersistentState())
+                    .purgeOnStartup(purgeOnStartup())
+                    .location(location())
+                    .async().enabled(true)
+                    .threadPoolSize(threadPoolSize()).singleton().enabled(false)
+                    .eviction()
+                    .strategy(EvictionStrategy.LRU).type(EvictionType.COUNT).size(evictionSize());
+        }
+
         this.manager.defineConfiguration(FACT_CACHE_NAME, factCacheConfigurationBuilder.build());
+        this.manager.defineConfiguration(SESSION_CACHE_NAME, sessionCacheConfigurationBuilder.build());
+
     }
 
     @Produces
@@ -142,6 +167,86 @@ public class DataGridConfiguration {
             return Integer.valueOf(System.getProperty("grid.owners", "2"));
         } catch (IllegalArgumentException e) {
             return 2;
+        }
+    }
+
+    private boolean persistence() {
+        try {
+            return Boolean.valueOf(System.getProperty("grid.persistence", "false"));
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    private int factsExpiration() {
+        try {
+            return Integer.valueOf(System.getProperty("grid.facts.expirationMaxIdle", "500"));
+        } catch (IllegalArgumentException e) {
+            return 500;
+        }
+    }
+
+    private boolean isPassivated() {
+        try {
+            return Boolean.valueOf(System.getProperty("grid.persistence.passivation", "true"));
+        } catch (IllegalArgumentException e) {
+            return true;
+        }
+    }
+
+    private boolean shared() {
+        try {
+            return Boolean.valueOf(System.getProperty("grid.persistence.shared", "false"));
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    private boolean preload() {
+        try {
+            return Boolean.valueOf(System.getProperty("grid.persistence.preload", "true"));
+        } catch (IllegalArgumentException e) {
+            return true;
+        }
+    }
+
+    private boolean fetchPersistentState() {
+        try {
+            return Boolean.valueOf(System.getProperty("grid.persistence.fetchPersistentState", "true"));
+        } catch (IllegalArgumentException e) {
+            return true;
+        }
+    }
+
+    private boolean purgeOnStartup() {
+        try {
+            return Boolean.valueOf(System.getProperty("grid.persistence.purgeOnStartup", "false"));
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    private int threadPoolSize() {
+        try {
+            return Integer.valueOf(System.getProperty("grid.persistence.threadPoolSize", "5"));
+        } catch (IllegalArgumentException e) {
+            return 5;
+        }
+    }
+
+    private String location() {
+        try {
+            return System.getProperty("grid.persistence.location",  System.getProperty("java.io.tmpdir"));
+        } catch (IllegalArgumentException e) {
+            return System.getProperty("java.io.tmpdir");
+        }
+    }
+
+    private int evictionSize() {
+        try {
+            return Integer.valueOf(System.getProperty("grid.persistence.evictionSize", "100"));
+        } catch (IllegalArgumentException e) {
+            return 100;
         }
     }
 
