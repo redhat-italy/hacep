@@ -56,10 +56,10 @@ public class JDGUtility {
         return valuesFromKeys(cache, k -> distributionManager.getLocality(k).isLocal() && !distributionManager.getPrimaryLocation(k).equals(address));
     }
 
-    public Map<Key, List<Address>> getKeysAddresses(Cache<Key, Object> cache) {
+    public <K> Map<K, List<Address>> getKeysAddresses(Cache<K, Object> cache) {
         DistributionManager distributionManager = cache.getAdvancedCache().getDistributionManager();
-        Map<Key, List<Address>> response = new HashMap<>();
-        for(Key k : cache.keySet()) {
+        Map<K, List<Address>> response = new HashMap<>();
+        for(K k : cache.keySet()) {
             response.put(k, distributionManager.locate(k));
         }
         return response;

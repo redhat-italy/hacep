@@ -38,7 +38,7 @@ public interface HACEP {
 
     Cache<Key, Fact> getFactCache();
 
-    Cache<Key, Object> getSessionCache();
+    Cache<String, Object> getSessionCache();
 
     DefaultCacheManager getCacheManager();
 

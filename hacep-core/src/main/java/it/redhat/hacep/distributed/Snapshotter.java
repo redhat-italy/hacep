@@ -32,13 +32,13 @@ public class Snapshotter implements Callable<Boolean>, Serializable {
 
     @Inject
     @HACEPSessionCache
-    private Cache<Key, Object> sessionCache;
+    private Cache<String, Object> sessionCache;
 
     @Override
     public Boolean call() throws Exception {
         System.out.println("I am here: " + sessionCache);
-        AdvancedCache<Key, Object> cache = sessionCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL);
-        for (Key k: cache.keySet()) {
+        AdvancedCache<String, Object> cache = sessionCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL);
+        for (String k: cache.keySet()) {
             if (isAReplicaKey(k)) {
                 HAKieSerializedSession session = (HAKieSerializedSession) sessionCache.get(k);
                 session.createSnapshot();
@@ -47,7 +47,7 @@ public class Snapshotter implements Callable<Boolean>, Serializable {
         return true;
     }
 
-    private boolean isAReplicaKey(Key key) {
+    private boolean isAReplicaKey(String key) {
         return !sessionCache.getAdvancedCache().getDistributionManager().getPrimaryLocation(key).equals(sessionCache.getCacheManager().getAddress());
     }
 }

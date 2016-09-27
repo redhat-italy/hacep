@@ -51,7 +51,7 @@ public class SessionsConsoleCommand implements ConsoleCommand {
 
     @Inject
     @HACEPSessionCache
-    private Cache<Key, Object> sessionCache;
+    private Cache<String, Object> sessionCache;
 
     public SessionsConsoleCommand() {
     }
@@ -69,7 +69,7 @@ public class SessionsConsoleCommand implements ConsoleCommand {
 
         Map<Address, List<SessionData>> sessions = new HashMap<>();
         manager.getMembers().stream().forEach(a -> sessions.put(a, new ArrayList<>()));
-        for (Map.Entry<Key, List<Address>> entry : jdgUtility.getKeysAddresses(sessionCache).entrySet()) {
+        for (Map.Entry<String, List<Address>> entry : jdgUtility.getKeysAddresses(sessionCache).entrySet()) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Key [" + entry.getKey() + "] List{" + entry.getValue() + "}");
             }

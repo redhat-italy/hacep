@@ -121,7 +121,6 @@ public class DataGridConfiguration {
 
         this.manager.defineConfiguration(FACT_CACHE_NAME, factCacheConfigurationBuilder.build());
         this.manager.defineConfiguration(SESSION_CACHE_NAME, sessionCacheConfigurationBuilder.build());
-
     }
 
     @Produces
@@ -132,7 +131,7 @@ public class DataGridConfiguration {
 
     @Produces
     @HACEPSessionCache
-    public Cache<Key, Object> getSessionCache() {
+    public Cache<String, Object> getSessionCache() {
         return this.manager.getCache(SESSION_CACHE_NAME, true);
     }
 

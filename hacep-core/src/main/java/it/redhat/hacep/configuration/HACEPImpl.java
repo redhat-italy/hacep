@@ -50,7 +50,7 @@ public class HACEPImpl implements HACEP {
 
     @Inject
     @HACEPSessionCache
-    private Cache<Key, Object> sessionCache;
+    private Cache<String, Object> sessionCache;
 
     @Inject
     private Router router;
@@ -120,7 +120,7 @@ public class HACEPImpl implements HACEP {
     }
 
     @Override
-    public Cache<Key, Object> getSessionCache() {
+    public Cache<String, Object> getSessionCache() {
         return sessionCache;
     }
 
