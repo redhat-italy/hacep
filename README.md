@@ -12,7 +12,7 @@ To build the HACEP core code you just need Maven. Default builds code using the 
 mvn clean install
 ```
 
-Alternatively, you can build the core using community repository: simply add the "community" profile to the Maven command
+Alternatively, you can build the core using community repository: simply add the "community" profile to the Maven command:
 
 ```shell
 mvn clean install -P community
