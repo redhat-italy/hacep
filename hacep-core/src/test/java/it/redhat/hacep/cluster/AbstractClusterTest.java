@@ -47,11 +47,17 @@ public abstract class AbstractClusterTest {
 
     protected abstract DroolsConfiguration getKieBaseConfiguration();
 
-    protected EmbeddedCacheManager startDistSyncNode(int owners) {
+    protected EmbeddedCacheManager startNodes(int owners) {
         System.out.println("Start node with owners(" + owners + ")");
         DefaultCacheManager cacheManager = clusteredCacheManager(CacheMode.DIST_SYNC, owners);
         nodes.add(cacheManager);
         return cacheManager;
+    }
+
+    protected void stopNodes() {
+        nodes.forEach((e) -> System.out.println("Stopping cache manager: [" + e.getAddress() + "]"));
+        nodes.forEach(EmbeddedCacheManager::stop);
+        nodes.clear();
     }
 
     private DefaultCacheManager clusteredCacheManager(CacheMode mode, int owners) {
@@ -73,8 +79,12 @@ public abstract class AbstractClusterTest {
         configurationBuilder.invocationBatching().enable();
         configureCacheMode(configurationBuilder, mode, owners);
 
-        org.infinispan.configuration.cache.Configuration loc = configurationBuilder.build();
+        org.infinispan.configuration.cache.Configuration loc = extendDefaultConfiguration(configurationBuilder).build();
         return new DefaultCacheManager(glob, loc, true);
+    }
+
+    public ConfigurationBuilder extendDefaultConfiguration(ConfigurationBuilder builder) {
+        return builder;
     }
 
     private static void configureCacheMode(ConfigurationBuilder configurationBuilder, CacheMode mode, int owners) {
@@ -84,7 +94,7 @@ public abstract class AbstractClusterTest {
     }
 
     @Before
-    public void start() {
+    public void init() {
         nodes = new ArrayList<>();
     }
 

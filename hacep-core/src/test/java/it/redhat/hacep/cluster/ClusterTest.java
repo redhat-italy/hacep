@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -49,7 +50,7 @@ public class ClusterTest extends AbstractClusterTest {
 
     private final static Logger logger = LoggerFactory.getLogger(ClusterTest.class);
 
-    private static TestDroolsConfiguration droolsConfiguration = new TestDroolsConfiguration();
+    private static TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildV1();
 
     private static KieSessionByteArraySerializer serializer = new KieSessionByteArraySerializer(droolsConfiguration);
 
@@ -66,8 +67,8 @@ public class ClusterTest extends AbstractClusterTest {
     public void testClusterSize() {
         System.out.println("Start test cluster size");
         logger.info("Start test cluster size");
-        Cache<Key, HAKieSession> cache1 = startDistSyncNode(2).getCache();
-        Cache<Key, HAKieSession> cache2 = startDistSyncNode(2).getCache();
+        Cache<Key, HAKieSession> cache1 = startNodes(2).getCache();
+        Cache<Key, HAKieSession> cache2 = startNodes(2).getCache();
 
         assertEquals(2, ((DefaultCacheManager) cache1.getCacheManager()).getClusterSize());
         assertEquals(2, ((DefaultCacheManager) cache2.getCacheManager()).getClusterSize());
@@ -81,8 +82,8 @@ public class ClusterTest extends AbstractClusterTest {
         System.out.println("Start test empty HASessionID");
         droolsConfiguration.setMaxBufferSize(10);
 
-        Cache<String, Object> cache1 = startDistSyncNode(2).getCache();
-        Cache<String, Object> cache2 = startDistSyncNode(2).getCache();
+        Cache<String, Object> cache1 = startNodes(2).getCache();
+        Cache<String, Object> cache2 = startNodes(2).getCache();
 
         reset(replayChannel);
 
@@ -110,8 +111,8 @@ public class ClusterTest extends AbstractClusterTest {
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(10);
 
-        Cache<String, Object> cache1 = startDistSyncNode(2).getCache();
-        Cache<String, Object> cache2 = startDistSyncNode(2).getCache();
+        Cache<String, Object> cache1 = startNodes(2).getCache();
+        Cache<String, Object> cache2 = startNodes(2).getCache();
 
         String key = "2";
         HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
@@ -167,8 +168,8 @@ public class ClusterTest extends AbstractClusterTest {
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(2);
 
-        Cache<String, HAKieSession> cache1 = startDistSyncNode(2).getCache();
-        Cache<String, HAKieSession> cache2 = startDistSyncNode(2).getCache();
+        Cache<String, HAKieSession> cache1 = startNodes(2).getCache();
+        Cache<String, HAKieSession> cache2 = startNodes(2).getCache();
 
         reset(replayChannel, additionsChannel);
 
@@ -220,10 +221,10 @@ public class ClusterTest extends AbstractClusterTest {
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(10);
 
-        Cache<String, HAKieSession> cache1 = startDistSyncNode(2).getCache();
-        Cache<String, HAKieSession> cache2 = startDistSyncNode(2).getCache();
-        Cache<String, HAKieSession> cache3 = startDistSyncNode(2).getCache();
-        Cache<String, HAKieSession> cache4 = startDistSyncNode(2).getCache();
+        Cache<String, HAKieSession> cache1 = startNodes(2).getCache();
+        Cache<String, HAKieSession> cache2 = startNodes(2).getCache();
+        Cache<String, HAKieSession> cache3 = startNodes(2).getCache();
+        Cache<String, HAKieSession> cache4 = startNodes(2).getCache();
 
         reset(replayChannel, additionsChannel);
 
@@ -258,7 +259,7 @@ public class ClusterTest extends AbstractClusterTest {
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(10);
 
-        Cache<String, HAKieSession> cache1 = startDistSyncNode(2).getCache();
+        Cache<String, HAKieSession> cache1 = startNodes(2).getCache();
 
         reset(replayChannel, additionsChannel);
 
@@ -286,7 +287,7 @@ public class ClusterTest extends AbstractClusterTest {
         // Double check on total number of calls to the method send
         verify(additionsChannel, times(3)).send(any());
 
-        Cache<Key, HAKieSession> cache2 = startDistSyncNode(2).getCache();
+        Cache<Key, HAKieSession> cache2 = startNodes(2).getCache();
         Object serializedSessionCopy = cache2.get(key);
 
         Assert.assertNotNull(serializedSessionCopy);
@@ -320,7 +321,7 @@ public class ClusterTest extends AbstractClusterTest {
 
     private Fact generateFactTenSecondsAfter(long ppid, long amount) {
         now = now.plusSeconds(10);
-        return new TestFact(ppid, amount, now.toInstant());
+        return new TestFact(ppid, amount, new Date(now.toInstant().toEpochMilli()));
     }
 
 }

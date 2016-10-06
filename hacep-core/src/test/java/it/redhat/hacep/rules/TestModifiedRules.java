@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -32,7 +33,7 @@ public class TestModifiedRules extends AbstractClusterTest {
 
     private final static Logger logger = LoggerFactory.getLogger(TestModifiedRules.class);
 
-    private static TestDroolsConfiguration droolsConfiguration = new TestDroolsConfiguration();
+    private static TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildV1();
 
     private static KieSessionByteArraySerializer serializer = new KieSessionByteArraySerializer(droolsConfiguration);
 
@@ -52,8 +53,8 @@ public class TestModifiedRules extends AbstractClusterTest {
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(10);
 
-        Cache<String, Object> cache1 = startDistSyncNode(2).getCache();
-        Cache<String, Object> cache2 = startDistSyncNode(2).getCache();
+        Cache<String, Object> cache1 = startNodes(2).getCache();
+        Cache<String, Object> cache2 = startNodes(2).getCache();
 
         String key = "2";
         HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
@@ -86,7 +87,7 @@ public class TestModifiedRules extends AbstractClusterTest {
         ((HAKieSerializedSession) serializedSessionCopy).createSnapshot();
         HAKieSession session2 = ((HAKieSerializedSession) serializedSessionCopy).rebuild();
 
-        droolsConfiguration.upgradeContainer();
+        droolsConfiguration.upgradeToV2();
 
         session2.insert(generateFactTenSecondsAfter(1L, 30L));
 
@@ -114,6 +115,6 @@ public class TestModifiedRules extends AbstractClusterTest {
 
     private Fact generateFactTenSecondsAfter(long ppid, long amount) {
         now = now.plusSeconds(10);
-        return new TestFact(ppid, amount, now.toInstant());
+        return new TestFact(ppid, amount, new Date(now.toInstant().toEpochMilli()));
     }
 }

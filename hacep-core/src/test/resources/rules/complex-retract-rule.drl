@@ -1,0 +1,68 @@
+package it.redhat.hacep.rules
+
+import org.drools.time.SessionClock
+
+import it.redhat.hacep.cluster.TestFact
+import it.redhat.hacep.cluster.TestRuleLocker
+import java.util.Date
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
+
+dialect  "mvel"
+
+declare TestFact
+    @role( event )
+    @timestamp ( instant.toEpochMilli() )
+    @expires( 1d )
+end
+
+declare TestRuleLocker
+  @role( event )
+  @timestamp ( timestamp.getTime() )
+end
+
+/*
+rule "Fact logger"
+    salience 1000
+    when
+        $g: TestFact($ppid : ppid, $amount : amount) over window:length(1)
+    then
+	    System.out.println("Fact Logger Player id ["+$ppid+"] bet amount ["+$amount+"]");
+end
+*/
+
+rule "Player played a game and no lock are present"
+    salience 1
+    when
+        $g: TestFact($ppid : ppid, $amount : amount) over window:length(1)
+        not(TestRuleLocker(ppid == $ppid))
+    then
+        channels["additions"].send($amount);
+	    System.out.println("Player id ["+$ppid+"] bet amount ["+$amount+"]");
+end
+
+rule "Player played a game with amount equals or greater than 10"
+    salience 0
+    when
+        $g: TestFact($ppid : ppid, $amount : amount) over window:length(1)
+        not(TestRuleLocker(ppid == $ppid))
+        eval($amount >= 10)
+    then
+        insert(new TestRuleLocker($ppid, new Date($g.instant.toEpochMilli()), 25))
+
+        channels["locks"].send("INSERTED");
+	    System.out.println("Insert RuleLocker. " + $ppid);
+end
+
+rule "When RuleLocker expires"
+    salience 10
+    when
+	    $lock : TestRuleLocker($ppid: ppid)
+	    $fact: TestFact(ppid == $ppid, this after[25s, 1d] $lock)
+    then
+	    retract($lock);
+
+        channels["locks"].send("REMOVED");
+	    System.out.println("RuleLocker["+$lock+"] expired for playerId [" + $fact + "]");
+end

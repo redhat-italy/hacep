@@ -34,19 +34,41 @@ public class TestDroolsConfiguration implements DroolsConfiguration {
     private final Map<String, Channel> replayChannels = new HashMap<>();
     private KieBase kieBase;
     private int maxBufferSize;
-    private final KieContainer kieContainer;
+    private KieContainer kieContainer;
+    private boolean upgradable = false;
 
-    public TestDroolsConfiguration() {
+    private TestDroolsConfiguration() {
+    }
+
+    public static TestDroolsConfiguration buildRulesWithRetract() {
         try {
-            ReleaseIdImpl releaseId = new ReleaseIdImpl("it.redhat.jdg", "rules", "2.0.0");
-            kieContainer = KieAPITestUtils.setupKieContainer(releaseId, "pom/pom-2.0.0.xml", "rules/simple-rule.drl");
-            kieBase = kieContainer.getKieBase();
+            TestDroolsConfiguration droolsConfiguration = new TestDroolsConfiguration();
+            ReleaseIdImpl releaseId = new ReleaseIdImpl("it.redhat.jdg", "rules", "1.0.0");
+            droolsConfiguration.kieContainer = KieAPITestUtils.setupKieContainer(releaseId, "pom/pom-1.0.0.xml", "rules/complex-retract-rule.drl");
+            droolsConfiguration.kieBase = droolsConfiguration.kieContainer.getKieBase();
+            return droolsConfiguration;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void upgradeContainer() {
+    public static TestDroolsConfiguration buildV1() {
+        try {
+            TestDroolsConfiguration droolsConfiguration = new TestDroolsConfiguration();
+            droolsConfiguration.upgradable = true;
+            ReleaseIdImpl releaseId = new ReleaseIdImpl("it.redhat.jdg", "rules", "1.0.0");
+            droolsConfiguration.kieContainer = KieAPITestUtils.setupKieContainer(releaseId, "pom/pom-1.0.0.xml", "rules/simple-rule.drl");
+            droolsConfiguration.kieBase = droolsConfiguration.kieContainer.getKieBase();
+            return droolsConfiguration;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void upgradeToV2() {
+        if (!upgradable) {
+            throw new IllegalStateException();
+        }
         ReleaseIdImpl releaseId = new ReleaseIdImpl("it.redhat.jdg", "rules", "2.0.0");
         KieAPITestUtils.setupKieContainer(releaseId, "pom/pom-2.0.0.xml", "rules/simple-rule_modified.drl");
         kieContainer.updateToVersion(releaseId);
@@ -89,5 +111,4 @@ public class TestDroolsConfiguration implements DroolsConfiguration {
     public int getMaxBufferSize() {
         return maxBufferSize;
     }
-
 }

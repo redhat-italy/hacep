@@ -21,14 +21,15 @@ import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
 
 import java.time.Instant;
+import java.util.Date;
 
 public class TestFact implements Fact {
 
     private final long ppid;
     private final long amount;
-    private final Instant instant;
+    private final Date instant;
 
-    public TestFact(long ppid, long amount, Instant instant) {
+    public TestFact(long ppid, long amount, Date instant) {
         this.ppid = ppid;
         this.amount = amount;
         this.instant = instant;
@@ -44,11 +45,20 @@ public class TestFact implements Fact {
 
     @Override
     public Instant getInstant() {
-        return instant;
+        return instant.toInstant();
     }
 
     @Override
     public Key extractKey() {
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return "TestFact{" +
+                "ppid=" + ppid +
+                ", amount=" + amount +
+                ", instant=" + instant +
+                '}';
     }
 }
