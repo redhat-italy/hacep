@@ -62,6 +62,11 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
             <artifactId>mockito-all</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>it.redhat.jdg</groupId>
+            <artifactId>hacep-commons-test</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!--Logging -->
         <dependency>

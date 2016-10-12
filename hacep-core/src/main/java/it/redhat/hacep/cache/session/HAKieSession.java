@@ -31,9 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -91,7 +89,7 @@ public class HAKieSession implements DeltaAware {
     public void commit() {
         lastFact = null;
     }
-    
+
     @Override
     protected void finalize() throws Throwable {
         if (session != null) {
@@ -150,6 +148,7 @@ public class HAKieSession implements DeltaAware {
         public void writeObject(ObjectOutput output, HAKieSession object) throws IOException {
             if (object.session != null) {
                 byte[] buffer = serializer.writeObject(object.session);
+                System.out.println("Advanced externalizer write buffer [" + buffer.length + "]");
                 output.writeInt(buffer.length);
                 output.write(buffer);
             } else {
@@ -160,9 +159,11 @@ public class HAKieSession implements DeltaAware {
         @Override
         public HAKieSession readObject(ObjectInput input) throws IOException, ClassNotFoundException {
             int len = input.readInt();
+            System.out.println("Advanced externalizer read buffer [" + len + "]");
             if (len > 0) {
                 byte[] buffer = new byte[len];
-                input.read(buffer);
+                int read = input.read(buffer);
+                System.out.println("Bytes Read [" + read + " of " + len + "]");
                 return new HAKieSerializedSession(droolsConfiguration, serializer, executor, buffer);
             } else {
                 return new HAKieSerializedSession(droolsConfiguration, serializer, executor);

@@ -24,10 +24,10 @@ import it.redhat.hacep.configuration.annotations.HACEPCamelContext;
 import it.redhat.hacep.configuration.annotations.HACEPFactCache;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
-import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jms.JmsComponent;
 import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.model.ModelCamelContext;
 import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +37,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
+@ApplicationScoped
 public class CamelRouter implements Router {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(CamelRouter.class);
@@ -53,7 +54,7 @@ public class CamelRouter implements Router {
     @HACEPFactCache
     private Cache<Key, Fact> factCache;
 
-    private CamelContext camelContext;
+    private ModelCamelContext camelContext;
 
     public CamelRouter() {
     }
@@ -78,7 +79,7 @@ public class CamelRouter implements Router {
 
     @Override
     public void suspend() {
-        if(LOGGER.isInfoEnabled()) {
+        if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Suspending route " + CamelRouter.CAMEL_ROUTE);
         }
         try {
@@ -136,7 +137,7 @@ public class CamelRouter implements Router {
     @Produces
     @ApplicationScoped
     @HACEPCamelContext
-    public CamelContext getCamelContext() {
+    public ModelCamelContext getCamelContext() {
         return camelContext;
     }
 }

@@ -40,6 +40,18 @@ public class TestDroolsConfiguration implements DroolsConfiguration {
     private TestDroolsConfiguration() {
     }
 
+    public static TestDroolsConfiguration buildRulesWithGamePlayRetract() {
+        try {
+            TestDroolsConfiguration droolsConfiguration = new TestDroolsConfiguration();
+            ReleaseIdImpl releaseId = new ReleaseIdImpl("it.redhat.jdg", "rules", "1.0.0");
+            droolsConfiguration.kieContainer = KieAPITestUtils.setupKieContainer(releaseId, "pom/pom-1.0.0.xml", "rules/gameplay_retract.drl");
+            droolsConfiguration.kieBase = droolsConfiguration.kieContainer.getKieBase();
+            return droolsConfiguration;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static TestDroolsConfiguration buildRulesWithRetract() {
         try {
             TestDroolsConfiguration droolsConfiguration = new TestDroolsConfiguration();

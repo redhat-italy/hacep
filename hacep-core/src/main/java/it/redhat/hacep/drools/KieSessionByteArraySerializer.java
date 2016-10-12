@@ -41,8 +41,9 @@ public class KieSessionByteArraySerializer {
     }
 
     public byte[] writeObject(KieSession kieSession) {
+        Marshaller marshaller = createSerializableMarshaller(droolsConfiguration.getKieBase());
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-             ObjectOutputStream oos = new ObjectOutputStream(outputStream);) {
+             ObjectOutputStream oos = new ObjectOutputStream(outputStream)) {
             /*
              * It seems that the Marshaller does not persist the actual SessionClock, which is a problem when using the PseudoClock, so we
              * persist the SessionConfiguration, Environment and clock time to be able to execute the pseudo-clock (if it's used).
@@ -50,9 +51,8 @@ public class KieSessionByteArraySerializer {
             KieSessionConfiguration kieSessionConfiguration = kieSession.getSessionConfiguration();
             oos.writeObject(kieSessionConfiguration);
 
-            Marshaller marshaller = createSerializableMarshaller(kieSession.getKieBase());
             marshaller.marshall(outputStream, kieSession);
-
+            outputStream.flush();
             byte[] bytes = outputStream.toByteArray();
 
             if (LOGGER.isInfoEnabled()) {
@@ -66,48 +66,29 @@ public class KieSessionByteArraySerializer {
         }
     }
 
-    public KieSession readSession(byte[] serializedKieSession) {
-        if (serializedKieSession == null) {
+    public KieSession readSession(byte[] buffer) {
+        if (buffer == null) {
             if (LOGGER.isWarnEnabled()) {
                 LOGGER.warn("[KieSessionByteArraySerializer] Unable to serialize NULL KieSessions");
             }
             return null;
         }
-        ObjectInputStream ois = null;
-        ByteArrayInputStream inputStream = null;
-        try {
-
-            inputStream = new ByteArrayInputStream(serializedKieSession);
-            ois = new ObjectInputStream(inputStream);
+        Marshaller marshaller = createSerializableMarshaller(droolsConfiguration.getKieBase());
+        System.out.println("Read from Serialized buffer [" + buffer.length + "]");
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(buffer);
+             ObjectInputStream ois = new ObjectInputStream(inputStream)) {
             KieSessionConfiguration kieSessionConfiguration = (KieSessionConfiguration) ois.readObject();
-            Marshaller marshaller = createSerializableMarshaller(droolsConfiguration.getKieBase());
-            KieSession kieSession = marshaller.unmarshall(inputStream, kieSessionConfiguration, null);
-            return kieSession;
-        } catch (Exception e) {
+            return marshaller.unmarshall(inputStream, kieSessionConfiguration, null);
+        } catch (IOException | ClassNotFoundException e) {
             LOGGER.error("Error when reading serialized session", e);
             throw new RuntimeException(e);
-        } finally {
-            if (ois != null) {
-                try {
-                    ois.close();
-                } catch (IOException e) {
-                }
-            }
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                }
-            }
-
         }
     }
 
     private Marshaller createSerializableMarshaller(KieBase kBase) {
         ObjectMarshallingStrategyAcceptor acceptor = MarshallerFactory.newClassFilterAcceptor(new String[]{"*.*"});
         ObjectMarshallingStrategy strategy = MarshallerFactory.newSerializeMarshallingStrategy(acceptor);
-        Marshaller marshaller = MarshallerFactory.newMarshaller(kBase, new ObjectMarshallingStrategy[]{strategy});
-        return marshaller;
+        return MarshallerFactory.newMarshaller(kBase, new ObjectMarshallingStrategy[]{strategy});
     }
 
 }

@@ -123,12 +123,15 @@ public class HAKieSerializedSession extends HAKieSession {
     }
 
     private KieSession buildSession() {
+        LOGGER.debug("Rebuild session Buffer {} - Serializer {}", session != null ? session.length : 0, serializer);
+        System.out.println(String.format("Rebuild session Buffer {%s} - Serializer {%s}", session != null ? session.length : 0, serializer));
         KieSession localSession;
         if (session != null) {
             localSession = serializer.readSession(this.session);
         } else {
             localSession = droolsConfiguration.getKieSession();
         }
+        LOGGER.debug("Session correctly created");
         if (!buffer.isEmpty()) {
             droolsConfiguration.getReplayChannels().forEach(localSession::registerChannel);
             while (!buffer.isEmpty()) {
@@ -184,6 +187,7 @@ public class HAKieSerializedSession extends HAKieSession {
         public void writeObject(ObjectOutput output, HAKieSerializedSession object) throws IOException {
             output.writeInt(object.session != null ? object.session.length : 0);
             if (object.session != null) {
+                System.out.println("Advanced serialized externalizer write buffer [" + object.session.length + "]");
                 output.write(object.session);
             }
             output.writeObject(object.buffer);
@@ -193,6 +197,7 @@ public class HAKieSerializedSession extends HAKieSession {
         public HAKieSerializedSession readObject(ObjectInput input) throws IOException, ClassNotFoundException {
             HAKieSerializedSession haKieSerializedSession = new HAKieSerializedSession(droolsConfiguration, serializer, executor);
             int len = input.readInt();
+            System.out.println("Advanced serialized externalizer read buffer [" + len + "]");
             if (len > 0) {
                 haKieSerializedSession.session = new byte[len];
                 input.read(haKieSerializedSession.session);
