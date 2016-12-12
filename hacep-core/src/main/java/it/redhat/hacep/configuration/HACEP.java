@@ -22,6 +22,8 @@ import it.redhat.hacep.model.Key;
 import org.infinispan.Cache;
 import org.infinispan.manager.DefaultCacheManager;
 
+import java.util.concurrent.Future;
+
 public interface HACEP {
 
     void start();
@@ -32,7 +34,7 @@ public interface HACEP {
 
     void resume();
 
-    void makeSnapshot();
+    Future<Boolean> makeSnapshot();
 
     void removeKey(Key key);
 
