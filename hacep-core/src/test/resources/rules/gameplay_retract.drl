@@ -1,0 +1,20 @@
+package it.redhat.hacep.rules.reward.catalog;
+
+import it.redhat.hacep.rules.model.Gameplay;
+
+declare Gameplay
+    @role( event )
+    @timestamp ( instant.toEpochMilli() )
+    @expires( 60d )
+end
+
+rule "retract test rule"
+salience 10
+when
+    $gamePlay : Gameplay($playerId : playerId) over window:length(1)
+then
+	retract($gamePlay);
+	channels["outcomes"].send($playerId + " plays game");
+	System.out.println("GamePlay["+$gamePlay+"] retracted");
+end
+
