@@ -103,10 +103,13 @@ public class HACEPImpl implements HACEP {
     }
 
     @Override
-    public void makeSnapshot() {
+    public Future<Boolean> makeSnapshot() {
         ExecutorService des = new DefaultExecutorService(sessionCache);
-        des.submit(new Snapshotter());
-        des.shutdown();
+        try {
+            return des.submit(new Snapshotter());
+        } finally {
+            des.shutdown();
+        }
     }
 
     @Override

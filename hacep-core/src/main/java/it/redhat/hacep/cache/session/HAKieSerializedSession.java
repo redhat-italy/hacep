@@ -97,11 +97,11 @@ public class HAKieSerializedSession extends HAKieSession {
     }
 
     public HAKieSession rebuild() {
-        this.waitForSnapshot();
+        this.waitForSnapshotToComplete();
         return new HAKieSession(droolsConfiguration, serializer, executor, buildSession());
     }
 
-    private void waitForSnapshot() {
+    public void waitForSnapshotToComplete() {
         if (saving.get()) {
             try {
                 latch.await();
