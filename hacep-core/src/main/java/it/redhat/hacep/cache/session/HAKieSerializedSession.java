@@ -158,6 +158,11 @@ public class HAKieSerializedSession extends HAKieSession {
         throw new IllegalStateException("Delta not expected on HAKieSerializedSession");
     }
 
+    @Override
+    public boolean isSerialized() {
+        return true;
+    }
+
     public static class HASerializedSessionExternalizer implements AdvancedExternalizer<HAKieSerializedSession> {
 
         private final DroolsConfiguration droolsConfiguration;

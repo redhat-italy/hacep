@@ -123,6 +123,14 @@ public class HAKieSession implements DeltaAware {
         }
     }
 
+    public boolean isSerialized() {
+        return false;
+    }
+
+    public HAKieSession rebuild() {
+        throw new IllegalStateException("Cannot rebuild an HAKieSession");
+    }
+
     public static class HASessionExternalizer implements AdvancedExternalizer<HAKieSession> {
 
         private final DroolsConfiguration droolsConfiguration;

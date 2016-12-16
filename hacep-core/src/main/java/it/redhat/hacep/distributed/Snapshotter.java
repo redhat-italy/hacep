@@ -18,9 +18,10 @@
 package it.redhat.hacep.distributed;
 
 import it.redhat.hacep.cache.session.HAKieSerializedSession;
-import it.redhat.hacep.configuration.annotations.HACEPSessionCache;
+import it.redhat.hacep.cache.session.HAKieSession;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.cdi.embedded.Input;
 import org.infinispan.context.Flag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,29 +32,32 @@ import java.util.concurrent.Callable;
 
 public class Snapshotter implements Callable<Boolean>, Serializable {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(Snapshotter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Snapshotter.class);
+
+    private static final long serialVersionUID = 5771231232134508L;
 
     @Inject
-    @HACEPSessionCache
-    private Cache<String, Object> sessionCache;
+    @Input
+    private Cache<String, HAKieSession> sessionCache;
+
+    public Snapshotter() {
+    }
 
     @Override
     public Boolean call() throws Exception {
+        System.out.println(String.format("Called snapshot on cache [%s]", sessionCache));
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(String.format("Called snapshot on cache [%s]", sessionCache));
         }
-        AdvancedCache<String, Object> cache = sessionCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL);
+        AdvancedCache<String, HAKieSession> cache = sessionCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL);
         for (String k : cache.keySet()) {
-            if (isAReplicaKey(k)) {
-                HAKieSerializedSession session = (HAKieSerializedSession) sessionCache.get(k);
-                session.createSnapshot();
-                session.waitForSnapshotToComplete();
+            HAKieSession session = sessionCache.get(k);
+            if (session != null && session.isSerialized()) {
+                ((HAKieSerializedSession) session).createSnapshot();
+                ((HAKieSerializedSession) session).waitForSnapshotToComplete();
             }
         }
         return true;
     }
 
-    private boolean isAReplicaKey(String key) {
-        return !sessionCache.getAdvancedCache().getDistributionManager().getPrimaryLocation(key).equals(sessionCache.getCacheManager().getAddress());
-    }
 }

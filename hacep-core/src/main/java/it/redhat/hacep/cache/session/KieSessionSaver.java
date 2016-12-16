@@ -62,14 +62,17 @@ public class KieSessionSaver {
         synchronized (getLock(sessionKey)) {
             HAKieSession haKieSession;
             Object value = sessionCache.get(sessionKey);
-            if (isANewSession(value)) {
+            if (value == null) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Session doesn't exist, must create a new session");
+                }
                 haKieSession = new HAKieSession(droolsConfiguration, serializer, executorService);
                 sessionCache.put(sessionKey, haKieSession);
-            } else if (isASerializedSession(value)) {
-                haKieSession = ((HAKieSerializedSession) value).rebuild();
             } else {
-                // is a local KieSession
                 haKieSession = (HAKieSession) value;
+                if(haKieSession.isSerialized()) {
+                    haKieSession = haKieSession.rebuild();
+                }
             }
 
             if (LOGGER.isDebugEnabled()) LOGGER.debug("Insert fact: " + fact);
@@ -81,16 +84,6 @@ public class KieSessionSaver {
             if (LOGGER.isDebugEnabled()) LOGGER.debug("Done saving HAKieSession for key: " + sessionKey);
 
         }
-    }
-
-    private boolean isANewSession(Object value) {
-        if (LOGGER.isDebugEnabled()) LOGGER.debug("Session doesn't exist, must create a new session");
-        return (value == null);
-    }
-
-    private boolean isASerializedSession(Object value) {
-        if (LOGGER.isDebugEnabled()) LOGGER.debug("Is a serialized session, must rebuild");
-        return HAKieSerializedSession.class.isAssignableFrom(value.getClass());
     }
 
     //@todo must be evaluated. In production code something like [1] or use infinispan locking (verifying that everything happens locally)
