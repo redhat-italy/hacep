@@ -1,7 +1,11 @@
 package it.redhat.hacep.session;
 
-/**
- * Created by fabio on 16/12/2016.
- */
+import org.junit.Test;
+
 public class TestHAKieSession {
+
+//    @Test
+    public void test() {
+
+    }
 }
