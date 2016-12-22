@@ -1,9 +1,8 @@
 package it.redhat.hacep.cluster;
 
 import it.redhat.hacep.cache.session.HAKieSession;
-import it.redhat.hacep.configuration.DroolsConfiguration;
+import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
 import it.redhat.hacep.distributed.Snapshotter;
-import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
 import org.infinispan.Cache;
 import org.infinispan.distexec.DefaultExecutorService;
@@ -34,8 +33,6 @@ public class TestSnapshotter extends AbstractClusterTest {
 
     private static TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildV1();
 
-    private static KieSessionByteArraySerializer serializer = new KieSessionByteArraySerializer(droolsConfiguration);
-
     private static ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     private Channel replayChannel = Mockito.mock(Channel.class);
@@ -53,7 +50,6 @@ public class TestSnapshotter extends AbstractClusterTest {
     @Test
     public void testDistributedSnapshots() throws InterruptedException, ExecutionException, TimeoutException {
         logger.info("Start test Distributed Snapshots");
-        System.out.println("Start test Distributed Snapshots");
 
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(10);
@@ -65,7 +61,7 @@ public class TestSnapshotter extends AbstractClusterTest {
 
         reset(replayChannel, additionsChannel);
 
-        HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
+        HAKieSession session1 = new HAKieSession(droolsConfiguration, executorService);
 
         cache1.put("1", session1);
 
@@ -83,7 +79,6 @@ public class TestSnapshotter extends AbstractClusterTest {
         des.shutdown();
         Assert.assertEquals(true, future.get(10, TimeUnit.SECONDS));
 
-        System.out.println("End test Distributed Snapshots");
         logger.info("End test Distributed Snapshots");
     }
 
@@ -93,7 +88,7 @@ public class TestSnapshotter extends AbstractClusterTest {
     }
 
     @Override
-    protected DroolsConfiguration getKieBaseConfiguration() {
+    protected AbstractBaseDroolsConfiguration getKieBaseConfiguration() {
         return droolsConfiguration;
     }
 

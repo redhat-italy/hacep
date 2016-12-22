@@ -70,16 +70,39 @@ public class KieAPITestUtils {
 
         KieBuilder kb = kieServices.newKieBuilder(kfs);
         kb.buildAll();
-        hasErrors(kb);
+        hasErrors(kb.getResults());
 
         KieContainer kc = kieServices.newKieContainer(releaseId);
 
         return kc;
     }
 
-    private static void hasErrors(KieBuilder kbuilder) {
-        if (kbuilder.getResults().hasMessages(Message.Level.ERROR)) {
-            throw new RuntimeException("Build errors\n" + kbuilder.getResults().toString());
+    public static KieModule createKieModule(ReleaseId releaseId, String pom, String... resources) {
+        KieServices kieServices = KieServices.Factory.get();
+
+        KieFileSystem kfs = kieServices.newKieFileSystem();
+
+        Resource pomResource = new ClassPathResource(pom);
+        kfs.write("pom.xml", pomResource);
+
+        Resource kmodule = new ClassPathResource("kmodule/kmodule.xml");
+        kfs.write("src/main/resources/META-INF/kmodule.xml", kmodule);
+
+        for (String res : resources) {
+            Resource resource = new ClassPathResource(res);
+            kfs.write("src/main/resources/" + res, resource);
+        }
+
+        KieBuilder kb = kieServices.newKieBuilder(kfs);
+        kb.buildAll();
+        hasErrors(kb.getResults());
+
+        return kb.getKieModule();
+    }
+
+    public static void hasErrors(Results results) {
+        if (results.hasMessages(Message.Level.ERROR)) {
+            throw new RuntimeException("Build errors\n" + results.toString());
         }
     }
 }

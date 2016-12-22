@@ -17,8 +17,7 @@
 
 package it.redhat.hacep.playground.configuration;
 
-import it.redhat.hacep.configuration.DroolsConfiguration;
-import it.redhat.hacep.configuration.JmsConfiguration;
+import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
 import it.redhat.hacep.drools.channels.NullChannel;
 import it.redhat.hacep.playground.drools.channels.AuditChannel;
 import it.redhat.hacep.playground.drools.channels.PlayerPointLevelChannel;
@@ -38,7 +37,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
-public class DroolsConfigurationImpl implements DroolsConfiguration {
+public class DroolsConfigurationImpl extends AbstractBaseDroolsConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(DroolsConfigurationImpl.class);
 
@@ -80,7 +79,7 @@ public class DroolsConfigurationImpl implements DroolsConfiguration {
     }
 
     @Override
-    public KieSession getKieSession() {
+    public KieSession newKieSession() {
         return kieContainer.newKieSession(KSESSION_RULES);
     }
 
@@ -97,15 +96,6 @@ public class DroolsConfigurationImpl implements DroolsConfiguration {
     @Override
     public Map<String, Channel> getReplayChannels() {
         return replayChannels;
-    }
-
-    @Override
-    public int getMaxBufferSize() {
-        try {
-            return Integer.valueOf(System.getProperty("grid.buffer", "1000"));
-        } catch (IllegalArgumentException e) {
-            return 1000;
-        }
     }
 
 }

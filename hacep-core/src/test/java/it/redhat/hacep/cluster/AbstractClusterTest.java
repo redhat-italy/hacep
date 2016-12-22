@@ -22,8 +22,7 @@ import it.redhat.hacep.cache.session.HAKieSerializedSession;
 import it.redhat.hacep.cache.session.HAKieSession;
 import it.redhat.hacep.cache.session.HAKieSessionDeltaEmpty;
 import it.redhat.hacep.cache.session.HAKieSessionDeltaFact;
-import it.redhat.hacep.configuration.DroolsConfiguration;
-import it.redhat.hacep.drools.KieSessionByteArraySerializer;
+import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
@@ -33,6 +32,8 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.junit.After;
 import org.junit.Before;
 import org.kie.api.runtime.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,37 +42,38 @@ import java.util.concurrent.Executors;
 
 public abstract class AbstractClusterTest {
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(AbstractClusterTest.class);
+
     private List<EmbeddedCacheManager> nodes = null;
 
     protected abstract Channel getReplayChannel();
 
-    protected abstract DroolsConfiguration getKieBaseConfiguration();
+    protected abstract AbstractBaseDroolsConfiguration getKieBaseConfiguration();
 
     protected EmbeddedCacheManager startNodes(int owners) {
-        System.out.println("Start node with owners(" + owners + ")");
+        LOGGER.info("Start node with owners({})", owners);
         DefaultCacheManager cacheManager = clusteredCacheManager(CacheMode.DIST_SYNC, owners);
         nodes.add(cacheManager);
         return cacheManager;
     }
 
     protected void stopNodes() {
-        nodes.forEach((e) -> System.out.println("Stopping cache manager: [" + e.getAddress() + "]"));
+        nodes.forEach((e) -> LOGGER.info("Stopping cache manager: [{}]", e.getAddress()));
         nodes.forEach(EmbeddedCacheManager::stop);
         nodes.clear();
     }
 
     private DefaultCacheManager clusteredCacheManager(CacheMode mode, int owners) {
         ExecutorService executorService = Executors.newFixedThreadPool(4);
-        KieSessionByteArraySerializer serializer = new KieSessionByteArraySerializer(getKieBaseConfiguration());
 
         GlobalConfiguration glob = new GlobalConfigurationBuilder().clusteredDefault()
                 .transport().addProperty("configurationFile", System.getProperty("jgroups.configuration", "jgroups-test-tcp.xml"))
                 .clusterName("HACEP")
                 .globalJmxStatistics().allowDuplicateDomains(true).enable()
                 .serialization()
-                .addAdvancedExternalizer(new HAKieSession.HASessionExternalizer(getKieBaseConfiguration(), serializer, executorService))
-                .addAdvancedExternalizer(new HAKieSerializedSession.HASerializedSessionExternalizer(getKieBaseConfiguration(), serializer, executorService))
-                .addAdvancedExternalizer(new HAKieSessionDeltaEmpty.HASessionDeltaEmptyExternalizer(getKieBaseConfiguration(), serializer, executorService))
+                .addAdvancedExternalizer(new HAKieSession.HASessionExternalizer(getKieBaseConfiguration(), executorService))
+                .addAdvancedExternalizer(new HAKieSerializedSession.HASerializedSessionExternalizer(getKieBaseConfiguration(), executorService))
+                .addAdvancedExternalizer(new HAKieSessionDeltaEmpty.HASessionDeltaEmptyExternalizer(getKieBaseConfiguration(), executorService))
                 .addAdvancedExternalizer(new HAKieSessionDeltaFact.HASessionDeltaFactExternalizer())
                 .build();
 
@@ -100,8 +102,6 @@ public abstract class AbstractClusterTest {
 
     @After
     public void close() throws Exception {
-        nodes.forEach((e) -> System.out.println("Stopping cache manager: [" + e.getAddress() + "]"));
-        nodes.forEach(EmbeddedCacheManager::stop);
-        nodes.clear();
+        stopNodes();
     }
 }

@@ -5,8 +5,7 @@ import it.redhat.hacep.cache.session.HAKieSession;
 import it.redhat.hacep.cluster.AbstractClusterTest;
 import it.redhat.hacep.cluster.TestDroolsConfiguration;
 import it.redhat.hacep.cluster.TestFact;
-import it.redhat.hacep.configuration.DroolsConfiguration;
-import it.redhat.hacep.drools.KieSessionByteArraySerializer;
+import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
 import it.redhat.hacep.model.Fact;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -23,7 +22,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
@@ -38,9 +36,8 @@ public class TestPassivation extends AbstractClusterTest {
 
     private final static TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildRulesWithRetract();
 
-    private final static KieSessionByteArraySerializer serializer = new KieSessionByteArraySerializer(droolsConfiguration);
-
     private final static ExecutorService executorService = Executors.newFixedThreadPool(4);
+
     public static final String CACHE_NAME = "application";
 
     private ZonedDateTime now = ZonedDateTime.now();
@@ -85,7 +82,7 @@ public class TestPassivation extends AbstractClusterTest {
         Cache<String, Object> cache = startNodes(1).getCache(CACHE_NAME);
 
         String key = "1";
-        HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
+        HAKieSession session1 = new HAKieSession(droolsConfiguration, executorService);
 
         session1.insert(generateFactTenSecondsAfter(1, 1L));
         cache.put(key, session1);
@@ -179,7 +176,7 @@ public class TestPassivation extends AbstractClusterTest {
     }
 
     @Override
-    protected DroolsConfiguration getKieBaseConfiguration() {
+    protected AbstractBaseDroolsConfiguration getKieBaseConfiguration() {
         return droolsConfiguration;
     }
 

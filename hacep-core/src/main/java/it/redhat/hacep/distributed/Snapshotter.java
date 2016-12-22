@@ -45,7 +45,6 @@ public class Snapshotter implements Callable<Boolean>, Serializable {
 
     @Override
     public Boolean call() throws Exception {
-        System.out.println(String.format("Called snapshot on cache [%s]", sessionCache));
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(String.format("Called snapshot on cache [%s]", sessionCache));
         }

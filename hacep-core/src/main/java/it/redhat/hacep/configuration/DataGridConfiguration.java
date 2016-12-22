@@ -21,8 +21,10 @@ import it.redhat.hacep.cache.session.HAKieSerializedSession;
 import it.redhat.hacep.cache.session.HAKieSession;
 import it.redhat.hacep.cache.session.HAKieSessionDeltaEmpty;
 import it.redhat.hacep.cache.session.HAKieSessionDeltaFact;
-import it.redhat.hacep.configuration.annotations.*;
-import it.redhat.hacep.drools.KieSessionByteArraySerializer;
+import it.redhat.hacep.configuration.annotations.HACEPCacheManager;
+import it.redhat.hacep.configuration.annotations.HACEPExecutorService;
+import it.redhat.hacep.configuration.annotations.HACEPFactCache;
+import it.redhat.hacep.configuration.annotations.HACEPSessionCache;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
 import org.infinispan.Cache;
@@ -57,10 +59,8 @@ public class DataGridConfiguration {
 
     private ExecutorService executorService;
 
-    private KieSessionByteArraySerializer serializer;
-
     @Inject
-    private DroolsConfiguration droolsConfiguration;
+    private AbstractBaseDroolsConfiguration droolsConfiguration;
 
     public DataGridConfiguration() {
     }
@@ -68,16 +68,15 @@ public class DataGridConfiguration {
     @PostConstruct
     private void build() {
         executorService = Executors.newFixedThreadPool(4);
-        serializer = new KieSessionByteArraySerializer(droolsConfiguration);
 
         GlobalConfiguration globalConfiguration = new GlobalConfigurationBuilder().clusteredDefault()
                 .transport().addProperty("configurationFile", System.getProperty("jgroups.configuration", "jgroups-tcp.xml"))
                 .clusterName("HACEP")
                 .globalJmxStatistics().allowDuplicateDomains(true).enable()
                 .serialization()
-                .addAdvancedExternalizer(new HAKieSession.HASessionExternalizer(droolsConfiguration, serializer, executorService))
-                .addAdvancedExternalizer(new HAKieSerializedSession.HASerializedSessionExternalizer(droolsConfiguration, serializer, executorService))
-                .addAdvancedExternalizer(new HAKieSessionDeltaEmpty.HASessionDeltaEmptyExternalizer(droolsConfiguration, serializer, executorService))
+                .addAdvancedExternalizer(new HAKieSession.HASessionExternalizer(droolsConfiguration, executorService))
+                .addAdvancedExternalizer(new HAKieSerializedSession.HASerializedSessionExternalizer(droolsConfiguration, executorService))
+                .addAdvancedExternalizer(new HAKieSessionDeltaEmpty.HASessionDeltaEmptyExternalizer(droolsConfiguration, executorService))
                 .addAdvancedExternalizer(new HAKieSessionDeltaFact.HASessionDeltaFactExternalizer())
                 .build();
 
@@ -139,12 +138,6 @@ public class DataGridConfiguration {
     @HACEPCacheManager
     public DefaultCacheManager getManager() {
         return manager;
-    }
-
-    @Produces
-    @HACEPKieSessionSerializer
-    public KieSessionByteArraySerializer getSerializer() {
-        return serializer;
     }
 
     @Produces

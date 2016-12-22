@@ -17,23 +17,33 @@
 
 package it.redhat.hacep.cluster;
 
-import it.redhat.hacep.configuration.DroolsConfiguration;
+import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
 import it.redhat.hacep.playground.rules.reward.catalog.KieAPITestUtils;
+import org.drools.compiler.kie.builder.impl.InternalKieModule;
 import org.drools.compiler.kproject.ReleaseIdImpl;
+import org.drools.core.io.impl.ClassPathResource;
 import org.kie.api.KieBase;
+import org.kie.api.KieServices;
+import org.kie.api.builder.KieModule;
+import org.kie.api.builder.ReleaseId;
+import org.kie.api.builder.Results;
 import org.kie.api.runtime.Channel;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
+import org.kie.scanner.MavenRepository;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TestDroolsConfiguration implements DroolsConfiguration {
+public class TestDroolsConfiguration extends AbstractBaseDroolsConfiguration {
 
     private final Map<String, Channel> channels = new HashMap<>();
     private final Map<String, Channel> replayChannels = new HashMap<>();
     private KieBase kieBase;
-    private int maxBufferSize;
+    private int maxBufferSize = 10;
     private KieContainer kieContainer;
     private boolean upgradable = false;
 
@@ -66,10 +76,19 @@ public class TestDroolsConfiguration implements DroolsConfiguration {
 
     public static TestDroolsConfiguration buildV1() {
         try {
+
+            ReleaseIdImpl releaseId = new ReleaseIdImpl("it.redhat.jdg", "rules", "1.0.0");
+            KieModule kieModule = KieAPITestUtils.createKieModule(releaseId, "pom/pom-1.0.0.xml", "rules/simple-rule.drl");
+            ClassPathResource resource = new ClassPathResource("pom/pom-1.0.0.xml");
+            File file = new File(resource.getURL().toURI());
+
+            MavenRepository.getMavenRepository().installArtifact(releaseId, (InternalKieModule) kieModule, file);
+
+            KieServices ks = KieServices.Factory.get();
+
             TestDroolsConfiguration droolsConfiguration = new TestDroolsConfiguration();
             droolsConfiguration.upgradable = true;
-            ReleaseIdImpl releaseId = new ReleaseIdImpl("it.redhat.jdg", "rules", "1.0.0");
-            droolsConfiguration.kieContainer = KieAPITestUtils.setupKieContainer(releaseId, "pom/pom-1.0.0.xml", "rules/simple-rule.drl");
+            droolsConfiguration.kieContainer = ks.newKieContainer(releaseId);
             droolsConfiguration.kieBase = droolsConfiguration.kieContainer.getKieBase();
             return droolsConfiguration;
         } catch (Exception e) {
@@ -77,13 +96,24 @@ public class TestDroolsConfiguration implements DroolsConfiguration {
         }
     }
 
-    public void upgradeToV2() {
+    public void upgradeToV2() throws IOException, URISyntaxException {
         if (!upgradable) {
             throw new IllegalStateException();
         }
+
         ReleaseIdImpl releaseId = new ReleaseIdImpl("it.redhat.jdg", "rules", "2.0.0");
-        KieAPITestUtils.setupKieContainer(releaseId, "pom/pom-2.0.0.xml", "rules/simple-rule_modified.drl");
-        kieContainer.updateToVersion(releaseId);
+        KieModule kieModule = KieAPITestUtils.createKieModule(releaseId, "pom/pom-2.0.0.xml", "rules/simple-rule_modified.drl");
+        ClassPathResource resource = new ClassPathResource("pom/pom-2.0.0.xml");
+        File file = new File(resource.getURL().toURI());
+
+        MavenRepository.getMavenRepository().installArtifact(releaseId, (InternalKieModule) kieModule, file);
+
+        ReleaseId oldReleaseId = kieContainer.getReleaseId();
+
+        Results results = kieContainer.updateToVersion(releaseId);
+        KieAPITestUtils.hasErrors(results);
+
+        kieBase = kieContainer.getKieBase();
     }
 
     public void registerChannel(String name, Channel channel, Channel replay) {
@@ -96,7 +126,7 @@ public class TestDroolsConfiguration implements DroolsConfiguration {
     }
 
     @Override
-    public KieSession getKieSession() {
+    public KieSession newKieSession() {
         try {
             return KieAPITestUtils.buildKieSession(kieBase);
         } catch (Exception e) {

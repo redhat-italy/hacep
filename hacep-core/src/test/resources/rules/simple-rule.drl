@@ -10,9 +10,9 @@ end
 
 rule "proxy-rule"
     when
-        $g: TestFact() over window:length(1)
+        TestFact($ppid: ppid) over window:length(1)
         $cumulative: Long(longValue>0) from accumulate(
-            TestFact($g.ppid == ppid, $amount: amount),
+            TestFact(ppid == $ppid, $amount: amount),
             init(long total = 0),
             action(total += $amount),
             result(total)

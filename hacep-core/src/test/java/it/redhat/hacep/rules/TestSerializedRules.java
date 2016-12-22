@@ -2,7 +2,6 @@ package it.redhat.hacep.rules;
 
 import it.redhat.hacep.cluster.TestDroolsConfiguration;
 import it.redhat.hacep.cluster.TestFact;
-import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,8 +28,6 @@ public class TestSerializedRules {
 
     private static TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildRulesWithRetract();
 
-    private static KieSessionByteArraySerializer serializer = new KieSessionByteArraySerializer(droolsConfiguration);
-
     private ZonedDateTime now;
 
     @Mock
@@ -48,7 +45,7 @@ public class TestSerializedRules {
     public void testSessionSerialization() {
         logger.info("Start test serialized rules");
 
-        KieSession kieSession = droolsConfiguration.getKieSession();
+        KieSession kieSession = droolsConfiguration.newKieSession();
         kieSession.registerChannel("additions", additionsChannel);
         kieSession.registerChannel("locks", locksChannel);
 
@@ -93,12 +90,11 @@ public class TestSerializedRules {
         kieSession.insert(generateFactTenSecondsAfter(1, 3L));
         kieSession.fireAllRules();
 
-
-        byte[] kieSessionBytes = serializer.writeObject(kieSession);
+        byte[] kieSessionBytes = droolsConfiguration.serialize(kieSession);
         Assert.assertTrue(kieSessionBytes.length > 0);
         kieSession.dispose();
 
-        KieSession kieSessionDeserialized = serializer.readSession(kieSessionBytes);
+        KieSession kieSessionDeserialized = droolsConfiguration.deserializeOrCreate(kieSessionBytes);
         kieSessionDeserialized.registerChannel("additions", additionsChannel);
         kieSessionDeserialized.registerChannel("locks", locksChannel);
 

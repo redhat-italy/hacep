@@ -19,8 +19,7 @@ package it.redhat.hacep.cluster;
 
 import it.redhat.hacep.cache.session.HAKieSerializedSession;
 import it.redhat.hacep.cache.session.HAKieSession;
-import it.redhat.hacep.configuration.DroolsConfiguration;
-import it.redhat.hacep.drools.KieSessionByteArraySerializer;
+import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
 import org.infinispan.Cache;
@@ -50,8 +49,6 @@ public class ClusterTest extends AbstractClusterTest {
 
     private static TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildV1();
 
-    private static KieSessionByteArraySerializer serializer = new KieSessionByteArraySerializer(droolsConfiguration);
-
     private static ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     @Mock
@@ -63,21 +60,18 @@ public class ClusterTest extends AbstractClusterTest {
 
     @Test
     public void testClusterSize() {
-        System.out.println("Start test cluster size");
         logger.info("Start test cluster size");
         Cache<Key, HAKieSession> cache1 = startNodes(2).getCache();
         Cache<Key, HAKieSession> cache2 = startNodes(2).getCache();
 
         assertEquals(2, ((DefaultCacheManager) cache1.getCacheManager()).getClusterSize());
         assertEquals(2, ((DefaultCacheManager) cache2.getCacheManager()).getClusterSize());
-        System.out.println("End test cluster size");
         logger.info("End test cluster size");
     }
 
     @Test
     public void testEmptyHASession() {
         logger.info("Start test empty HASessionID");
-        System.out.println("Start test empty HASessionID");
         droolsConfiguration.setMaxBufferSize(10);
 
         Cache<String, Object> cache1 = startNodes(2).getCache();
@@ -86,7 +80,7 @@ public class ClusterTest extends AbstractClusterTest {
         reset(replayChannel);
 
         String key = "1";
-        HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
+        HAKieSession session1 = new HAKieSession(droolsConfiguration, executorService);
 
         cache1.put(key, session1);
         Object serializedSessionCopy = cache2.get(key);
@@ -98,14 +92,12 @@ public class ClusterTest extends AbstractClusterTest {
 
         HAKieSession session2 = ((HAKieSerializedSession) serializedSessionCopy).rebuild();
         Assert.assertNotNull(session2);
-        System.out.println("End test empty HASessionID");
         logger.info("End test empty HASessionID");
     }
 
     @Test
     public void testNonEmptyHASession() {
         logger.info("Start test non empty HASessionID");
-        System.out.println("Start test non empty HASessionID");
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(10);
 
@@ -113,7 +105,7 @@ public class ClusterTest extends AbstractClusterTest {
         Cache<String, Object> cache2 = startNodes(2).getCache();
 
         String key = "2";
-        HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
+        HAKieSession session1 = new HAKieSession(droolsConfiguration, executorService);
 
         cache1.put(key, session1);
 
@@ -155,14 +147,12 @@ public class ClusterTest extends AbstractClusterTest {
 
         verify(additionsChannel, atMost(1)).send(any());
         verify(additionsChannel, times(1)).send(eq(100L));
-        System.out.println("End test non empty HASessionID");
         logger.info("End test non empty HASessionID");
     }
 
     @Test
     public void testHASessionWithMaxBuffer() {
         logger.info("Start test HASessionID with max buffer 2");
-        System.out.println("Start test HASessionID with max buffer 2");
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(2);
 
@@ -172,7 +162,7 @@ public class ClusterTest extends AbstractClusterTest {
         reset(replayChannel, additionsChannel);
 
         String key = "3";
-        HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
+        HAKieSession session1 = new HAKieSession(droolsConfiguration, executorService);
 
         cache1.put(key, session1);
 
@@ -207,7 +197,6 @@ public class ClusterTest extends AbstractClusterTest {
         verify(additionsChannel, times(1)).send(eq(100L));
         // Double check on total number of calls to the method send
         verify(additionsChannel, times(1)).send(any());
-        System.out.println("End test HASessionID with max buffer 2");
         logger.info("End test HASessionID with max buffer 2");
     }
 
@@ -215,7 +204,6 @@ public class ClusterTest extends AbstractClusterTest {
     @Test
     public void testHASessionAddNode() {
         logger.info("Start test HASessionID add node");
-        System.out.println("Start test HASessionID add node");
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(10);
 
@@ -224,7 +212,7 @@ public class ClusterTest extends AbstractClusterTest {
         reset(replayChannel, additionsChannel);
 
         String key = "3";
-        HAKieSession session1 = new HAKieSession(droolsConfiguration, serializer, executorService);
+        HAKieSession session1 = new HAKieSession(droolsConfiguration, executorService);
 
         cache1.put(key, session1);
 
@@ -265,7 +253,6 @@ public class ClusterTest extends AbstractClusterTest {
         // Double check on total number of calls to the method send
         verify(additionsChannel, times(1)).send(any());
 
-        System.out.println("End test HASessionID add node");
         logger.info("End test HASessionID add node");
     }
 
@@ -275,7 +262,7 @@ public class ClusterTest extends AbstractClusterTest {
     }
 
     @Override
-    protected DroolsConfiguration getKieBaseConfiguration() {
+    protected AbstractBaseDroolsConfiguration getKieBaseConfiguration() {
         return droolsConfiguration;
     }
 

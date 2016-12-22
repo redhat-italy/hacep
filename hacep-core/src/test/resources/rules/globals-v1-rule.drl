@@ -2,6 +2,8 @@ import it.redhat.hacep.cluster.TestFact
 
 dialect  "mvel"
 
+global java.util.List list
+
 declare TestFact
     @role( event )
     @timestamp ( instant.toEpochMilli() )
@@ -10,13 +12,12 @@ end
 
 rule "proxy-rule"
     when
-        TestFact($ppid: ppid) over window:length(1)
         $cumulative: Long(longValue>0) from accumulate(
-            TestFact(ppid == $ppid, $amount: amount),
+            $g: Long() from entry-point DEFAULT,
             init(long total = 0),
-            action(total += $amount * 2),
+            action(total += $g),
             result(total)
         )
     then
-        channels["additions"].send($cumulative);
+        list.add($cumulative);
 end

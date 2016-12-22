@@ -1,7 +1,6 @@
 package it.redhat.hacep.rules;
 
 import it.redhat.hacep.cluster.TestDroolsConfiguration;
-import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.rules.model.Gameplay;
 import org.junit.Assert;
@@ -19,10 +18,7 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestSerializedRetractRules {
@@ -30,8 +26,6 @@ public class TestSerializedRetractRules {
     private final static Logger logger = LoggerFactory.getLogger(TestSerializedRetractRules.class);
 
     private static TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildRulesWithGamePlayRetract();
-
-    private static KieSessionByteArraySerializer serializer = new KieSessionByteArraySerializer(droolsConfiguration);
 
     private ZonedDateTime now;
 
@@ -48,7 +42,7 @@ public class TestSerializedRetractRules {
         logger.info("Start test serialized rules");
         reset(outcomesChannel);
 
-        KieSession kieSession = droolsConfiguration.getKieSession();
+        KieSession kieSession = droolsConfiguration.newKieSession();
         kieSession.registerChannel("outcomes", outcomesChannel);
 
         kieSession.insert(generateFactTenSecondsAfter(1));
@@ -59,11 +53,11 @@ public class TestSerializedRetractRules {
 
         reset(outcomesChannel);
 
-        byte[] kieSessionBytes = serializer.writeObject(kieSession);
+        byte[] kieSessionBytes = droolsConfiguration.serialize(kieSession);
         Assert.assertTrue(kieSessionBytes.length > 0);
         kieSession.dispose();
 
-        KieSession kieSessionDeserialized = serializer.readSession(kieSessionBytes);
+        KieSession kieSessionDeserialized = droolsConfiguration.deserializeOrCreate(kieSessionBytes);
         kieSessionDeserialized.registerChannel("outcomes", outcomesChannel);
 
         kieSessionDeserialized.insert(generateFactTenSecondsAfter(1));
