@@ -12,6 +12,7 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.eviction.EvictionType;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.kie.api.runtime.Channel;
@@ -24,24 +25,23 @@ import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.reset;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestPassivation extends AbstractClusterTest {
 
     private final static Logger logger = LoggerFactory.getLogger(TestPassivation.class);
 
-    private final static TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildRulesWithRetract();
-
     private final static ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     public static final String CACHE_NAME = "application";
 
     private ZonedDateTime now = ZonedDateTime.now();
-
 
     @Mock
     private Channel replayChannel;
@@ -51,6 +51,13 @@ public class TestPassivation extends AbstractClusterTest {
 
     @Mock
     private Channel locksChannel;
+
+    private String passivationLocation;
+
+    @Before
+    public void createTemporaryLocationName() {
+        passivationLocation = "./target/" + UUID.randomUUID().toString();
+    }
 
     @Override
     public ConfigurationBuilder extendDefaultConfiguration(ConfigurationBuilder builder) {
@@ -62,9 +69,10 @@ public class TestPassivation extends AbstractClusterTest {
                 .preload(true)
                 .fetchPersistentState(true)
                 .purgeOnStartup(false)
-                .location("./target")
-                .async().enabled(true)
-                .threadPoolSize(5).singleton().enabled(false)
+                .location(passivationLocation)
+//                .async().enabled(true)
+//                .threadPoolSize(5)
+                .singleton().enabled(false)
                 .eviction()
                 .strategy(EvictionStrategy.LRU).type(EvictionType.COUNT).size(1024);
         return builder;
@@ -72,14 +80,17 @@ public class TestPassivation extends AbstractClusterTest {
 
     @Test
     public void testPassivation() {
+        reset(additionsChannel, replayChannel, locksChannel);
+
         logger.info("Start test serialized rules");
         logger.info("Start test modified rules");
 
+        TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildRulesWithRetract();
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.registerChannel("locks", locksChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(10);
 
-        Cache<String, Object> cache = startNodes(1).getCache(CACHE_NAME);
+        Cache<String, Object> cache = startNodes(1, droolsConfiguration).getCache(CACHE_NAME);
 
         String key = "1";
         HAKieSession session1 = new HAKieSession(droolsConfiguration, executorService);
@@ -131,7 +142,8 @@ public class TestPassivation extends AbstractClusterTest {
         cache.put(key, session1);
 
         stopNodes();
-        Cache<String, Object> cacheDeserialized = startNodes(1).getCache(CACHE_NAME);
+
+        Cache<String, Object> cacheDeserialized = startNodes(1, droolsConfiguration).getCache(CACHE_NAME);
 
         Object o = cacheDeserialized.get(key);
         Assert.assertTrue(o instanceof HAKieSerializedSession);
@@ -168,16 +180,12 @@ public class TestPassivation extends AbstractClusterTest {
         order.verifyNoMoreInteractions();
 
         logger.info("End test serialized rules");
+        droolsConfiguration.dispose();
     }
 
     @Override
     protected Channel getReplayChannel() {
         return replayChannel;
-    }
-
-    @Override
-    protected AbstractBaseDroolsConfiguration getKieBaseConfiguration() {
-        return droolsConfiguration;
     }
 
     private Fact generateFactTenSecondsAfter(long ppid, long amount) {

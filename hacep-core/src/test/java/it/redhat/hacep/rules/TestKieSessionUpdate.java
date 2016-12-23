@@ -5,24 +5,18 @@ import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.playground.rules.reward.catalog.KieAPITestUtils;
 import it.redhat.hacep.support.KieSessionUtils;
-import org.drools.compiler.kie.builder.impl.InternalKieModule;
 import org.drools.compiler.kproject.ReleaseIdImpl;
-import org.drools.core.io.impl.ClassPathResource;
 import org.junit.Assert;
 import org.junit.Test;
 import org.kie.api.KieBase;
 import org.kie.api.KieServices;
-import org.kie.api.builder.KieModule;
 import org.kie.api.marshalling.Marshaller;
 import org.kie.api.marshalling.ObjectMarshallingStrategy;
 import org.kie.api.marshalling.ObjectMarshallingStrategyAcceptor;
-import org.kie.api.runtime.Channel;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.internal.marshalling.MarshallerFactory;
-import org.kie.scanner.MavenRepository;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.ZonedDateTime;
@@ -40,9 +34,7 @@ public class TestKieSessionUpdate {
         KieServices ks = KieServices.Factory.get();
 
         ReleaseIdImpl releaseIdV1 = new ReleaseIdImpl("it.redhat.test.update", "rules", "1.0.0");
-        installRelease(releaseIdV1, "pom/pom-1.0.0.xml", "rules/globals-v1-rule.drl");
-
-        KieContainer kieContainer = ks.newKieContainer(releaseIdV1);
+        KieContainer kieContainer = KieAPITestUtils.setupKieContainerFromTemplates(releaseIdV1, "rules/globals-v1-rule.drl");
 
         KieSession kieSession = kieContainer.newKieSession();
         kieSession.setGlobal("list", globalList);
@@ -63,7 +55,7 @@ public class TestKieSessionUpdate {
         Assert.assertEquals(3L, globalList.get(1));
 
         ReleaseIdImpl releaseIdV2 = new ReleaseIdImpl("it.redhat.test.update", "rules", "2.0.0");
-        installRelease(releaseIdV2, "pom/pom-2.0.0.xml", "rules/globals-v2-rule.drl");
+        KieAPITestUtils.buildReleaseFromTemplates(releaseIdV2, "rules/globals-v2-rule.drl");
 
         kieContainer.updateToVersion(releaseIdV2);
         kieSession.insert(4L);
@@ -84,9 +76,7 @@ public class TestKieSessionUpdate {
         KieServices ks = KieServices.Factory.get();
 
         ReleaseIdImpl releaseIdV1 = new ReleaseIdImpl("it.redhat.test.serialized", "rules", "1.0.0");
-        installRelease(releaseIdV1, "pom/pom-1.0.0.xml", "rules/globals-v1-rule.drl");
-
-        KieContainer kieContainer = ks.newKieContainer(releaseIdV1);
+        KieContainer kieContainer = KieAPITestUtils.setupKieContainerFromTemplates(releaseIdV1, "rules/globals-v1-rule.drl");
 
         KieSession kieSession = kieContainer.newKieSession();
         kieSession.setGlobal("list", globalList);
@@ -111,7 +101,7 @@ public class TestKieSessionUpdate {
         kieSession.dispose();
 
         ReleaseIdImpl releaseIdV2 = new ReleaseIdImpl("it.redhat.test.serialized", "rules", "2.0.0");
-        installRelease(releaseIdV2, "pom/pom-2.0.0.xml", "rules/globals-v2-rule.drl");
+        KieAPITestUtils.buildReleaseFromTemplates(releaseIdV2, "rules/globals-v2-rule.drl");
 
         kieContainer.updateToVersion(releaseIdV2);
 
@@ -133,10 +123,8 @@ public class TestKieSessionUpdate {
 
         KieServices ks = KieServices.Factory.get();
 
-        ReleaseIdImpl releaseIdV1 = new ReleaseIdImpl("it.redhat.test.serialized.window", "rules", "1.0.0");
-        installRelease(releaseIdV1, "pom/pom-1.0.0.xml", "rules/simple-rule.drl");
-
-        KieContainer kieContainer = ks.newKieContainer(releaseIdV1);
+        ReleaseIdImpl releaseIdV1 = new ReleaseIdImpl("it.redhat.jdg.v1", "rules", "1.0.0");
+        KieContainer kieContainer = KieAPITestUtils.setupKieContainerFromTemplates(releaseIdV1, "rules/simple-rule.drl");
 
         KieSession kieSession = kieContainer.newKieSession();
         kieSession.registerChannel("additions", globalList::add);
@@ -164,8 +152,8 @@ public class TestKieSessionUpdate {
         byte[] buffer = serializer.writeObject(createSerializableMarshaller(kieContainer.getKieBase()), kieSession);
         kieSession.dispose();
 
-        ReleaseIdImpl releaseIdV2 = new ReleaseIdImpl("it.redhat.test.serialized.window", "rules", "2.0.0");
-        installRelease(releaseIdV2, "pom/pom-2.0.0.xml", "rules/simple-rule_modified.drl");
+        ReleaseIdImpl releaseIdV2 = new ReleaseIdImpl("it.redhat.jdg.v2", "rules", "2.0.0");
+        KieAPITestUtils.buildReleaseFromTemplates(releaseIdV2, "rules/simple-rule_modified.drl");
 
         KieSession serializedSession = serializer.readSession(createSerializableMarshaller(kieContainer.getKieBase()), buffer);
         serializedSession.registerChannel("additions", globalList::add);
@@ -182,13 +170,6 @@ public class TestKieSessionUpdate {
         Assert.assertEquals(1L, globalList.get(0));
         Assert.assertEquals(3L, globalList.get(1));
         Assert.assertEquals(14L, globalList.get(2));
-    }
-
-    private void installRelease(ReleaseIdImpl releaseId, String pom, String... rules) throws URISyntaxException, IOException {
-        KieModule kieModule = KieAPITestUtils.createKieModule(releaseId, pom, rules);
-        ClassPathResource resource = new ClassPathResource(pom);
-        File file = new File(resource.getURL().toURI());
-        MavenRepository.getMavenRepository().installArtifact(releaseId, (InternalKieModule) kieModule, file);
     }
 
     private Marshaller createSerializableMarshaller(KieBase kieBase) {

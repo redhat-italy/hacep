@@ -19,12 +19,12 @@ package it.redhat.hacep.configuration;
 
 import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import org.kie.api.KieBase;
+import org.kie.api.KieServices;
+import org.kie.api.marshalling.KieMarshallers;
 import org.kie.api.marshalling.Marshaller;
 import org.kie.api.marshalling.ObjectMarshallingStrategy;
-import org.kie.api.marshalling.ObjectMarshallingStrategyAcceptor;
 import org.kie.api.runtime.Channel;
 import org.kie.api.runtime.KieSession;
-import org.kie.internal.marshalling.MarshallerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,8 +33,6 @@ import java.util.Map;
 public abstract class AbstractBaseDroolsConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBaseDroolsConfiguration.class);
-
-    private static final KieSessionByteArraySerializer serializer = new KieSessionByteArraySerializer();
 
     public abstract KieSession newKieSession();
 
@@ -46,7 +44,7 @@ public abstract class AbstractBaseDroolsConfiguration {
 
     public byte[] serialize(KieSession kieSession) {
         Marshaller marshaller = createSerializableMarshaller();
-        return serializer.writeObject(marshaller, kieSession);
+        return KieSessionByteArraySerializer.writeObject(marshaller, kieSession);
     }
 
     public KieSession deserializeOrCreate(byte[] buffer) {
@@ -56,7 +54,7 @@ public abstract class AbstractBaseDroolsConfiguration {
         }
 
         Marshaller marshaller = createSerializableMarshaller();
-        return serializer.readSession(marshaller, buffer);
+        return KieSessionByteArraySerializer.readSession(marshaller, buffer);
     }
 
     public void registerChannels(KieSession session) {
@@ -76,9 +74,9 @@ public abstract class AbstractBaseDroolsConfiguration {
     }
 
     private Marshaller createSerializableMarshaller() {
-        ObjectMarshallingStrategyAcceptor acceptor = MarshallerFactory.newClassFilterAcceptor(new String[]{"*.*"});
-        ObjectMarshallingStrategy strategy = MarshallerFactory.newSerializeMarshallingStrategy(acceptor);
-        Marshaller marshaller = MarshallerFactory.newMarshaller(getKieBase(), new ObjectMarshallingStrategy[]{strategy});
-        return marshaller;
+        KieServices ks = KieServices.Factory.get();
+        KieMarshallers marshallers = ks.getMarshallers();
+        ObjectMarshallingStrategy strategy = marshallers.newSerializeMarshallingStrategy();
+        return marshallers.newMarshaller(getKieBase(), new ObjectMarshallingStrategy[]{strategy});
     }
 }

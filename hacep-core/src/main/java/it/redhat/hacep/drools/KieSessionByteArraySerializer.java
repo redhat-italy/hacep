@@ -29,7 +29,7 @@ public class KieSessionByteArraySerializer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KieSessionByteArraySerializer.class);
 
-    public byte[] writeObject(Marshaller marshaller, KieSession kieSession) {
+    public static byte[] writeObject(Marshaller marshaller, KieSession kieSession) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
              ObjectOutputStream oos = new ObjectOutputStream(outputStream);) {
             /*
@@ -54,7 +54,7 @@ public class KieSessionByteArraySerializer {
         }
     }
 
-    public KieSession readSession(Marshaller marshaller, byte[] serializedKieSession) {
+    public static KieSession readSession(Marshaller marshaller, byte[] serializedKieSession) {
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(serializedKieSession);
              ObjectInputStream ois = new ObjectInputStream(inputStream);) {
             KieSessionConfiguration kieSessionConfiguration = (KieSessionConfiguration) ois.readObject();

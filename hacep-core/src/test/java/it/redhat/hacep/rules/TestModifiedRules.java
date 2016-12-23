@@ -8,10 +8,7 @@ import it.redhat.hacep.cluster.TestFact;
 import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
 import it.redhat.hacep.model.Fact;
 import org.infinispan.Cache;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.kie.api.runtime.Channel;
 import org.kie.api.runtime.KieSession;
@@ -37,7 +34,6 @@ public class TestModifiedRules extends AbstractClusterTest {
 
     private final static Logger logger = LoggerFactory.getLogger(TestModifiedRules.class);
 
-    private TestDroolsConfiguration droolsConfiguration;
     private static ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     @Mock
@@ -54,16 +50,11 @@ public class TestModifiedRules extends AbstractClusterTest {
 
     private ZonedDateTime now = ZonedDateTime.now();
 
-    @Before
-    public void init() {
-        super.init();
-        droolsConfiguration = TestDroolsConfiguration.buildV1();
-    }
-
     @Test
     public void testRuleUpdateLiveSession() throws IOException, URISyntaxException {
         logger.info("Start test modified rules");
 
+        TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildV1();
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(10);
 
@@ -93,12 +84,14 @@ public class TestModifiedRules extends AbstractClusterTest {
         verify(additionsChannel, atMost(1)).send(any());
 
         logger.info("End test modified rules");
+        droolsConfiguration.dispose();
     }
 
     @Test
     public void testRuleUpdateSerializedSession() throws IOException, URISyntaxException {
         logger.info("Start test modified rules");
 
+        TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildV1();
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(10);
 
@@ -141,17 +134,19 @@ public class TestModifiedRules extends AbstractClusterTest {
         inOrder.verifyNoMoreInteractions();
 
         logger.info("End test modified rules");
+        droolsConfiguration.dispose();
     }
 
     @Test
     public void testNonEmptyHASession() throws IOException, URISyntaxException {
         logger.info("Start test modified rules");
 
+        TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildV1();
         droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
         droolsConfiguration.setMaxBufferSize(10);
 
-        Cache<String, Object> cache1 = startNodes(2).getCache();
-        Cache<String, Object> cache2 = startNodes(2).getCache();
+        Cache<String, Object> cache1 = startNodes(2, droolsConfiguration).getCache();
+        Cache<String, Object> cache2 = startNodes(2, droolsConfiguration).getCache();
 
         String key = "2";
         HAKieSession session1 = new HAKieSession(droolsConfiguration, executorService);
@@ -208,16 +203,12 @@ public class TestModifiedRules extends AbstractClusterTest {
         verify(otherAdditionsChannel, times(1)).send(eq(120L));
 
         logger.info("End test modified rules");
+        droolsConfiguration.dispose();
     }
 
     @Override
     protected Channel getReplayChannel() {
         return replayChannel;
-    }
-
-    @Override
-    protected AbstractBaseDroolsConfiguration getKieBaseConfiguration() {
-        return droolsConfiguration;
     }
 
     private Fact generateFactTenSecondsAfter(long ppid, long amount) {

@@ -3,6 +3,7 @@ package it.redhat.hacep.rules;
 import it.redhat.hacep.cluster.TestDroolsConfiguration;
 import it.redhat.hacep.cluster.TestFact;
 import it.redhat.hacep.model.Fact;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,8 +27,6 @@ public class TestSerializedRules {
 
     private final static Logger logger = LoggerFactory.getLogger(TestSerializedRules.class);
 
-    private static TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildRulesWithRetract();
-
     private ZonedDateTime now;
 
     @Mock
@@ -43,6 +42,8 @@ public class TestSerializedRules {
 
     @Test
     public void testSessionSerialization() {
+        TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildRulesWithRetract();
+
         logger.info("Start test serialized rules");
 
         KieSession kieSession = droolsConfiguration.newKieSession();
@@ -133,6 +134,7 @@ public class TestSerializedRules {
         order.verifyNoMoreInteractions();
 
         logger.info("End test serialized rules");
+        droolsConfiguration.dispose();
     }
 
     private Fact generateFactTenSecondsAfter(long ppid, long amount) {

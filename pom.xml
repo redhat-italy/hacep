@@ -75,8 +75,9 @@
             </activation>
             <properties>
                 <version.org.infinispan>8.3.0.Final-redhat-1</version.org.infinispan>
-                <version.org.jboss.fuse>6.2.1.redhat-084</version.org.jboss.fuse>
-                <version.org.jboss.bom.brms>6.3.0.GA-redhat-3</version.org.jboss.bom.brms>
+                <version.org.jboss.fuse>6.3.0.redhat-187</version.org.jboss.fuse>
+                <!--<version.org.jboss.fuse>6.2.1.redhat-084</version.org.jboss.fuse>-->
+                <version.org.jboss.bom.brms>6.4.0.GA-redhat-2</version.org.jboss.bom.brms>
                 <version.weld>1.1.33.Final</version.weld>
                 <version.org.jboss.bom.eap>6.4.5.GA</version.org.jboss.bom.eap>
             </properties>
@@ -119,13 +120,19 @@
                             </exclusion>
                         </exclusions>
                     </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.spec</groupId>
+                        <artifactId>jboss-javaee-all-6.0</artifactId>
+                        <version>3.0.3.Final</version>
+                    </dependency>
                 </dependencies>
             </dependencyManagement>
+
             <dependencies>
                 <dependency>
                     <groupId>org.jboss.spec</groupId>
                     <artifactId>jboss-javaee-all-6.0</artifactId>
-                    <version>3.0.3.Final</version>
                     <scope>provided</scope>
                 </dependency>
             </dependencies>
@@ -134,8 +141,9 @@
             <id>supported-GA-ee7</id>
             <properties>
                 <version.org.infinispan>8.3.0.Final-redhat-1</version.org.infinispan>
-                <version.org.jboss.fuse>6.2.1.redhat-084</version.org.jboss.fuse>
-                <version.org.jboss.bom.brms>6.3.0.GA-redhat-3</version.org.jboss.bom.brms>
+                <version.org.jboss.fuse>6.3.0.redhat-187</version.org.jboss.fuse>
+                <!--<version.org.jboss.fuse>6.2.1.redhat-084</version.org.jboss.fuse>-->
+                <version.org.jboss.bom.brms>6.4.0.GA-redhat-2</version.org.jboss.bom.brms>
                 <version.weld>2.3.5.Final</version.weld>
                 <version.org.jboss.bom.eap>7.0.2.GA</version.org.jboss.bom.eap>
             </properties>
@@ -177,13 +185,19 @@
                             </exclusion>
                         </exclusions>
                     </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.spec</groupId>
+                        <artifactId>jboss-javaee-all-7.0</artifactId>
+                        <version>1.0.4.Final</version>
+                    </dependency>
                 </dependencies>
             </dependencyManagement>
+
             <dependencies>
                 <dependency>
                     <groupId>org.jboss.spec</groupId>
                     <artifactId>jboss-javaee-all-7.0</artifactId>
-                    <version>1.0.4.Final</version>
                     <scope>provided</scope>
                 </dependency>
             </dependencies>
@@ -196,6 +210,7 @@
                 <version.org.jboss.bom>1.0.7.Final</version.org.jboss.bom>
                 <version.org.apache.camel>2.18.1</version.org.apache.camel>
                 <version.org.apache.activemq>5.14.2</version.org.apache.activemq>
+                <version.weld>1.1.33.Final</version.weld>
             </properties>
             <dependencyManagement>
                 <dependencies>
@@ -243,6 +258,12 @@
                         <type>pom</type>
                         <scope>import</scope>
                     </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.spec</groupId>
+                        <artifactId>jboss-javaee-all-6.0</artifactId>
+                        <version>3.0.3.Final</version>
+                    </dependency>
                 </dependencies>
             </dependencyManagement>
 
@@ -250,7 +271,6 @@
                 <dependency>
                     <groupId>org.jboss.spec</groupId>
                     <artifactId>jboss-javaee-all-6.0</artifactId>
-                    <version>3.0.3.Final</version>
                     <scope>provided</scope>
                 </dependency>
             </dependencies>
@@ -312,65 +332,11 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
             <dependency>
                 <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-core</artifactId>
                 <version>${version.weld}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-artifact</artifactId>
-                <version>${maven.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-core</artifactId>
-                <version>${maven.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-model</artifactId>
-                <version>${maven.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-model-builder</artifactId>
-                <version>${maven.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-plugin-api</artifactId>
-                <version>${maven.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-settings</artifactId>
-                <version>${maven.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-settings-builder</artifactId>
-                <version>${maven.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-compat</artifactId>
-                <version>${maven.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-aether-provider</artifactId>
-                <version>${maven.version}</version>
                 <scope>test</scope>
             </dependency>
 

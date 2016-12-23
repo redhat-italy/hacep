@@ -3,6 +3,7 @@ package it.redhat.hacep.rules;
 import it.redhat.hacep.cluster.TestDroolsConfiguration;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.rules.model.Gameplay;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,8 +26,6 @@ public class TestSerializedRetractRules {
 
     private final static Logger logger = LoggerFactory.getLogger(TestSerializedRetractRules.class);
 
-    private static TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildRulesWithGamePlayRetract();
-
     private ZonedDateTime now;
 
     @Mock
@@ -39,6 +38,8 @@ public class TestSerializedRetractRules {
 
     @Test
     public void testSessionSerialization() {
+        TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildRulesWithGamePlayRetract();
+
         logger.info("Start test serialized rules");
         reset(outcomesChannel);
 
@@ -67,6 +68,7 @@ public class TestSerializedRetractRules {
         verifyNoMoreInteractions(outcomesChannel);
 
         logger.info("End test serialized rules");
+        droolsConfiguration.dispose();
     }
 
     private Fact generateFactTenSecondsAfter(long ppid) {

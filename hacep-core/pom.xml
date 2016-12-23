@@ -46,14 +46,7 @@
             <groupId>org.kie</groupId>
             <artifactId>kie-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.kie</groupId>
-            <artifactId>kie-internal</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.kie</groupId>
-            <artifactId>kie-ci</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>org.drools</groupId>
             <artifactId>drools-compiler</artifactId>
@@ -94,13 +87,7 @@
             <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
             <scope>test</scope>
         </dependency>
-<!--
-        <dependency>
-            <groupId>org.jboss.arquillian.protocol</groupId>
-            <artifactId>arquillian-protocol-servlet</artifactId>
-            <scope>test</scope>
-        </dependency>
--->
+
         <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>
             <artifactId>arquillian-junit-container</artifactId>
@@ -126,7 +113,7 @@
         </dependency>
     </dependencies>
 
-    <!-- TODO: remove when bump brms version to >= 6.4 (or drools >= 6.5) -->
+    <!-- TODO: remove when bump brms version to >= 6.4 (or drools >= 6.5)
     <build>
         <plugins>
             <plugin>
@@ -141,5 +128,6 @@
             </plugin>
         </plugins>
     </build>
+    -->
 
 </project>

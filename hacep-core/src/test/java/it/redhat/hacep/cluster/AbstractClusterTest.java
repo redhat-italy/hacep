@@ -30,7 +30,6 @@ import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.junit.After;
-import org.junit.Before;
 import org.kie.api.runtime.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,20 +38,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractClusterTest {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(AbstractClusterTest.class);
 
-    private List<EmbeddedCacheManager> nodes = null;
+    private List<EmbeddedCacheManager> nodes = new ArrayList<>();
 
     protected abstract Channel getReplayChannel();
 
-    protected abstract AbstractBaseDroolsConfiguration getKieBaseConfiguration();
-
-    protected EmbeddedCacheManager startNodes(int owners) {
+    protected EmbeddedCacheManager startNodes(int owners, AbstractBaseDroolsConfiguration droolsConfiguration) {
         LOGGER.info("Start node with owners({})", owners);
-        DefaultCacheManager cacheManager = clusteredCacheManager(CacheMode.DIST_SYNC, owners);
+        DefaultCacheManager cacheManager = clusteredCacheManager(CacheMode.DIST_SYNC, owners, droolsConfiguration);
         nodes.add(cacheManager);
         return cacheManager;
     }
@@ -60,10 +58,32 @@ public abstract class AbstractClusterTest {
     protected void stopNodes() {
         nodes.forEach((e) -> LOGGER.info("Stopping cache manager: [{}]", e.getAddress()));
         nodes.forEach(EmbeddedCacheManager::stop);
-        nodes.clear();
+        ExecutorService service = Executors.newSingleThreadExecutor();
+        service.submit(() -> {
+            LOGGER.info("Await for {} nodes shutdown", nodes.size());
+            while (nodes.size() > 0) {
+                if (nodes.get(0).getStatus().isTerminated()) {
+                    nodes.remove(0);
+                }
+                Thread.sleep(100);
+                LOGGER.info("Still waiting for {} nodes shutdown", nodes.size());
+            }
+            LOGGER.info("Nodes shutdown complete", nodes.size());
+            return true;
+        });
+        try {
+            LOGGER.info("Waiting for termination");
+            service.shutdown();
+            LOGGER.info("Terminated");
+            service.awaitTermination(1, TimeUnit.MINUTES);
+            LOGGER.info("Shutdown");
+        } catch (InterruptedException e) {
+            LOGGER.error("Interrupted");
+            Thread.currentThread().interrupt();
+        }
     }
 
-    private DefaultCacheManager clusteredCacheManager(CacheMode mode, int owners) {
+    private DefaultCacheManager clusteredCacheManager(CacheMode mode, int owners, AbstractBaseDroolsConfiguration droolsConfiguration) {
         ExecutorService executorService = Executors.newFixedThreadPool(4);
 
         GlobalConfiguration glob = new GlobalConfigurationBuilder().clusteredDefault()
@@ -71,9 +91,9 @@ public abstract class AbstractClusterTest {
                 .clusterName("HACEP")
                 .globalJmxStatistics().allowDuplicateDomains(true).enable()
                 .serialization()
-                .addAdvancedExternalizer(new HAKieSession.HASessionExternalizer(getKieBaseConfiguration(), executorService))
-                .addAdvancedExternalizer(new HAKieSerializedSession.HASerializedSessionExternalizer(getKieBaseConfiguration(), executorService))
-                .addAdvancedExternalizer(new HAKieSessionDeltaEmpty.HASessionDeltaEmptyExternalizer(getKieBaseConfiguration(), executorService))
+                .addAdvancedExternalizer(new HAKieSession.HASessionExternalizer(droolsConfiguration, executorService))
+                .addAdvancedExternalizer(new HAKieSerializedSession.HASerializedSessionExternalizer(droolsConfiguration, executorService))
+                .addAdvancedExternalizer(new HAKieSessionDeltaEmpty.HASessionDeltaEmptyExternalizer(droolsConfiguration, executorService))
                 .addAdvancedExternalizer(new HAKieSessionDeltaFact.HASessionDeltaFactExternalizer())
                 .build();
 
@@ -93,11 +113,6 @@ public abstract class AbstractClusterTest {
         configurationBuilder
                 .clustering().cacheMode(mode)
                 .hash().numOwners(owners).groups().enabled();
-    }
-
-    @Before
-    public void init() {
-        nodes = new ArrayList<>();
     }
 
     @After

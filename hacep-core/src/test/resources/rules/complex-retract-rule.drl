@@ -59,10 +59,10 @@ rule "When RuleLocker expires"
     salience 10
     when
 	    $lock : TestRuleLocker($ppid: ppid)
-	    $fact: TestFact(ppid == $ppid, this after[25s, 1d] $lock)
+	    TestFact(ppid == $ppid, this after[25s, 1d] $lock)
     then
 	    retract($lock);
 
         channels["locks"].send("REMOVED");
-	    System.out.println("RuleLocker["+$lock+"] expired for playerId [" + $fact + "]");
+	    System.out.println("Removed RuleLocker expired for playerId [" + $ppid + "]");
 end
