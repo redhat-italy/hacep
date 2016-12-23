@@ -17,11 +17,9 @@
 
 package it.redhat.hacep.cache.session;
 
-import it.redhat.hacep.configuration.DroolsConfiguration;
+import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
 import it.redhat.hacep.configuration.annotations.HACEPExecutorService;
-import it.redhat.hacep.configuration.annotations.HACEPKieSessionSerializer;
 import it.redhat.hacep.configuration.annotations.HACEPSessionCache;
-import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
 import org.infinispan.Cache;
@@ -44,15 +42,11 @@ public class KieSessionSaver {
     private Cache<String, Object> sessionCache;
 
     @Inject
-    @HACEPKieSessionSerializer
-    private KieSessionByteArraySerializer serializer;
-
-    @Inject
     @HACEPExecutorService
     private ExecutorService executorService;
 
     @Inject
-    private DroolsConfiguration droolsConfiguration;
+    private AbstractBaseDroolsConfiguration droolsConfiguration;
 
     public void insert(Key key, Fact fact) {
         //SessionKey sessionKey = new SessionKey(key.getGroup());
@@ -66,11 +60,11 @@ public class KieSessionSaver {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Session doesn't exist, must create a new session");
                 }
-                haKieSession = new HAKieSession(droolsConfiguration, serializer, executorService);
+                haKieSession = new HAKieSession(droolsConfiguration, executorService);
                 sessionCache.put(sessionKey, haKieSession);
             } else {
                 haKieSession = (HAKieSession) value;
-                if(haKieSession.isSerialized()) {
+                if (haKieSession.isSerialized()) {
                     haKieSession = haKieSession.rebuild();
                 }
             }

@@ -17,8 +17,7 @@
 
 package it.redhat.hacep.cache.session;
 
-import it.redhat.hacep.configuration.DroolsConfiguration;
-import it.redhat.hacep.drools.KieSessionByteArraySerializer;
+import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
 import org.infinispan.atomic.Delta;
 import org.infinispan.atomic.DeltaAware;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
@@ -34,16 +33,14 @@ import static it.redhat.hacep.cache.session.JDGExternalizerIDs.HASessionDeltaID;
 
 public class HAKieSessionDeltaEmpty implements Delta {
 
-    private final KieSessionByteArraySerializer serializer;
     private final Executor executor;
-    private final DroolsConfiguration droolsConfiguration;
+    private final AbstractBaseDroolsConfiguration droolsConfiguration;
 
     public HAKieSessionDeltaEmpty() {
-        this(null, null, null);
+        this(null, null);
     }
 
-    public HAKieSessionDeltaEmpty(DroolsConfiguration droolsConfiguration, KieSessionByteArraySerializer serializer, Executor executor) {
-        this.serializer = serializer;
+    public HAKieSessionDeltaEmpty(AbstractBaseDroolsConfiguration droolsConfiguration, Executor executor) {
         this.executor = executor;
         this.droolsConfiguration = droolsConfiguration;
     }
@@ -53,18 +50,15 @@ public class HAKieSessionDeltaEmpty implements Delta {
         if (d != null) {
             return d;
         }
-        return new HAKieSerializedSession(droolsConfiguration, serializer, executor);
+        return new HAKieSerializedSession(droolsConfiguration, executor);
     }
 
     public static class HASessionDeltaEmptyExternalizer implements AdvancedExternalizer<HAKieSessionDeltaEmpty> {
 
-        private final KieSessionByteArraySerializer serializer;
         private final Executor executor;
-        private final DroolsConfiguration droolsConfiguration;
+        private final AbstractBaseDroolsConfiguration droolsConfiguration;
 
-        public HASessionDeltaEmptyExternalizer(DroolsConfiguration droolsConfiguration, KieSessionByteArraySerializer serializer,
-                                               Executor executor) {
-            this.serializer = serializer;
+        public HASessionDeltaEmptyExternalizer(AbstractBaseDroolsConfiguration droolsConfiguration, Executor executor) {
             this.executor = executor;
             this.droolsConfiguration = droolsConfiguration;
         }
@@ -85,7 +79,7 @@ public class HAKieSessionDeltaEmpty implements Delta {
 
         @Override
         public HAKieSessionDeltaEmpty readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-            return new HAKieSessionDeltaEmpty(droolsConfiguration, serializer, executor);
+            return new HAKieSessionDeltaEmpty(droolsConfiguration, executor);
         }
     }
 }

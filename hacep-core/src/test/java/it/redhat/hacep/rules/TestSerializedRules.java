@@ -2,8 +2,8 @@ package it.redhat.hacep.rules;
 
 import it.redhat.hacep.cluster.TestDroolsConfiguration;
 import it.redhat.hacep.cluster.TestFact;
-import it.redhat.hacep.drools.KieSessionByteArraySerializer;
 import it.redhat.hacep.model.Fact;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,10 +27,6 @@ public class TestSerializedRules {
 
     private final static Logger logger = LoggerFactory.getLogger(TestSerializedRules.class);
 
-    private static TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildRulesWithRetract();
-
-    private static KieSessionByteArraySerializer serializer = new KieSessionByteArraySerializer(droolsConfiguration);
-
     private ZonedDateTime now;
 
     @Mock
@@ -46,9 +42,11 @@ public class TestSerializedRules {
 
     @Test
     public void testSessionSerialization() {
+        TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildRulesWithRetract();
+
         logger.info("Start test serialized rules");
 
-        KieSession kieSession = droolsConfiguration.getKieSession();
+        KieSession kieSession = droolsConfiguration.newKieSession();
         kieSession.registerChannel("additions", additionsChannel);
         kieSession.registerChannel("locks", locksChannel);
 
@@ -93,12 +91,11 @@ public class TestSerializedRules {
         kieSession.insert(generateFactTenSecondsAfter(1, 3L));
         kieSession.fireAllRules();
 
-
-        byte[] kieSessionBytes = serializer.writeObject(kieSession);
+        byte[] kieSessionBytes = droolsConfiguration.serialize(kieSession);
         Assert.assertTrue(kieSessionBytes.length > 0);
         kieSession.dispose();
 
-        KieSession kieSessionDeserialized = serializer.readSession(kieSessionBytes);
+        KieSession kieSessionDeserialized = droolsConfiguration.deserializeOrCreate(kieSessionBytes);
         kieSessionDeserialized.registerChannel("additions", additionsChannel);
         kieSessionDeserialized.registerChannel("locks", locksChannel);
 
@@ -137,6 +134,7 @@ public class TestSerializedRules {
         order.verifyNoMoreInteractions();
 
         logger.info("End test serialized rules");
+        droolsConfiguration.dispose();
     }
 
     private Fact generateFactTenSecondsAfter(long ppid, long amount) {

@@ -17,9 +17,9 @@
 
 package it.redhat.hacep.cache.session;
 
-import it.redhat.hacep.configuration.DroolsConfiguration;
-import it.redhat.hacep.drools.KieSessionByteArraySerializer;
+import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
 import it.redhat.hacep.model.Fact;
+import it.redhat.hacep.support.KieSessionUtils;
 import org.infinispan.atomic.Delta;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.kie.api.runtime.KieSession;
@@ -43,9 +43,8 @@ public class HAKieSerializedSession extends HAKieSession {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(HAKieSerializedSession.class);
 
-    private final KieSessionByteArraySerializer serializer;
     private final Executor executor;
-    private final DroolsConfiguration droolsConfiguration;
+    private final AbstractBaseDroolsConfiguration droolsConfiguration;
 
     private AtomicBoolean saving = new AtomicBoolean(false);
     private volatile CountDownLatch latch = new CountDownLatch(0);
@@ -54,16 +53,14 @@ public class HAKieSerializedSession extends HAKieSession {
     private transient long size = 0;
     private Queue<Fact> buffer = new ConcurrentLinkedQueue<>();
 
-    public HAKieSerializedSession(DroolsConfiguration droolsConfiguration, KieSessionByteArraySerializer serializer, Executor executor) {
-        super(droolsConfiguration, serializer, executor);
+    public HAKieSerializedSession(AbstractBaseDroolsConfiguration droolsConfiguration, Executor executor) {
+        super(droolsConfiguration, executor);
         this.droolsConfiguration = droolsConfiguration;
-        this.serializer = serializer;
         this.executor = executor;
     }
 
-    public HAKieSerializedSession(DroolsConfiguration droolsConfiguration, KieSessionByteArraySerializer serializer,
-                                  Executor executor, byte[] session) {
-        this(droolsConfiguration, serializer, executor);
+    public HAKieSerializedSession(AbstractBaseDroolsConfiguration droolsConfiguration, Executor executor, byte[] session) {
+        this(droolsConfiguration, executor);
         this.session = session;
     }
 
@@ -83,12 +80,12 @@ public class HAKieSerializedSession extends HAKieSession {
                 try {
                     printSessionSize("Start consuming buffer");
                     localSession = buildSession();
-                    session = serializer.writeObject(localSession);
+                    session = droolsConfiguration.serialize(localSession);
                     printSessionSize("Buffer empty");
                 } catch (Exception e) {
                     LOGGER.error("Unexpected exception", e);
                 } finally {
-                    dispose(localSession);
+                    KieSessionUtils.dispose(localSession);
                     saving.set(false);
                     latch.countDown();
                 }
@@ -98,7 +95,8 @@ public class HAKieSerializedSession extends HAKieSession {
 
     public HAKieSession rebuild() {
         this.waitForSnapshotToComplete();
-        return new HAKieSession(droolsConfiguration, serializer, executor, buildSession());
+        KieSession session = buildSession();
+        return new HAKieSession(droolsConfiguration, executor, session);
     }
 
     public void waitForSnapshotToComplete() {
@@ -123,23 +121,22 @@ public class HAKieSerializedSession extends HAKieSession {
     }
 
     private KieSession buildSession() {
-        KieSession localSession;
-        if (session != null) {
-            localSession = serializer.readSession(this.session);
-        } else {
-            localSession = droolsConfiguration.getKieSession();
+        if (LOGGER.isDebugEnabled()) {
+            int sessionSize = this.session != null ? this.session.length : 0;
+            LOGGER.debug("Rebuild session from serialized byte array. Buffer size [" + sessionSize + "]");
         }
+        KieSession localSession = droolsConfiguration.deserializeOrCreate(this.session);
         if (!buffer.isEmpty()) {
-            droolsConfiguration.getReplayChannels().forEach(localSession::registerChannel);
+            droolsConfiguration.registerReplayChannels(localSession);
             while (!buffer.isEmpty()) {
                 Fact fact = buffer.remove();
-                advanceClock(localSession, fact);
+                KieSessionUtils.advanceClock(localSession, fact);
                 localSession.insert(fact);
             }
             size = 0;
             localSession.fireAllRules();
         }
-        droolsConfiguration.getChannels().forEach(localSession::registerChannel);
+        droolsConfiguration.registerChannels(localSession);
         return localSession;
     }
 
@@ -163,14 +160,16 @@ public class HAKieSerializedSession extends HAKieSession {
         return true;
     }
 
+    public byte[] getSerializedSession() {
+        return this.session;
+    }
+
     public static class HASerializedSessionExternalizer implements AdvancedExternalizer<HAKieSerializedSession> {
 
-        private final DroolsConfiguration droolsConfiguration;
-        private final KieSessionByteArraySerializer serializer;
+        private final AbstractBaseDroolsConfiguration droolsConfiguration;
         private final Executor executor;
 
-        public HASerializedSessionExternalizer(DroolsConfiguration droolsConfiguration, KieSessionByteArraySerializer serializer, Executor executor) {
-            this.serializer = serializer;
+        public HASerializedSessionExternalizer(AbstractBaseDroolsConfiguration droolsConfiguration, Executor executor) {
             this.droolsConfiguration = droolsConfiguration;
             this.executor = executor;
         }
@@ -196,7 +195,7 @@ public class HAKieSerializedSession extends HAKieSession {
 
         @Override
         public HAKieSerializedSession readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-            HAKieSerializedSession haKieSerializedSession = new HAKieSerializedSession(droolsConfiguration, serializer, executor);
+            HAKieSerializedSession haKieSerializedSession = new HAKieSerializedSession(droolsConfiguration, executor);
             int len = input.readInt();
             if (len > 0) {
                 haKieSerializedSession.session = new byte[len];

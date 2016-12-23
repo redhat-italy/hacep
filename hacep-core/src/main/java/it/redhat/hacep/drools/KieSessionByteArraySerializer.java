@@ -17,14 +17,9 @@
 
 package it.redhat.hacep.drools;
 
-import it.redhat.hacep.configuration.DroolsConfiguration;
-import org.kie.api.KieBase;
 import org.kie.api.marshalling.Marshaller;
-import org.kie.api.marshalling.ObjectMarshallingStrategy;
-import org.kie.api.marshalling.ObjectMarshallingStrategyAcceptor;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
-import org.kie.internal.marshalling.MarshallerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,15 +27,9 @@ import java.io.*;
 
 public class KieSessionByteArraySerializer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger("it.redhat.hacep");
+    private static final Logger LOGGER = LoggerFactory.getLogger(KieSessionByteArraySerializer.class);
 
-    private final DroolsConfiguration droolsConfiguration;
-
-    public KieSessionByteArraySerializer(DroolsConfiguration droolsConfiguration) {
-        this.droolsConfiguration = droolsConfiguration;
-    }
-
-    public byte[] writeObject(KieSession kieSession) {
+    public static byte[] writeObject(Marshaller marshaller, KieSession kieSession) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
              ObjectOutputStream oos = new ObjectOutputStream(outputStream);) {
             /*
@@ -50,7 +39,6 @@ public class KieSessionByteArraySerializer {
             KieSessionConfiguration kieSessionConfiguration = kieSession.getSessionConfiguration();
             oos.writeObject(kieSessionConfiguration);
 
-            Marshaller marshaller = createSerializableMarshaller(kieSession.getKieBase());
             marshaller.marshall(outputStream, kieSession);
 
             byte[] bytes = outputStream.toByteArray();
@@ -66,48 +54,15 @@ public class KieSessionByteArraySerializer {
         }
     }
 
-    public KieSession readSession(byte[] serializedKieSession) {
-        if (serializedKieSession == null) {
-            if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn("[KieSessionByteArraySerializer] Unable to serialize NULL KieSessions");
-            }
-            return null;
-        }
-        ObjectInputStream ois = null;
-        ByteArrayInputStream inputStream = null;
-        try {
-
-            inputStream = new ByteArrayInputStream(serializedKieSession);
-            ois = new ObjectInputStream(inputStream);
+    public static KieSession readSession(Marshaller marshaller, byte[] serializedKieSession) {
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(serializedKieSession);
+             ObjectInputStream ois = new ObjectInputStream(inputStream);) {
             KieSessionConfiguration kieSessionConfiguration = (KieSessionConfiguration) ois.readObject();
-            Marshaller marshaller = createSerializableMarshaller(droolsConfiguration.getKieBase());
-            KieSession kieSession = marshaller.unmarshall(inputStream, kieSessionConfiguration, null);
-            return kieSession;
+            return marshaller.unmarshall(inputStream, kieSessionConfiguration, null);
         } catch (Exception e) {
             LOGGER.error("Error when reading serialized session", e);
             throw new RuntimeException(e);
-        } finally {
-            if (ois != null) {
-                try {
-                    ois.close();
-                } catch (IOException e) {
-                }
-            }
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                }
-            }
-
         }
-    }
-
-    private Marshaller createSerializableMarshaller(KieBase kBase) {
-        ObjectMarshallingStrategyAcceptor acceptor = MarshallerFactory.newClassFilterAcceptor(new String[]{"*.*"});
-        ObjectMarshallingStrategy strategy = MarshallerFactory.newSerializeMarshallingStrategy(acceptor);
-        Marshaller marshaller = MarshallerFactory.newMarshaller(kBase, new ObjectMarshallingStrategy[]{strategy});
-        return marshaller;
     }
 
 }

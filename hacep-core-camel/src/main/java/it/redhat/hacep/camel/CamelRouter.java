@@ -17,7 +17,7 @@
 
 package it.redhat.hacep.camel;
 
-import it.redhat.hacep.configuration.DroolsConfiguration;
+import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
 import it.redhat.hacep.configuration.JmsConfiguration;
 import it.redhat.hacep.configuration.Router;
 import it.redhat.hacep.configuration.annotations.HACEPCamelContext;
@@ -47,7 +47,7 @@ public class CamelRouter implements Router {
     private JmsConfiguration jmsConfiguration;
 
     @Inject
-    private DroolsConfiguration droolsConfiguration;
+    private AbstractBaseDroolsConfiguration droolsConfiguration;
 
     @Inject
     @HACEPFactCache

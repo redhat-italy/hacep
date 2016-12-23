@@ -17,36 +17,44 @@
 
 package it.redhat.hacep.cluster;
 
-import it.redhat.hacep.configuration.DroolsConfiguration;
+import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
 import it.redhat.hacep.playground.rules.reward.catalog.KieAPITestUtils;
-import org.drools.compiler.kproject.ReleaseIdImpl;
 import org.kie.api.KieBase;
+import org.kie.api.KieServices;
+import org.kie.api.builder.ReleaseId;
+import org.kie.api.builder.Results;
 import org.kie.api.runtime.Channel;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TestDroolsConfiguration implements DroolsConfiguration {
+public class TestDroolsConfiguration extends AbstractBaseDroolsConfiguration {
 
     private final Map<String, Channel> channels = new HashMap<>();
     private final Map<String, Channel> replayChannels = new HashMap<>();
-    private KieBase kieBase;
-    private int maxBufferSize;
+
+    private int maxBufferSize = 10;
+
     private KieContainer kieContainer;
     private boolean upgradable = false;
 
     private TestDroolsConfiguration() {
     }
 
+    public TestDroolsConfiguration(KieContainer kieContainer, boolean upgradable) {
+        this.kieContainer = kieContainer;
+        this.upgradable = upgradable;
+    }
+
     public static TestDroolsConfiguration buildRulesWithGamePlayRetract() {
         try {
-            TestDroolsConfiguration droolsConfiguration = new TestDroolsConfiguration();
-            ReleaseIdImpl releaseId = new ReleaseIdImpl("it.redhat.jdg", "rules", "1.0.0");
-            droolsConfiguration.kieContainer = KieAPITestUtils.setupKieContainer(releaseId, "pom/pom-1.0.0.xml", "rules/gameplay_retract.drl");
-            droolsConfiguration.kieBase = droolsConfiguration.kieContainer.getKieBase();
-            return droolsConfiguration;
+            ReleaseId releaseId = KieServices.Factory.get().newReleaseId("it.redhat.jdg.gameplay.retract", "rules", "1.0.0");
+            KieContainer kieContainer = KieAPITestUtils.setupKieContainerFromTemplates(releaseId, "rules/gameplay_retract.drl");
+            return new TestDroolsConfiguration(kieContainer, false);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -54,11 +62,9 @@ public class TestDroolsConfiguration implements DroolsConfiguration {
 
     public static TestDroolsConfiguration buildRulesWithRetract() {
         try {
-            TestDroolsConfiguration droolsConfiguration = new TestDroolsConfiguration();
-            ReleaseIdImpl releaseId = new ReleaseIdImpl("it.redhat.jdg", "rules", "1.0.0");
-            droolsConfiguration.kieContainer = KieAPITestUtils.setupKieContainer(releaseId, "pom/pom-1.0.0.xml", "rules/complex-retract-rule.drl");
-            droolsConfiguration.kieBase = droolsConfiguration.kieContainer.getKieBase();
-            return droolsConfiguration;
+            ReleaseId releaseId = KieServices.Factory.get().newReleaseId("it.redhat.jdg.retract", "rules", "1.0.0");
+            KieContainer kieContainer = KieAPITestUtils.setupKieContainerFromTemplates(releaseId, "rules/complex-retract-rule.drl");
+            return new TestDroolsConfiguration(kieContainer, false);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -66,24 +72,30 @@ public class TestDroolsConfiguration implements DroolsConfiguration {
 
     public static TestDroolsConfiguration buildV1() {
         try {
-            TestDroolsConfiguration droolsConfiguration = new TestDroolsConfiguration();
-            droolsConfiguration.upgradable = true;
-            ReleaseIdImpl releaseId = new ReleaseIdImpl("it.redhat.jdg", "rules", "1.0.0");
-            droolsConfiguration.kieContainer = KieAPITestUtils.setupKieContainer(releaseId, "pom/pom-1.0.0.xml", "rules/simple-rule.drl");
-            droolsConfiguration.kieBase = droolsConfiguration.kieContainer.getKieBase();
-            return droolsConfiguration;
+            ReleaseId releaseId = KieServices.Factory.get().newReleaseId("it.redhat.jdg", "rules-update", "1.0.0");
+            KieContainer kieContainer = KieAPITestUtils.setupKieContainerFromTemplates(releaseId, "rules/simple-rule.drl");
+            return new TestDroolsConfiguration(kieContainer, true);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void upgradeToV2() {
+    public void upgradeToV2() throws IOException, URISyntaxException {
         if (!upgradable) {
             throw new IllegalStateException();
         }
-        ReleaseIdImpl releaseId = new ReleaseIdImpl("it.redhat.jdg", "rules", "2.0.0");
-        KieAPITestUtils.setupKieContainer(releaseId, "pom/pom-2.0.0.xml", "rules/simple-rule_modified.drl");
-        kieContainer.updateToVersion(releaseId);
+        ReleaseId releaseId = KieServices.Factory.get().newReleaseId("it.redhat.jdg", "rules-update", "2.0.0");
+        KieAPITestUtils.setupKieContainerFromTemplates(releaseId, "rules/simple-rule_modified.drl");
+        KieAPITestUtils.hasErrors(kieContainer.updateToVersion(releaseId));
+
+        Results results = kieContainer.verify();
+        results.getMessages().forEach(m -> System.out.println(m.toString()));
+        KieAPITestUtils.hasErrors(results);
+    }
+
+    public void dispose() {
+        KieAPITestUtils.cleanUp();
+        kieContainer = null;
     }
 
     public void registerChannel(String name, Channel channel, Channel replay) {
@@ -91,22 +103,14 @@ public class TestDroolsConfiguration implements DroolsConfiguration {
         replayChannels.put(name, replay);
     }
 
-    public void setMaxBufferSize(int maxBufferSize) {
-        this.maxBufferSize = maxBufferSize;
-    }
-
     @Override
-    public KieSession getKieSession() {
-        try {
-            return KieAPITestUtils.buildKieSession(kieBase);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public KieSession newKieSession() {
+        return kieContainer.newKieSession("ksession-test");
     }
 
     @Override
     public KieBase getKieBase() {
-        return kieBase;
+        return kieContainer.getKieBase("kbase-test");
     }
 
     @Override
@@ -117,6 +121,10 @@ public class TestDroolsConfiguration implements DroolsConfiguration {
     @Override
     public Map<String, Channel> getReplayChannels() {
         return replayChannels;
+    }
+
+    public void setMaxBufferSize(int maxBufferSize) {
+        this.maxBufferSize = maxBufferSize;
     }
 
     @Override

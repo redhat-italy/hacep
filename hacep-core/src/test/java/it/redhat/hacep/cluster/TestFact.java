@@ -22,6 +22,7 @@ import it.redhat.hacep.model.Key;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.Objects;
 
 public class TestFact implements Fact {
 
@@ -51,6 +52,21 @@ public class TestFact implements Fact {
     @Override
     public Key extractKey() {
         return null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TestFact)) return false;
+        TestFact testFact = (TestFact) o;
+        return ppid == testFact.ppid &&
+                amount == testFact.amount &&
+                Objects.equals(instant, testFact.instant);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ppid, amount, instant);
     }
 
     @Override

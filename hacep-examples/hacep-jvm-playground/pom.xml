@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
 
@@ -32,19 +32,8 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 
         <!-- JBoss EAP dependencies. -->
         <dependency>
-            <groupId>javax.enterprise</groupId>
-            <artifactId>cdi-api</artifactId>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss.weld.se</groupId>
-            <artifactId>weld-se-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.transaction</groupId>
-            <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-            <scope>compile</scope>
+            <artifactId>weld-se</artifactId>
         </dependency>
 
         <!--TEST -->
@@ -74,86 +63,47 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>it.redhat.hacep.playground.Main</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-            </plugin>
-
-        	<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<argLine>-Xms1024M</argLine>
-					<argLine>-Xmx2048M</argLine>
-                    <excludes>
-                        <exclude>**/OrderTest.java</exclude>
-                    </excludes>
-				</configuration>
-			</plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-resources</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>src/main/resources</directory>
-                                    <includes>
-                                        <include>log4j.properties</include>
-                                    </includes>
-                                    <filtering>true</filtering>
-                                </resource>
-                                <resource>
-                                    <directory>src/main/scripts</directory>
-                                    <includes>
-                                        <include>start.sh</include>
-                                    </includes>
-                                    <filtering>true</filtering>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
     <profiles>
+        <profile>
+            <id>supported-GA-ee6</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.spec</groupId>
+                    <artifactId>jboss-javaee-all-6.0</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>supported-GA-ee7</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.spec</groupId>
+                    <artifactId>jboss-javaee-all-7.0</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>community</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.spec</groupId>
+                    <artifactId>jboss-javaee-all-6.0</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
         <profile>
             <id>run</id>
             <build>
                 <defaultGoal>install</defaultGoal>
 
                 <plugins>
-                	<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<skipTests>true</skipTests>
-						</configuration>
-					</plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skipTests>true</skipTests>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jar-plugin</artifactId>
@@ -193,4 +143,70 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
             </build>
         </profile>
     </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>it.redhat.hacep.playground.Main</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-Xms1024M</argLine>
+                    <argLine>-Xmx2048M</argLine>
+                    <excludes>
+                        <exclude>**/OrderTest.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                    <includes>
+                                        <include>log4j.properties</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                                <resource>
+                                    <directory>src/main/scripts</directory>
+                                    <includes>
+                                        <include>start.sh</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
