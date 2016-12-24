@@ -104,6 +104,10 @@ public class DataGridManager {
             this.manager.defineConfiguration(FACT_CACHE_NAME, factCacheConfigurationBuilder.build());
             this.manager.defineConfiguration(SESSION_CACHE_NAME, sessionCacheConfigurationBuilder.build());
 
+            ConfigurationBuilder replicated = new ConfigurationBuilder();
+            replicated.clustering().cacheMode(CacheMode.REPL_SYNC);
+            this.manager.defineConfiguration(REPLICATED_CACHE_NAME, replicated.build());
+
             this.manager.start();
         }
     }
