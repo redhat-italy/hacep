@@ -17,7 +17,7 @@
 
 package it.redhat.hacep.cache.session;
 
-import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
+import it.redhat.hacep.configuration.RulesManager;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.support.KieSessionUtils;
 import org.infinispan.atomic.Delta;
@@ -44,7 +44,7 @@ public class HAKieSerializedSession extends HAKieSession {
     private final static Logger LOGGER = LoggerFactory.getLogger(HAKieSerializedSession.class);
 
     private final Executor executor;
-    private final AbstractBaseDroolsConfiguration droolsConfiguration;
+    private final RulesManager droolsConfiguration;
 
     private AtomicBoolean saving = new AtomicBoolean(false);
     private volatile CountDownLatch latch = new CountDownLatch(0);
@@ -53,13 +53,13 @@ public class HAKieSerializedSession extends HAKieSession {
     private transient long size = 0;
     private Queue<Fact> buffer = new ConcurrentLinkedQueue<>();
 
-    public HAKieSerializedSession(AbstractBaseDroolsConfiguration droolsConfiguration, Executor executor) {
+    public HAKieSerializedSession(RulesManager droolsConfiguration, Executor executor) {
         super(droolsConfiguration, executor);
         this.droolsConfiguration = droolsConfiguration;
         this.executor = executor;
     }
 
-    public HAKieSerializedSession(AbstractBaseDroolsConfiguration droolsConfiguration, Executor executor, byte[] session) {
+    public HAKieSerializedSession(RulesManager droolsConfiguration, Executor executor, byte[] session) {
         this(droolsConfiguration, executor);
         this.session = session;
     }
@@ -166,12 +166,10 @@ public class HAKieSerializedSession extends HAKieSession {
 
     public static class HASerializedSessionExternalizer implements AdvancedExternalizer<HAKieSerializedSession> {
 
-        private final AbstractBaseDroolsConfiguration droolsConfiguration;
-        private final Executor executor;
+        private final HAKieSessionBuilder builder;
 
-        public HASerializedSessionExternalizer(AbstractBaseDroolsConfiguration droolsConfiguration, Executor executor) {
-            this.droolsConfiguration = droolsConfiguration;
-            this.executor = executor;
+        public HASerializedSessionExternalizer(HAKieSessionBuilder builder) {
+            this.builder = builder;
         }
 
         @Override
@@ -195,7 +193,7 @@ public class HAKieSerializedSession extends HAKieSession {
 
         @Override
         public HAKieSerializedSession readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-            HAKieSerializedSession haKieSerializedSession = new HAKieSerializedSession(droolsConfiguration, executor);
+            HAKieSerializedSession haKieSerializedSession = builder.buildSerialized();
             int len = input.readInt();
             if (len > 0) {
                 haKieSerializedSession.session = new byte[len];

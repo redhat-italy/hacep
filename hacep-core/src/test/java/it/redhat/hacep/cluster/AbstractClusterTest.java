@@ -18,11 +18,8 @@
 package it.redhat.hacep.cluster;
 
 
-import it.redhat.hacep.cache.session.HAKieSerializedSession;
-import it.redhat.hacep.cache.session.HAKieSession;
-import it.redhat.hacep.cache.session.HAKieSessionDeltaEmpty;
-import it.redhat.hacep.cache.session.HAKieSessionDeltaFact;
-import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
+import it.redhat.hacep.cache.session.*;
+import it.redhat.hacep.configuration.RulesManager;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
@@ -48,7 +45,7 @@ public abstract class AbstractClusterTest {
 
     protected abstract Channel getReplayChannel();
 
-    protected EmbeddedCacheManager startNodes(int owners, AbstractBaseDroolsConfiguration droolsConfiguration) {
+    protected EmbeddedCacheManager startNodes(int owners, RulesManager droolsConfiguration) {
         LOGGER.info("Start node with owners({})", owners);
         DefaultCacheManager cacheManager = clusteredCacheManager(CacheMode.DIST_SYNC, owners, droolsConfiguration);
         nodes.add(cacheManager);
@@ -83,17 +80,18 @@ public abstract class AbstractClusterTest {
         }
     }
 
-    private DefaultCacheManager clusteredCacheManager(CacheMode mode, int owners, AbstractBaseDroolsConfiguration droolsConfiguration) {
+    private DefaultCacheManager clusteredCacheManager(CacheMode mode, int owners, RulesManager rulesManager) {
         ExecutorService executorService = Executors.newFixedThreadPool(4);
+        HAKieSessionBuilder sessionBuilder = new HAKieSessionBuilder(rulesManager, executorService);
 
         GlobalConfiguration glob = new GlobalConfigurationBuilder().clusteredDefault()
                 .transport().addProperty("configurationFile", System.getProperty("jgroups.configuration", "jgroups-test-tcp.xml"))
                 .clusterName("HACEP")
                 .globalJmxStatistics().allowDuplicateDomains(true).enable()
                 .serialization()
-                .addAdvancedExternalizer(new HAKieSession.HASessionExternalizer(droolsConfiguration, executorService))
-                .addAdvancedExternalizer(new HAKieSerializedSession.HASerializedSessionExternalizer(droolsConfiguration, executorService))
-                .addAdvancedExternalizer(new HAKieSessionDeltaEmpty.HASessionDeltaEmptyExternalizer(droolsConfiguration, executorService))
+                .addAdvancedExternalizer(new HAKieSession.HASessionExternalizer(sessionBuilder))
+                .addAdvancedExternalizer(new HAKieSerializedSession.HASerializedSessionExternalizer(sessionBuilder))
+                .addAdvancedExternalizer(new HAKieSessionDeltaEmpty.HASessionDeltaEmptyExternalizer(sessionBuilder))
                 .addAdvancedExternalizer(new HAKieSessionDeltaFact.HASessionDeltaFactExternalizer())
                 .build();
 

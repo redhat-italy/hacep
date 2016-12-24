@@ -23,6 +23,7 @@ import it.redhat.hacep.playground.console.UI;
 import it.redhat.hacep.playground.console.support.IllegalParametersException;
 import org.infinispan.Cache;
 import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.manager.EmbeddedCacheManager;
 
 import javax.inject.Inject;
 import java.util.Iterator;
@@ -64,14 +65,13 @@ public class InfoConsoleCommand implements ConsoleCommand {
     }
 
     private String generalInfo() {
-        DefaultCacheManager cacheManager = application.getCacheManager();
+        EmbeddedCacheManager cacheManager = application.getCacheManager();
         StringBuilder info = new StringBuilder();
         info.append("Cache Manager Status: ").append(cacheManager.getStatus()).append("\n");
         info.append("Cache Manager Address: ").append(cacheManager.getAddress()).append("\n");
         info.append("Coordinator address: ").append(cacheManager.getCoordinator()).append("\n");
         info.append("Is Coordinator: ").append(cacheManager.isCoordinator()).append("\n");
         info.append("Cluster Name: ").append(cacheManager.getClusterName()).append("\n");
-        info.append("Cluster Size: ").append(cacheManager.getClusterSize()).append("\n");
         info.append("Member list: ").append(cacheManager.getMembers()).append("\n");
         info.append("Caches: ").append(cacheManager.getCacheNames()).append("\n");
         return info.toString();
