@@ -36,7 +36,6 @@ import java.util.concurrent.TimeUnit;
 import static it.redhat.hacep.cluster.RulesConfigurationTestImpl.RulesTestBuilder;
 import static org.mockito.Mockito.*;
 
-@RunWith(Arquillian.class)
 public class TestContainerUpdate {
 
     private ZonedDateTime now = ZonedDateTime.now();
@@ -65,6 +64,7 @@ public class TestContainerUpdate {
         DataGridManager dataGridManager2 = buildDataGridManager(rulesManager2, router2);
 
         String rulesV2 = RulesTestBuilder.buildV2();
+        String rulesV3 = RulesTestBuilder.buildV3();
 
         Assert.assertTrue(dataGridManager1.waitForMinimumOwners(1, TimeUnit.MINUTES));
         Assert.assertTrue(dataGridManager2.waitForMinimumOwners(1, TimeUnit.MINUTES));
@@ -75,7 +75,7 @@ public class TestContainerUpdate {
             @Override
             public Key getKey() {
                 long random = Math.round(Math.random() * 100000);
-                return new GameplayKey("" + random, "" + random);
+                return new GameplayKey("1", "" + random);
             }
         }, 10, true);
         Address address1 = dataGridManager1.getCacheManager().getAddress();
@@ -91,6 +91,7 @@ public class TestContainerUpdate {
 
         verify(additionsChannel1, times(1)).send(eq(10L));
         verify(replayChannel1, never()).send(any());
+
         verify(additionsChannel2, never()).send(any());
         verify(replayChannel2, never()).send(any());
 
@@ -115,16 +116,48 @@ public class TestContainerUpdate {
         Assert.assertEquals(rulesV2, rulesManager1.getReleaseId().getVersion());
         Assert.assertEquals(rulesV2, rulesManager2.getReleaseId().getVersion());
 
+        factCache.remove(keyForDatagrid1);
         factCache.put(keyForDatagrid1, generateFactTenSecondsAfter(1L, 20L));
 
         verify(additionsChannel1, times(1)).send(eq(60L));
         verify(replayChannel1, never()).send(any());
 
         verify(additionsChannel2, never()).send(any());
-        verify(replayChannel2, times(1)).send(eq(20L));
+        verify(replayChannel2, times(1)).send(eq(10L));
 
         Assert.assertEquals(1, sessionCache1.size());
         Assert.assertEquals(1, sessionCache2.size());
+
+        reset(router1, router2, additionsChannel1, replayChannel1, additionsChannel2, replayChannel2);
+
+        // Rules Update
+        dataGridManager1.getReplicatedCache().put(RulesManager.RULES_VERSION, rulesV3);
+
+        inOrder = Mockito.inOrder(router1);
+        inOrder.verify(router1, times(1)).suspend();
+        inOrder.verify(router1, times(1)).resume();
+        inOrder.verifyNoMoreInteractions();
+
+        inOrder = Mockito.inOrder(router2);
+        inOrder.verify(router2, times(1)).suspend();
+        inOrder.verify(router2, times(1)).resume();
+        inOrder.verifyNoMoreInteractions();
+
+        Assert.assertEquals(rulesV3, rulesManager1.getReleaseId().getVersion());
+        Assert.assertEquals(rulesV3, rulesManager2.getReleaseId().getVersion());
+
+        factCache.remove(keyForDatagrid1);
+        factCache.put(keyForDatagrid1, generateFactTenSecondsAfter(1L, 30L));
+
+        verify(additionsChannel1, times(1)).send(eq(180L));
+        verify(replayChannel1, never()).send(any());
+
+        verify(additionsChannel2, never()).send(any());
+        verify(replayChannel2, times(1)).send(eq(60L));
+
+        Assert.assertEquals(1, sessionCache1.size());
+        Assert.assertEquals(1, sessionCache2.size());
+
 
         dataGridManager1.stop();
         dataGridManager2.stop();
@@ -146,12 +179,6 @@ public class TestContainerUpdate {
         infoCache.addListener(new UpdateVersionListener(router, rulesManager));
 
         return dataGridManager2;
-    }
-
-    @Deployment
-    public static JavaArchive createDeployment() {
-        return ShrinkWrap.create(JavaArchive.class)
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     private Fact generateFactTenSecondsAfter(long ppid, long amount) {

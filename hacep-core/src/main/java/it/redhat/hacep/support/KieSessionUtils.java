@@ -4,6 +4,7 @@ import it.redhat.hacep.model.Fact;
 import org.drools.core.time.SessionPseudoClock;
 import org.kie.api.builder.Message;
 import org.kie.api.builder.Results;
+import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,10 +27,20 @@ public class KieSessionUtils {
         clock.advanceTime(gts - current, TimeUnit.MILLISECONDS);
     }
 
-    public static void dispose(KieSession localSession) {
-        if (localSession != null) {
+    public static void dispose(KieSession kieSession) {
+        if (kieSession != null) {
             try {
-                localSession.dispose();
+                kieSession.dispose();
+            } catch (Exception e) {
+                LOGGER.error("Unexpected exception", e);
+            }
+        }
+    }
+
+    public static void dispose(KieContainer kieContainer) {
+        if (kieContainer != null) {
+            try {
+                kieContainer.dispose();
             } catch (Exception e) {
                 LOGGER.error("Unexpected exception", e);
             }

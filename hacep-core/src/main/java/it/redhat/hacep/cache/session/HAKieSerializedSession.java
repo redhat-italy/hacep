@@ -22,6 +22,7 @@ import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.support.KieSessionUtils;
 import org.infinispan.atomic.Delta;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
+import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,17 +59,22 @@ public class HAKieSerializedSession extends HAKieSession {
         super(rulesManager, executor);
         this.rulesManager = rulesManager;
         this.executor = executor;
+        this.version = rulesManager.getReleaseId().getVersion();
+        LOGGER.debug(String.format("Create serialized empty session with version [%s]", this.version));
     }
 
     public HAKieSerializedSession(RulesManager rulesManager, Executor executor, String version, byte[] session) {
-        this(rulesManager, executor);
+        super(rulesManager, executor);
+        this.rulesManager = rulesManager;
+        this.executor = executor;
         this.version = version;
         this.session = session;
+        LOGGER.debug(String.format("Create serialized session with version [%s]", this.version));
     }
 
     public void add(Fact f) {
         if (isUpgradeNeeded()) {
-
+            rebuildSessionAndUpgrade();
         }
         buffer.offer(f);
         size++;
@@ -78,7 +84,7 @@ public class HAKieSerializedSession extends HAKieSession {
     }
 
     private boolean isUpgradeNeeded() {
-        return session!=null && version != null && !version.equals(rulesManager.getReleaseId().getVersion());
+        return version != null && !version.equals(rulesManager.getReleaseId().getVersion());
     }
 
     public void createSnapshot() {
@@ -87,16 +93,23 @@ public class HAKieSerializedSession extends HAKieSession {
             executor.execute(() -> {
                 KieSession localSession = null;
                 try {
-                    printSessionSize("Start consuming buffer");
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug(String.format("Start consuming buffer: Size [%s] - Buffer [%s]", getSessionSize(), size));
+                    }
+                    if (isUpgradeNeeded()) {
+                        rebuildSessionAndUpgrade();
+                    }
                     localSession = buildSession();
                     session = rulesManager.serialize(localSession);
-                    printSessionSize("Buffer empty");
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug(String.format("Buffer empty: Size [%s] - Buffer [%s]", getSessionSize(), size));
+                    }
                 } catch (Exception e) {
                     LOGGER.error("Unexpected exception", e);
                 } finally {
-                    KieSessionUtils.dispose(localSession);
                     saving.set(false);
                     latch.countDown();
+                    KieSessionUtils.dispose(localSession);
                 }
             });
         }
@@ -104,6 +117,9 @@ public class HAKieSerializedSession extends HAKieSession {
 
     public HAKieSession rebuild() {
         this.waitForSnapshotToComplete();
+        if (isUpgradeNeeded()) {
+            rebuildSessionAndUpgrade();
+        }
         KieSession session = buildSession();
         return new HAKieSession(rulesManager, executor, session);
     }
@@ -122,31 +138,43 @@ public class HAKieSerializedSession extends HAKieSession {
         return (size > rulesManager.getMaxBufferSize());
     }
 
-    private void printSessionSize(String message) {
-        if (LOGGER.isDebugEnabled()) {
-            int sessionSize = this.session != null ? this.session.length : 0;
-            LOGGER.debug(message + " - Size [" + sessionSize + "] - Buffer [" + size + "]");
+    private void rebuildSessionAndUpgrade() {
+        KieContainer kieContainer = null;
+        KieSession kieSession = null;
+        try {
+            kieContainer = rulesManager.newKieContainer(this.version);
+            kieSession = rulesManager.deserializeOrCreate(kieContainer, this.session);
+            replayFacts(kieSession);
+            kieContainer.updateToVersion(rulesManager.getReleaseId());
+            this.session = rulesManager.serialize(kieContainer, kieSession);
+            this.version = rulesManager.getReleaseId().getVersion();
+        } finally {
+            KieSessionUtils.dispose(kieSession);
+            KieSessionUtils.dispose(kieContainer);
         }
     }
 
     private KieSession buildSession() {
         if (LOGGER.isDebugEnabled()) {
-            int sessionSize = this.session != null ? this.session.length : 0;
-            LOGGER.debug("Rebuild session from serialized byte array. Buffer size [" + sessionSize + "]");
+            LOGGER.debug(String.format("Rebuild session from serialized byte array. Buffer size [%s]", getSessionSize()));
         }
         KieSession localSession = rulesManager.deserializeOrCreate(this.session);
+        return replayFacts(localSession);
+    }
+
+    private KieSession replayFacts(KieSession session) {
         if (!buffer.isEmpty()) {
-            rulesManager.registerReplayChannels(localSession);
+            rulesManager.registerReplayChannels(session);
             while (!buffer.isEmpty()) {
                 Fact fact = buffer.remove();
-                KieSessionUtils.advanceClock(localSession, fact);
-                localSession.insert(fact);
+                KieSessionUtils.advanceClock(session, fact);
+                session.insert(fact);
             }
             size = 0;
-            localSession.fireAllRules();
+            session.fireAllRules();
         }
-        rulesManager.registerChannels(localSession);
-        return localSession;
+        rulesManager.registerChannels(session);
+        return session;
     }
 
     @Override
@@ -173,6 +201,10 @@ public class HAKieSerializedSession extends HAKieSession {
         return this.session;
     }
 
+    public int getSessionSize() {
+        return this.session != null ? this.session.length : 0;
+    }
+
     public static class HASerializedSessionExternalizer implements AdvancedExternalizer<HAKieSerializedSession> {
 
         private final HAKieSessionBuilder builder;
@@ -193,7 +225,7 @@ public class HAKieSerializedSession extends HAKieSession {
 
         @Override
         public void writeObject(ObjectOutput output, HAKieSerializedSession object) throws IOException {
-            output.writeInt(object.session != null ? object.session.length : 0);
+            output.writeInt(object.getSessionSize());
             if (object.session != null) {
                 output.write(object.session);
                 output.writeUTF(object.version);

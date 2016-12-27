@@ -10,13 +10,14 @@ end
 
 rule "proxy-rule"
     when
-        TestFact($ppid: ppid) over window:length(1)
+        $g: TestFact($ppid: ppid) over window:length(1)
         $cumulative: Long(longValue>0) from accumulate(
             TestFact(ppid == $ppid, $amount: amount),
             init(long total = 0),
-            action(total += $amount * 2),
+            action(total += $amount * 3),
             result(total)
         )
     then
+        System.out.println("Version3:-> Amount ["+$g.getAmount()+"] - Cumulative ["+$cumulative+"]");
         channels["additions"].send($cumulative);
 end

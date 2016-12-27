@@ -66,11 +66,8 @@ public class RulesManager {
                         groupId, artifactId, version));
             }
 
-            this.releaseId = kieServices.newReleaseId(
-                    rulesConfiguration.getGroupId(),
-                    rulesConfiguration.getArtifactId(),
-                    StringUtils.isEmpty(version) ? rulesConfiguration.getVersion() : version);
-            kieContainer = kieServices.newKieContainer(releaseId);
+            this.kieContainer = newKieContainer(version);
+            this.releaseId = this.kieContainer.getReleaseId();
         }
     }
 
@@ -104,7 +101,15 @@ public class RulesManager {
         return releaseId;
     }
 
-    public KieBase getKieBase() {
+    public KieContainer newKieContainer(String version) {
+        ReleaseId releaseId = kieServices.newReleaseId(
+                rulesConfiguration.getGroupId(),
+                rulesConfiguration.getArtifactId(),
+                StringUtils.isEmpty(version) ? rulesConfiguration.getVersion() : version);
+        return kieServices.newKieContainer(releaseId);
+    }
+
+    public KieBase getKieBase(KieContainer kieContainer) {
         checkStatus();
         if (!StringUtils.isEmpty(rulesConfiguration.getKieBaseName())) {
             return kieContainer.getKieBase(rulesConfiguration.getKieBaseName());
@@ -113,6 +118,10 @@ public class RulesManager {
     }
 
     public KieSession newKieSession() {
+        return newKieSession(this.kieContainer);
+    }
+
+    public KieSession newKieSession(KieContainer kieContainer) {
         checkStatus();
         if (!StringUtils.isEmpty(rulesConfiguration.getKieSessionName())) {
             return kieContainer.newKieSession(rulesConfiguration.getKieSessionName());
@@ -121,17 +130,25 @@ public class RulesManager {
     }
 
     public byte[] serialize(KieSession kieSession) {
-        Marshaller marshaller = createSerializableMarshaller();
+        return this.serialize(this.kieContainer, kieSession);
+    }
+
+    public byte[] serialize(KieContainer kieContainer, KieSession kieSession) {
+        Marshaller marshaller = createSerializableMarshaller(getKieBase(kieContainer));
         return KieSessionByteArraySerializer.writeObject(marshaller, kieSession);
     }
 
     public KieSession deserializeOrCreate(byte[] buffer) {
+        return this.deserializeOrCreate(this.kieContainer, buffer);
+    }
+
+    public KieSession deserializeOrCreate(KieContainer kieContainer, byte[] buffer) {
         if (buffer == null) {
             if (LOGGER.isDebugEnabled()) LOGGER.debug("Buffer empty, creating new KieSession");
-            return newKieSession();
+            return newKieSession(kieContainer);
         }
 
-        Marshaller marshaller = createSerializableMarshaller();
+        Marshaller marshaller = createSerializableMarshaller(getKieBase(kieContainer));
         return KieSessionByteArraySerializer.readSession(marshaller, buffer);
     }
 
@@ -157,10 +174,10 @@ public class RulesManager {
         }
     }
 
-    private Marshaller createSerializableMarshaller() {
+    private Marshaller createSerializableMarshaller(KieBase kieBase) {
         KieServices ks = KieServices.Factory.get();
         KieMarshallers marshallers = ks.getMarshallers();
         ObjectMarshallingStrategy strategy = marshallers.newSerializeMarshallingStrategy();
-        return marshallers.newMarshaller(getKieBase(), new ObjectMarshallingStrategy[]{strategy});
+        return marshallers.newMarshaller(kieBase, new ObjectMarshallingStrategy[]{strategy});
     }
 }

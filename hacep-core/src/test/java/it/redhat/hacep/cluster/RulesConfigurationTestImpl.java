@@ -122,7 +122,18 @@ public class RulesConfigurationTestImpl implements RulesConfiguration {
             try {
                 String version = "2.0.0";
                 ReleaseId releaseId = KieServices.Factory.get().newReleaseId("it.redhat.jdg", "rules-update", version);
-                KieAPITestUtils.buildReleaseFromTemplates(releaseId, "rules/simple-rule_modified.drl");
+                KieAPITestUtils.buildReleaseFromTemplates(releaseId, "rules/simple-rule-v2.drl");
+                return version;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public static String buildV3() {
+            try {
+                String version = "3.0.0";
+                ReleaseId releaseId = KieServices.Factory.get().newReleaseId("it.redhat.jdg", "rules-update", version);
+                KieAPITestUtils.buildReleaseFromTemplates(releaseId, "rules/simple-rule-v3.drl");
                 return version;
             } catch (Exception e) {
                 throw new RuntimeException(e);

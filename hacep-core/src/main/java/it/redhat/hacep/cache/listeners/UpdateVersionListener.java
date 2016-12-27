@@ -25,7 +25,7 @@ public class UpdateVersionListener {
     public void eventReceived(CacheEntryModifiedEvent event) {
         Object key = event.getKey();
         Object value = event.getValue();
-        if (LOGGER.isDebugEnabled()) LOGGER.debug("Received MODIEFIED key on INFOS key=[{}] value=[{}]", key, value);
+        if (LOGGER.isDebugEnabled()) LOGGER.debug("Received MODIFIED key on INFOS key=[{}] value=[{}]", key, value);
         if (RulesManager.RULES_ARTIFACT_ID.equals(key) || RulesManager.RULES_GROUP_ID.equals(key)) {
             throw new IllegalStateException("Cannot change rules artifact or group id.");
         }
