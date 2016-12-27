@@ -27,7 +27,11 @@ public class HAKieSessionBuilder {
         return new HAKieSerializedSession(rulesManager, executorService);
     }
 
-    public HAKieSerializedSession buildSerialized(byte[] buffer) {
-        return new HAKieSerializedSession(rulesManager, executorService, buffer);
+    public HAKieSerializedSession buildSerialized(String version, byte[] buffer) {
+        return new HAKieSerializedSession(rulesManager, executorService, version, buffer);
+    }
+
+    public String getVersion() {
+        return rulesManager.getReleaseId().getVersion();
     }
 }

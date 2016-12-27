@@ -20,6 +20,7 @@ package it.redhat.hacep.configuration;
 import it.redhat.hacep.cache.listeners.FactListenerPost;
 import it.redhat.hacep.cache.listeners.SessionListenerPost;
 import it.redhat.hacep.cache.listeners.SessionListenerPre;
+import it.redhat.hacep.cache.listeners.UpdateVersionListener;
 import it.redhat.hacep.cache.session.HAKieSessionBuilder;
 import it.redhat.hacep.cache.session.KieSessionSaver;
 import it.redhat.hacep.model.Key;
@@ -51,7 +52,7 @@ public class HACEPImpl implements HACEP {
     @Inject
     private RulesConfiguration rulesConfiguration;
 
-    private final static AtomicBoolean started = new AtomicBoolean(false);
+    private final AtomicBoolean started = new AtomicBoolean(false);
 
     public HACEPImpl() {
         this.executorService = Executors.newFixedThreadPool(4);
@@ -76,11 +77,11 @@ public class HACEPImpl implements HACEP {
                 this.dataGridManager.getSessionCache().addListener(new SessionListenerPost(this.router));
 
                 Cache<String, String> infoCache = this.dataGridManager.getReplicatedCache();
-
-                String groupId = infoCache.get("GROUP_ID");
-                String artifactId = infoCache.get("ARTIFACT_ID");
-                String version = infoCache.get("VERSION");
+                String groupId = infoCache.putIfAbsent(RulesManager.RULES_GROUP_ID, rulesConfiguration.getGroupId());
+                String artifactId = infoCache.putIfAbsent(RulesManager.RULES_ARTIFACT_ID, rulesConfiguration.getArtifactId());
+                String version = infoCache.putIfAbsent(RulesManager.RULES_VERSION, rulesConfiguration.getVersion());
                 this.rulesManager.start(groupId, artifactId, version);
+                infoCache.addListener(new UpdateVersionListener(this.router, this.rulesManager));
 
                 this.router.start(dataGridManager.getFactCache(), jmsConfiguration);
             } catch (Exception e) {

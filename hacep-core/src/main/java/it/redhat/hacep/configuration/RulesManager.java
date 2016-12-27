@@ -18,6 +18,7 @@
 package it.redhat.hacep.configuration;
 
 import it.redhat.hacep.drools.KieSessionByteArraySerializer;
+import it.redhat.hacep.support.KieSessionUtils;
 import org.drools.core.util.StringUtils;
 import org.kie.api.KieBase;
 import org.kie.api.KieServices;
@@ -36,6 +37,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RulesManager {
 
+    public static final String RULES_GROUP_ID = "RULES_GROUP_ID";
+    public static final String RULES_ARTIFACT_ID = "RULES_ARTIFACT_ID";
+    public static final String RULES_VERSION = "RULES_VERSION";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(RulesManager.class);
 
     private final AtomicBoolean started = new AtomicBoolean(false);
@@ -44,9 +49,59 @@ public class RulesManager {
 
     private KieContainer kieContainer;
     private KieServices kieServices;
+    private ReleaseId releaseId;
 
     public RulesManager(RulesConfiguration rulesConfiguration) {
         this.rulesConfiguration = rulesConfiguration;
+    }
+
+    public void start(String groupId, String artifactId, String version) {
+        if (started.compareAndSet(false, true)) {
+            kieServices = KieServices.Factory.get();
+            if (!(StringUtils.isEmpty(groupId) || StringUtils.isEmpty(artifactId) || StringUtils.isEmpty(version)) &&
+                    (!rulesConfiguration.getGroupId().equals(groupId) || !rulesConfiguration.getArtifactId().equals(artifactId))) {
+                throw new IllegalStateException(String.format("Cannot start a Rule Manager with different Group Id and Artifact. " +
+                                "Rule configuration releaseId [%s:%s:%s] cached value [%s:%s:%s]",
+                        rulesConfiguration.getGroupId(), rulesConfiguration.getArtifactId(), rulesConfiguration.getVersion(),
+                        groupId, artifactId, version));
+            }
+
+            this.releaseId = kieServices.newReleaseId(
+                    rulesConfiguration.getGroupId(),
+                    rulesConfiguration.getArtifactId(),
+                    StringUtils.isEmpty(version) ? rulesConfiguration.getVersion() : version);
+            kieContainer = kieServices.newKieContainer(releaseId);
+        }
+    }
+
+    public void stop() {
+        if (started.compareAndSet(true, false)) {
+            kieContainer.dispose();
+        }
+    }
+
+    public boolean updateToVersion(String version) {
+        checkStatus();
+        if (StringUtils.isEmpty(version)) {
+            throw new IllegalArgumentException("Update to version cannot accept an empty version");
+        }
+        this.releaseId = kieServices.newReleaseId(
+                rulesConfiguration.getGroupId(),
+                rulesConfiguration.getArtifactId(),
+                version);
+        Results results = kieContainer.updateToVersion(releaseId);
+        KieSessionUtils.logResults(results);
+        if (results.hasMessages(Message.Level.ERROR)) {
+            LOGGER.error("Update to version {} aborted due to errors", version);
+            return false;
+        }
+        LOGGER.info("Update to version {} completed", version);
+        return true;
+    }
+
+    public ReleaseId getReleaseId() {
+        checkStatus();
+        return releaseId;
     }
 
     public KieBase getKieBase() {
@@ -65,73 +120,6 @@ public class RulesManager {
         return kieContainer.newKieSession();
     }
 
-    public boolean updateToVersion(String version) {
-        if (StringUtils.isEmpty(version)) {
-            throw new IllegalArgumentException("Update to version cannot accept an empty version");
-        }
-        if (started.get()) {
-            ReleaseId releaseId = kieServices.newReleaseId(
-                    rulesConfiguration.getGroupId(),
-                    rulesConfiguration.getArtifactId(),
-                    version);
-            Results results = kieContainer.updateToVersion(releaseId);
-            for (Message result : results.getMessages()) {
-                switch (result.getLevel()) {
-                    case ERROR:
-                        LOGGER.error(result.toString());
-                        break;
-                    case WARNING:
-                        LOGGER.warn(result.toString());
-                        break;
-                    case INFO:
-                        LOGGER.info(result.toString());
-                        break;
-                    default:
-                        LOGGER.warn(result.toString());
-                }
-            }
-            if(results.hasMessages(Message.Level.ERROR)) {
-                LOGGER.error("Update to version {} aborted due to errors", version);
-                return false;
-            }
-            LOGGER.info("Update to version {} completed", version);
-            return true;
-        }
-        LOGGER.warn("Cannot complete update to version {} in a stopped rulemanager", version);
-        return false;
-    }
-
-    public void start(String groupId, String artifactId, String version) {
-        if (started.compareAndSet(false, true)) {
-            kieServices = KieServices.Factory.get();
-            if (!(StringUtils.isEmpty(groupId) || StringUtils.isEmpty(artifactId) || StringUtils.isEmpty(version)) &&
-                    (!rulesConfiguration.getGroupId().equals(groupId) || !rulesConfiguration.getArtifactId().equals(artifactId))) {
-                throw new IllegalStateException(String.format("Cannot start a Rule Manager with different Group Id and Artifact. " +
-                                "Rule configuration releaseId [%s:%s:%s] cached value [%s:%s:%s]",
-                        rulesConfiguration.getGroupId(), rulesConfiguration.getArtifactId(), rulesConfiguration.getVersion(),
-                        groupId, artifactId, version));
-            }
-
-            ReleaseId releaseId = kieServices.newReleaseId(
-                    rulesConfiguration.getGroupId(),
-                    rulesConfiguration.getArtifactId(),
-                    StringUtils.isEmpty(version) ? rulesConfiguration.getVersion() : version);
-            kieContainer = kieServices.newKieContainer(releaseId);
-        }
-    }
-
-    public void stop() {
-        if (started.compareAndSet(true, false)) {
-            kieContainer.dispose();
-        }
-    }
-
-    private void checkStatus() {
-        if (!started.get()) {
-            throw new IllegalStateException("Rule manager must be started first!");
-        }
-    }
-
     public byte[] serialize(KieSession kieSession) {
         Marshaller marshaller = createSerializableMarshaller();
         return KieSessionByteArraySerializer.writeObject(marshaller, kieSession);
@@ -145,6 +133,12 @@ public class RulesManager {
 
         Marshaller marshaller = createSerializableMarshaller();
         return KieSessionByteArraySerializer.readSession(marshaller, buffer);
+    }
+
+    private void checkStatus() {
+        if (!started.get()) {
+            throw new IllegalStateException("Rule manager must be started first!");
+        }
     }
 
     public void registerChannels(KieSession session) {

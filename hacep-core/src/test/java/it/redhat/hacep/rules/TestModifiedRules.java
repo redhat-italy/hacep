@@ -130,7 +130,7 @@ public class TestModifiedRules extends AbstractClusterTest {
         rulesManager = new RulesManager(rulesConfigurationTest);
         rulesManager.start(null, null, null);
 
-        HAKieSerializedSession newSerializedSession = new HAKieSerializedSession(rulesManager, executorService, serializedSession);
+        HAKieSerializedSession newSerializedSession = new HAKieSerializedSession(rulesManager, executorService, rulesConfigurationTest.getVersion(), serializedSession);
         HAKieSession rebuiltSession = newSerializedSession.rebuild();
 
         String version = RulesTestBuilder.buildV2();
@@ -208,7 +208,7 @@ public class TestModifiedRules extends AbstractClusterTest {
         rulesManager.start(null, null, null);
 
         byte[] serializedSession = ((HAKieSerializedSession) serializedSessionCopy).getSerializedSession();
-        HAKieSession session2 = new HAKieSerializedSession(rulesManager, executorService, serializedSession).rebuild();
+        HAKieSession session2 = new HAKieSerializedSession(rulesManager, executorService, rulesConfigurationTest.getVersion(), serializedSession).rebuild();
 
         String version = RulesTestBuilder.buildV2();
         rulesManager.updateToVersion(version);

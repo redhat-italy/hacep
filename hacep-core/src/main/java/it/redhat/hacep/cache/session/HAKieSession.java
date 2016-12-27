@@ -39,33 +39,33 @@ public class HAKieSession implements DeltaAware {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(HAKieSession.class);
 
-    private final RulesManager droolsConfiguration;
+    private final RulesManager rulesManager;
     private final Executor executor;
 
     private Fact lastFact;
     private KieSession session;
 
-    public HAKieSession(RulesManager droolsConfiguration, Executor executor) {
-        this.droolsConfiguration = droolsConfiguration;
+    public HAKieSession(RulesManager rulesManager, Executor executor) {
+        this.rulesManager = rulesManager;
         this.executor = executor;
     }
 
-    public HAKieSession(RulesManager droolsConfiguration, Executor executor, KieSession session) {
-        this(droolsConfiguration, executor);
+    public HAKieSession(RulesManager rulesManager, Executor executor, KieSession session) {
+        this(rulesManager, executor);
         this.session = session;
     }
 
     public final HAKieSerializedSession wrapWithSerializedSession() {
         if (session != null) {
-            return new HAKieSerializedSession(droolsConfiguration, executor, this.toByteArray());
+            return new HAKieSerializedSession(rulesManager, executor, rulesManager.getReleaseId().getVersion(), this.toByteArray());
         }
-        return new HAKieSerializedSession(droolsConfiguration, executor);
+        return new HAKieSerializedSession(rulesManager, executor);
     }
 
     public void insert(Fact fact) {
         if (session == null) {
-            session = droolsConfiguration.newKieSession();
-            droolsConfiguration.registerChannels(session);
+            session = rulesManager.newKieSession();
+            rulesManager.registerChannels(session);
         }
         lastFact = fact;
         KieSessionUtils.advanceClock(session, fact);
@@ -74,7 +74,7 @@ public class HAKieSession implements DeltaAware {
     }
 
     private byte[] toByteArray() {
-        return droolsConfiguration.serialize(session);
+        return rulesManager.serialize(session);
     }
 
     @Override
@@ -133,6 +133,7 @@ public class HAKieSession implements DeltaAware {
                 byte[] buffer = object.toByteArray();
                 output.writeInt(buffer.length);
                 output.write(buffer);
+                output.writeUTF(builder.getVersion());
             } else {
                 output.writeInt(0);
             }
@@ -143,7 +144,8 @@ public class HAKieSession implements DeltaAware {
             if (len > 0) {
                 byte[] buffer = new byte[len];
                 input.read(buffer);
-                return builder.buildSerialized(buffer);
+                String version = input.readUTF();
+                return builder.buildSerialized(version, buffer);
             } else {
                 return builder.buildSerialized();
             }

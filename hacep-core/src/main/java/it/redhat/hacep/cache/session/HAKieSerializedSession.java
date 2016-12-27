@@ -44,32 +44,41 @@ public class HAKieSerializedSession extends HAKieSession {
     private final static Logger LOGGER = LoggerFactory.getLogger(HAKieSerializedSession.class);
 
     private final Executor executor;
-    private final RulesManager droolsConfiguration;
+    private final RulesManager rulesManager;
 
     private AtomicBoolean saving = new AtomicBoolean(false);
     private volatile CountDownLatch latch = new CountDownLatch(0);
 
+    private String version;
     private byte[] session = null;
     private transient long size = 0;
     private Queue<Fact> buffer = new ConcurrentLinkedQueue<>();
 
-    public HAKieSerializedSession(RulesManager droolsConfiguration, Executor executor) {
-        super(droolsConfiguration, executor);
-        this.droolsConfiguration = droolsConfiguration;
+    public HAKieSerializedSession(RulesManager rulesManager, Executor executor) {
+        super(rulesManager, executor);
+        this.rulesManager = rulesManager;
         this.executor = executor;
     }
 
-    public HAKieSerializedSession(RulesManager droolsConfiguration, Executor executor, byte[] session) {
-        this(droolsConfiguration, executor);
+    public HAKieSerializedSession(RulesManager rulesManager, Executor executor, String version, byte[] session) {
+        this(rulesManager, executor);
+        this.version = version;
         this.session = session;
     }
 
     public void add(Fact f) {
+        if (isUpgradeNeeded()) {
+
+        }
         buffer.offer(f);
         size++;
         if (this.needToSave()) {
             this.createSnapshot();
         }
+    }
+
+    private boolean isUpgradeNeeded() {
+        return session!=null && version != null && !version.equals(rulesManager.getReleaseId().getVersion());
     }
 
     public void createSnapshot() {
@@ -80,7 +89,7 @@ public class HAKieSerializedSession extends HAKieSession {
                 try {
                     printSessionSize("Start consuming buffer");
                     localSession = buildSession();
-                    session = droolsConfiguration.serialize(localSession);
+                    session = rulesManager.serialize(localSession);
                     printSessionSize("Buffer empty");
                 } catch (Exception e) {
                     LOGGER.error("Unexpected exception", e);
@@ -96,7 +105,7 @@ public class HAKieSerializedSession extends HAKieSession {
     public HAKieSession rebuild() {
         this.waitForSnapshotToComplete();
         KieSession session = buildSession();
-        return new HAKieSession(droolsConfiguration, executor, session);
+        return new HAKieSession(rulesManager, executor, session);
     }
 
     public void waitForSnapshotToComplete() {
@@ -110,7 +119,7 @@ public class HAKieSerializedSession extends HAKieSession {
     }
 
     private boolean needToSave() {
-        return (size > droolsConfiguration.getMaxBufferSize());
+        return (size > rulesManager.getMaxBufferSize());
     }
 
     private void printSessionSize(String message) {
@@ -125,9 +134,9 @@ public class HAKieSerializedSession extends HAKieSession {
             int sessionSize = this.session != null ? this.session.length : 0;
             LOGGER.debug("Rebuild session from serialized byte array. Buffer size [" + sessionSize + "]");
         }
-        KieSession localSession = droolsConfiguration.deserializeOrCreate(this.session);
+        KieSession localSession = rulesManager.deserializeOrCreate(this.session);
         if (!buffer.isEmpty()) {
-            droolsConfiguration.registerReplayChannels(localSession);
+            rulesManager.registerReplayChannels(localSession);
             while (!buffer.isEmpty()) {
                 Fact fact = buffer.remove();
                 KieSessionUtils.advanceClock(localSession, fact);
@@ -136,7 +145,7 @@ public class HAKieSerializedSession extends HAKieSession {
             size = 0;
             localSession.fireAllRules();
         }
-        droolsConfiguration.registerChannels(localSession);
+        rulesManager.registerChannels(localSession);
         return localSession;
     }
 
@@ -187,20 +196,22 @@ public class HAKieSerializedSession extends HAKieSession {
             output.writeInt(object.session != null ? object.session.length : 0);
             if (object.session != null) {
                 output.write(object.session);
+                output.writeUTF(object.version);
             }
             output.writeObject(object.buffer);
         }
 
         @Override
         public HAKieSerializedSession readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-            HAKieSerializedSession haKieSerializedSession = builder.buildSerialized();
+            HAKieSerializedSession object = builder.buildSerialized();
             int len = input.readInt();
             if (len > 0) {
-                haKieSerializedSession.session = new byte[len];
-                input.read(haKieSerializedSession.session);
+                object.session = new byte[len];
+                input.read(object.session);
+                object.version = input.readUTF();
             }
-            haKieSerializedSession.buffer = (Queue<Fact>) input.readObject();
-            return haKieSerializedSession;
+            object.buffer = (Queue<Fact>) input.readObject();
+            return object;
         }
     }
 }
