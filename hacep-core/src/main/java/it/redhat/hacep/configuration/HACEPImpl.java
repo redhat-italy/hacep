@@ -20,59 +20,70 @@ package it.redhat.hacep.configuration;
 import it.redhat.hacep.cache.listeners.FactListenerPost;
 import it.redhat.hacep.cache.listeners.SessionListenerPost;
 import it.redhat.hacep.cache.listeners.SessionListenerPre;
+import it.redhat.hacep.cache.listeners.UpdateVersionListener;
+import it.redhat.hacep.cache.session.HAKieSessionBuilder;
 import it.redhat.hacep.cache.session.KieSessionSaver;
-import it.redhat.hacep.configuration.annotations.HACEPCacheManager;
-import it.redhat.hacep.configuration.annotations.HACEPFactCache;
-import it.redhat.hacep.configuration.annotations.HACEPSessionCache;
-import it.redhat.hacep.distributed.Snapshotter;
-import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
 import org.infinispan.Cache;
-import org.infinispan.distexec.DefaultExecutorService;
-import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.manager.EmbeddedCacheManager;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @ApplicationScoped
 public class HACEPImpl implements HACEP {
 
-    @Inject
-    @HACEPCacheManager
-    private DefaultCacheManager manager;
-
-    @Inject
-    @HACEPFactCache
-    private Cache<Key, Fact> factCache;
-
-    @Inject
-    @HACEPSessionCache
-    private Cache<String, Object> sessionCache;
+    private DataGridManager dataGridManager;
+    private RulesManager rulesManager;
+    private ExecutorService executorService;
+    private HAKieSessionBuilder haKieSessionBuilder;
+    private KieSessionSaver kieSessionSaver;
 
     @Inject
     private Router router;
 
     @Inject
-    private KieSessionSaver kieSessionSaver;
+    private JmsConfiguration jmsConfiguration;
+
+    @Inject
+    private RulesConfiguration rulesConfiguration;
 
     private final AtomicBoolean started = new AtomicBoolean(false);
 
     public HACEPImpl() {
+        this.executorService = Executors.newFixedThreadPool(4);
     }
 
     @Override
     public void start() {
         if (started.compareAndSet(false, true)) {
             try {
-                this.factCache.addListener(new FactListenerPost(this.kieSessionSaver));
-                this.sessionCache.addListener(new SessionListenerPre(this.router));
-                this.sessionCache.addListener(new SessionListenerPost(this.router));
+                this.rulesManager = new RulesManager(rulesConfiguration);
+                this.dataGridManager = new DataGridManager();
+                this.haKieSessionBuilder = new HAKieSessionBuilder(rulesManager, executorService);
 
-                this.router.start();
-                this.manager.start();
+                this.dataGridManager.start(haKieSessionBuilder);
+
+                this.dataGridManager.waitForMinimumOwners(1, TimeUnit.MINUTES);
+
+                this.kieSessionSaver = new KieSessionSaver(haKieSessionBuilder, this.dataGridManager.getSessionCache());
+
+                this.dataGridManager.getFactCache().addListener(new FactListenerPost(this.kieSessionSaver));
+                this.dataGridManager.getSessionCache().addListener(new SessionListenerPre(this.router));
+                this.dataGridManager.getSessionCache().addListener(new SessionListenerPost(this.router));
+
+                Cache<String, String> infoCache = this.dataGridManager.getReplicatedCache();
+                String groupId = infoCache.putIfAbsent(RulesManager.RULES_GROUP_ID, rulesConfiguration.getGroupId());
+                String artifactId = infoCache.putIfAbsent(RulesManager.RULES_ARTIFACT_ID, rulesConfiguration.getArtifactId());
+                String version = infoCache.putIfAbsent(RulesManager.RULES_VERSION, rulesConfiguration.getVersion());
+                this.rulesManager.start(groupId, artifactId, version);
+                infoCache.addListener(new UpdateVersionListener(this.router, this.rulesManager));
+
+                this.router.start(dataGridManager.getFactCache(), jmsConfiguration);
             } catch (Exception e) {
                 started.set(false);
                 throw new RuntimeException(e);
@@ -85,7 +96,7 @@ public class HACEPImpl implements HACEP {
         if (started.compareAndSet(true, false)) {
             try {
                 this.router.stop();
-                this.manager.stop();
+                this.dataGridManager.stop();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -103,33 +114,18 @@ public class HACEPImpl implements HACEP {
     }
 
     @Override
-    public Future<Boolean> makeSnapshot() {
-        ExecutorService des = new DefaultExecutorService(sessionCache);
-        try {
-            return des.submit(new Snapshotter());
-        } finally {
-            des.shutdown();
-        }
-    }
-
-    @Override
     public void removeKey(Key key) {
-        sessionCache.remove(key);
+        dataGridManager.removeSession(key);
     }
 
     @Override
-    public Cache<Key, Fact> getFactCache() {
-        return factCache;
+    public EmbeddedCacheManager getCacheManager() {
+        return dataGridManager.getCacheManager();
     }
 
     @Override
     public Cache<String, Object> getSessionCache() {
-        return sessionCache;
-    }
-
-    @Override
-    public DefaultCacheManager getCacheManager() {
-        return manager;
+        return dataGridManager.getSessionCache();
     }
 
 }

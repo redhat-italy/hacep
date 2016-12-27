@@ -17,11 +17,15 @@
 
 package it.redhat.hacep.configuration;
 
+import it.redhat.hacep.model.Fact;
+import it.redhat.hacep.model.Key;
+import org.infinispan.Cache;
+
 public interface Router {
     /**
      * Start context.
      */
-    void start();
+    void start(Cache<Key, Fact> factCache, JmsConfiguration jmsConfiguration);
 
     /**
      * Stop context.

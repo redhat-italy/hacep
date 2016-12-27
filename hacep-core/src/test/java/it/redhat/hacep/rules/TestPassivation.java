@@ -3,9 +3,9 @@ package it.redhat.hacep.rules;
 import it.redhat.hacep.cache.session.HAKieSerializedSession;
 import it.redhat.hacep.cache.session.HAKieSession;
 import it.redhat.hacep.cluster.AbstractClusterTest;
-import it.redhat.hacep.cluster.TestDroolsConfiguration;
+import it.redhat.hacep.cluster.RulesConfigurationTestImpl;
 import it.redhat.hacep.cluster.TestFact;
-import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
+import it.redhat.hacep.configuration.RulesManager;
 import it.redhat.hacep.model.Fact;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -80,20 +80,23 @@ public class TestPassivation extends AbstractClusterTest {
 
     @Test
     public void testPassivation() {
+        System.setProperty("grid.buffer", "10");
+
         reset(additionsChannel, replayChannel, locksChannel);
 
         logger.info("Start test serialized rules");
-        logger.info("Start test modified rules");
 
-        TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildRulesWithRetract();
-        droolsConfiguration.registerChannel("additions", additionsChannel, replayChannel);
-        droolsConfiguration.registerChannel("locks", locksChannel, replayChannel);
-        droolsConfiguration.setMaxBufferSize(10);
+        RulesConfigurationTestImpl rulesConfigurationTest = RulesConfigurationTestImpl.RulesTestBuilder.buildRulesWithRetract();
+        rulesConfigurationTest.registerChannel("additions", additionsChannel, replayChannel);
+        rulesConfigurationTest.registerChannel("locks", locksChannel, replayChannel);
 
-        Cache<String, Object> cache = startNodes(1, droolsConfiguration).getCache(CACHE_NAME);
+        RulesManager rulesManager = new RulesManager(rulesConfigurationTest);
+        rulesManager.start(null, null, null);
+
+        Cache<String, Object> cache = startNodes(1, rulesManager).getCache(CACHE_NAME);
 
         String key = "1";
-        HAKieSession session1 = new HAKieSession(droolsConfiguration, executorService);
+        HAKieSession session1 = new HAKieSession(rulesManager, executorService);
 
         session1.insert(generateFactTenSecondsAfter(1, 1L));
         cache.put(key, session1);
@@ -143,7 +146,7 @@ public class TestPassivation extends AbstractClusterTest {
 
         stopNodes();
 
-        Cache<String, Object> cacheDeserialized = startNodes(1, droolsConfiguration).getCache(CACHE_NAME);
+        Cache<String, Object> cacheDeserialized = startNodes(1, rulesManager).getCache(CACHE_NAME);
 
         Object o = cacheDeserialized.get(key);
         Assert.assertTrue(o instanceof HAKieSerializedSession);
@@ -180,7 +183,7 @@ public class TestPassivation extends AbstractClusterTest {
         order.verifyNoMoreInteractions();
 
         logger.info("End test serialized rules");
-        droolsConfiguration.dispose();
+        rulesManager.stop();
     }
 
     @Override

@@ -15,20 +15,25 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.configuration.annotations;
+package it.redhat.hacep.configuration;
 
-import javax.inject.Qualifier;
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import org.kie.api.runtime.Channel;
 
-import static java.lang.annotation.ElementType.*;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import java.util.Map;
 
+public interface RulesConfiguration {
 
-@Qualifier
-@Target({TYPE, METHOD, PARAMETER, FIELD})
-@Retention(RUNTIME)
-@Documented
-public @interface HACEPCacheManager {
+    String getKieSessionName();
+
+    String getKieBaseName();
+
+    Map<String, Channel> getChannels();
+
+    Map<String, Channel> getReplayChannels();
+
+    String getGroupId();
+
+    String getArtifactId();
+
+    String getVersion();
 }

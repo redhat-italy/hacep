@@ -17,9 +17,7 @@
 
 package it.redhat.hacep.playground.console.commands;
 
-import it.redhat.hacep.configuration.annotations.HACEPCacheManager;
-import it.redhat.hacep.configuration.annotations.HACEPSessionCache;
-import it.redhat.hacep.model.Key;
+import it.redhat.hacep.configuration.HACEP;
 import it.redhat.hacep.playground.JDGUtility;
 import it.redhat.hacep.playground.console.UI;
 import it.redhat.hacep.playground.console.commands.dto.HACEPNode;
@@ -27,7 +25,6 @@ import it.redhat.hacep.playground.console.commands.dto.NodeType;
 import it.redhat.hacep.playground.console.commands.dto.SessionData;
 import it.redhat.hacep.playground.console.support.IllegalParametersException;
 import org.infinispan.Cache;
-import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,18 +39,14 @@ public class SessionsConsoleCommand implements ConsoleCommand {
 
     private static final String COMMAND_NAME = "sessions";
 
+    private final HACEP hacep;
+
     @Inject
     private JDGUtility jdgUtility;
 
     @Inject
-    @HACEPCacheManager
-    private DefaultCacheManager manager;
-
-    @Inject
-    @HACEPSessionCache
-    private Cache<String, Object> sessionCache;
-
-    public SessionsConsoleCommand() {
+    public SessionsConsoleCommand(HACEP hacep) {
+        this.hacep = hacep;
     }
 
     @Override
@@ -67,8 +60,9 @@ public class SessionsConsoleCommand implements ConsoleCommand {
             LOGGER.debug("Start execute command 'sessions'");
         }
 
+        Cache<String, Object> sessionCache = hacep.getSessionCache();
         Map<Address, List<SessionData>> sessions = new HashMap<>();
-        manager.getMembers().stream().forEach(a -> sessions.put(a, new ArrayList<>()));
+        hacep.getCacheManager().getMembers().forEach(a -> sessions.put(a, new ArrayList<>()));
         for (Map.Entry<String, List<Address>> entry : jdgUtility.getKeysAddresses(sessionCache).entrySet()) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Key [" + entry.getKey() + "] List{" + entry.getValue() + "}");

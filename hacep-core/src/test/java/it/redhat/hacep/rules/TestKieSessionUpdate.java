@@ -153,7 +153,7 @@ public class TestKieSessionUpdate {
         kieSession.dispose();
 
         ReleaseIdImpl releaseIdV2 = new ReleaseIdImpl("it.redhat.jdg.v2", "rules", "2.0.0");
-        KieAPITestUtils.buildReleaseFromTemplates(releaseIdV2, "rules/simple-rule_modified.drl");
+        KieAPITestUtils.buildReleaseFromTemplates(releaseIdV2, "rules/simple-rule-v2.drl");
 
         KieSession serializedSession = serializer.readSession(createSerializableMarshaller(kieContainer.getKieBase()), buffer);
         serializedSession.registerChannel("additions", globalList::add);

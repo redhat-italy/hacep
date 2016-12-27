@@ -17,16 +17,12 @@
 
 package it.redhat.hacep.playground.configuration;
 
-import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
+import it.redhat.hacep.configuration.RulesConfiguration;
 import it.redhat.hacep.drools.channels.NullChannel;
 import it.redhat.hacep.playground.drools.channels.AuditChannel;
 import it.redhat.hacep.playground.drools.channels.PlayerPointLevelChannel;
 import it.redhat.hacep.playground.drools.channels.SysoutChannel;
-import org.kie.api.KieBase;
-import org.kie.api.KieServices;
 import org.kie.api.runtime.Channel;
-import org.kie.api.runtime.KieContainer;
-import org.kie.api.runtime.KieSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,15 +33,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
-public class DroolsConfigurationImpl extends AbstractBaseDroolsConfiguration {
+public class RulesConfigurationImpl implements RulesConfiguration {
 
-    private static final Logger logger = LoggerFactory.getLogger(DroolsConfigurationImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RulesConfigurationImpl.class);
 
     private final Map<String, Channel> channels = new ConcurrentHashMap<>();
     private final Map<String, Channel> replayChannels = new ConcurrentHashMap<>();
-
-    private final KieContainer kieContainer;
-    private final KieBase kieBase;
 
     private static final String KSESSION_RULES = "hacep-sessions";
     private static final String KBASE_NAME = "hacep-rules";
@@ -56,16 +49,6 @@ public class DroolsConfigurationImpl extends AbstractBaseDroolsConfiguration {
     private AuditChannel auditChannel;
     @Inject
     private PlayerPointLevelChannel playerPointLevelChannel;
-
-    public DroolsConfigurationImpl() {
-        KieServices kieServices = KieServices.Factory.get();
-        kieContainer = kieServices.getKieClasspathContainer();
-        kieBase = kieContainer.getKieBase(KBASE_NAME);
-
-        if (logger.isInfoEnabled()) {
-            logger.info("[Kie Container] successfully initialized.");
-        }
-    }
 
     @PostConstruct
     public void registerChannels() {
@@ -79,13 +62,13 @@ public class DroolsConfigurationImpl extends AbstractBaseDroolsConfiguration {
     }
 
     @Override
-    public KieSession newKieSession() {
-        return kieContainer.newKieSession(KSESSION_RULES);
+    public String getKieSessionName() {
+        return KSESSION_RULES;
     }
 
     @Override
-    public KieBase getKieBase() {
-        return kieBase;
+    public String getKieBaseName() {
+        return KBASE_NAME;
     }
 
     @Override
@@ -96,6 +79,21 @@ public class DroolsConfigurationImpl extends AbstractBaseDroolsConfiguration {
     @Override
     public Map<String, Channel> getReplayChannels() {
         return replayChannels;
+    }
+
+    @Override
+    public String getGroupId() {
+        return "it.redhat.jdg.examples";
+    }
+
+    @Override
+    public String getArtifactId() {
+        return "hacep-rules";
+    }
+
+    @Override
+    public String getVersion() {
+        return "1.0-SNAPSHOT";
     }
 
 }

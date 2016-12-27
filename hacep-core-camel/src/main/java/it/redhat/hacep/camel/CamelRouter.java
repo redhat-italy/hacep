@@ -17,11 +17,8 @@
 
 package it.redhat.hacep.camel;
 
-import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
 import it.redhat.hacep.configuration.JmsConfiguration;
 import it.redhat.hacep.configuration.Router;
-import it.redhat.hacep.configuration.annotations.HACEPCamelContext;
-import it.redhat.hacep.configuration.annotations.HACEPFactCache;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
 import org.apache.camel.CamelContext;
@@ -32,111 +29,92 @@ import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+@ApplicationScoped
 public class CamelRouter implements Router {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(CamelRouter.class);
 
-    public static final String CAMEL_ROUTE = "facts";
+    private static final String CAMEL_ROUTE = "facts";
 
-    @Inject
-    private JmsConfiguration jmsConfiguration;
-
-    @Inject
-    private AbstractBaseDroolsConfiguration droolsConfiguration;
-
-    @Inject
-    @HACEPFactCache
-    private Cache<Key, Fact> factCache;
+    private final AtomicBoolean started = new AtomicBoolean(false);
 
     private CamelContext camelContext;
 
     public CamelRouter() {
+        this.camelContext = new DefaultCamelContext();
     }
 
     @Override
-    public void start() {
-        try {
-            camelContext.start();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    public void start(Cache<Key, Fact> factCache, JmsConfiguration jmsConfiguration) {
+        if (started.compareAndSet(false, true)) {
+            try {
+                JmsComponent component = JmsComponent.jmsComponent(jmsConfiguration.getConnectionFactory());
+                camelContext.addComponent("jms", component);
+                camelContext.addRoutes(new RouteBuilder() {
+
+                    @Override
+                    public void configure() throws Exception {
+                        String uri = "jms:" + jmsConfiguration.getQueueName()
+                                + "?concurrentConsumers=" + jmsConfiguration.getMaxConsumers()
+                                + "&maxConcurrentConsumers=" + jmsConfiguration.getMaxConsumers();
+
+                        from(uri)
+                                .routeId(CAMEL_ROUTE)
+                                .to("direct:putInGrid");
+                    }
+                });
+
+                camelContext.addRoutes(new RouteBuilder() {
+                    @Override
+                    public void configure() throws Exception {
+                        from("direct:putInGrid")
+                                .bean(new Putter(factCache), "put(${body})");
+                    }
+                });
+                camelContext.start();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     @Override
     public void stop() {
-        try {
-            camelContext.stop();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (started.compareAndSet(true, false)) {
+            try {
+                camelContext.stop();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     @Override
     public void suspend() {
-        if(LOGGER.isInfoEnabled()) {
-            LOGGER.info("Suspending route " + CamelRouter.CAMEL_ROUTE);
-        }
-        try {
-            camelContext.suspendRoute(CAMEL_ROUTE);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (started.get()) {
+            if (LOGGER.isInfoEnabled()) LOGGER.info("Suspending route " + CamelRouter.CAMEL_ROUTE);
+            try {
+                camelContext.suspendRoute(CAMEL_ROUTE);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     @Override
     public void resume() {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Resuming route " + CamelRouter.CAMEL_ROUTE);
+        if (started.get()) {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("Resuming route " + CamelRouter.CAMEL_ROUTE);
+            }
+            try {
+                camelContext.resumeRoute(CAMEL_ROUTE);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
-        try {
-            camelContext.resumeRoute(CAMEL_ROUTE);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @PostConstruct
-    public void createCamelContext() {
-        camelContext = new DefaultCamelContext();
-        try {
-
-            JmsComponent component = JmsComponent.jmsComponent(jmsConfiguration.getConnectionFactory());
-            camelContext.addComponent("jms", component);
-            camelContext.addRoutes(new RouteBuilder() {
-
-                @Override
-                public void configure() throws Exception {
-                    String uri = "jms:" + jmsConfiguration.getQueueName()
-                            + "?concurrentConsumers=" + jmsConfiguration.getMaxConsumers()
-                            + "&maxConcurrentConsumers=" + jmsConfiguration.getMaxConsumers();
-
-                    from(uri)
-                            .routeId(CAMEL_ROUTE)
-                            .to("direct:putInGrid");
-                }
-            });
-
-            camelContext.addRoutes(new RouteBuilder() {
-                @Override
-                public void configure() throws Exception {
-                    from("direct:putInGrid")
-                            .bean(new Putter(factCache), "put(${body})");
-                }
-            });
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage());
-        }
-    }
-
-    @Produces
-    @ApplicationScoped
-    @HACEPCamelContext
-    public CamelContext getCamelContext() {
-        return camelContext;
     }
 }

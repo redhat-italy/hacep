@@ -1,9 +1,9 @@
 package it.redhat.hacep.rules;
 
-import it.redhat.hacep.cluster.TestDroolsConfiguration;
+import it.redhat.hacep.cluster.RulesConfigurationTestImpl;
 import it.redhat.hacep.cluster.TestFact;
+import it.redhat.hacep.configuration.RulesManager;
 import it.redhat.hacep.model.Fact;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +21,7 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.reset;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestSerializedRules {
@@ -42,11 +43,17 @@ public class TestSerializedRules {
 
     @Test
     public void testSessionSerialization() {
-        TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildRulesWithRetract();
+        System.setProperty("grid.buffer", "10");
 
         logger.info("Start test serialized rules");
 
-        KieSession kieSession = droolsConfiguration.newKieSession();
+        RulesConfigurationTestImpl rulesConfigurationTest = RulesConfigurationTestImpl.RulesTestBuilder.buildRulesWithRetract();
+
+        RulesManager rulesManager = new RulesManager(rulesConfigurationTest);
+        rulesManager.start(null, null, null);
+
+
+        KieSession kieSession = rulesManager.newKieSession();
         kieSession.registerChannel("additions", additionsChannel);
         kieSession.registerChannel("locks", locksChannel);
 
@@ -91,11 +98,11 @@ public class TestSerializedRules {
         kieSession.insert(generateFactTenSecondsAfter(1, 3L));
         kieSession.fireAllRules();
 
-        byte[] kieSessionBytes = droolsConfiguration.serialize(kieSession);
+        byte[] kieSessionBytes = rulesManager.serialize(kieSession);
         Assert.assertTrue(kieSessionBytes.length > 0);
         kieSession.dispose();
 
-        KieSession kieSessionDeserialized = droolsConfiguration.deserializeOrCreate(kieSessionBytes);
+        KieSession kieSessionDeserialized = rulesManager.deserializeOrCreate(kieSessionBytes);
         kieSessionDeserialized.registerChannel("additions", additionsChannel);
         kieSessionDeserialized.registerChannel("locks", locksChannel);
 
@@ -134,7 +141,7 @@ public class TestSerializedRules {
         order.verifyNoMoreInteractions();
 
         logger.info("End test serialized rules");
-        droolsConfiguration.dispose();
+        rulesManager.stop();
     }
 
     private Fact generateFactTenSecondsAfter(long ppid, long amount) {

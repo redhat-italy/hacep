@@ -1,9 +1,9 @@
 package it.redhat.hacep.rules;
 
-import it.redhat.hacep.cluster.TestDroolsConfiguration;
+import it.redhat.hacep.cluster.RulesConfigurationTestImpl;
+import it.redhat.hacep.configuration.RulesManager;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.rules.model.Gameplay;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,12 +38,18 @@ public class TestSerializedRetractRules {
 
     @Test
     public void testSessionSerialization() {
-        TestDroolsConfiguration droolsConfiguration = TestDroolsConfiguration.buildRulesWithGamePlayRetract();
-
         logger.info("Start test serialized rules");
+
+        System.setProperty("grid.buffer", "10");
+
+        RulesConfigurationTestImpl rulesConfigurationTest = RulesConfigurationTestImpl.RulesTestBuilder.buildRulesWithGamePlayRetract();
+
+        RulesManager rulesManager = new RulesManager(rulesConfigurationTest);
+        rulesManager.start(null, null, null);
+
         reset(outcomesChannel);
 
-        KieSession kieSession = droolsConfiguration.newKieSession();
+        KieSession kieSession = rulesManager.newKieSession();
         kieSession.registerChannel("outcomes", outcomesChannel);
 
         kieSession.insert(generateFactTenSecondsAfter(1));
@@ -54,11 +60,11 @@ public class TestSerializedRetractRules {
 
         reset(outcomesChannel);
 
-        byte[] kieSessionBytes = droolsConfiguration.serialize(kieSession);
+        byte[] kieSessionBytes = rulesManager.serialize(kieSession);
         Assert.assertTrue(kieSessionBytes.length > 0);
         kieSession.dispose();
 
-        KieSession kieSessionDeserialized = droolsConfiguration.deserializeOrCreate(kieSessionBytes);
+        KieSession kieSessionDeserialized = rulesManager.deserializeOrCreate(kieSessionBytes);
         kieSessionDeserialized.registerChannel("outcomes", outcomesChannel);
 
         kieSessionDeserialized.insert(generateFactTenSecondsAfter(1));
@@ -68,7 +74,7 @@ public class TestSerializedRetractRules {
         verifyNoMoreInteractions(outcomesChannel);
 
         logger.info("End test serialized rules");
-        droolsConfiguration.dispose();
+        rulesManager.stop();
     }
 
     private Fact generateFactTenSecondsAfter(long ppid) {

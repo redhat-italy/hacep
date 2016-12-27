@@ -17,12 +17,9 @@
 
 package it.redhat.hacep.configuration;
 
-import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
 import org.infinispan.Cache;
-import org.infinispan.manager.DefaultCacheManager;
-
-import java.util.concurrent.Future;
+import org.infinispan.manager.EmbeddedCacheManager;
 
 public interface HACEP {
 
@@ -34,14 +31,9 @@ public interface HACEP {
 
     void resume();
 
-    Future<Boolean> makeSnapshot();
-
     void removeKey(Key key);
 
-    Cache<Key, Fact> getFactCache();
+    EmbeddedCacheManager getCacheManager();
 
-    Cache<String, Object> getSessionCache();
-
-    DefaultCacheManager getCacheManager();
-
+    Cache<String,Object> getSessionCache();
 }

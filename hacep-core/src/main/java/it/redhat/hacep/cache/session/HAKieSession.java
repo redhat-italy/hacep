@@ -17,7 +17,7 @@
 
 package it.redhat.hacep.cache.session;
 
-import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
+import it.redhat.hacep.configuration.RulesManager;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.support.KieSessionUtils;
 import org.infinispan.atomic.Delta;
@@ -39,39 +39,42 @@ public class HAKieSession implements DeltaAware {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(HAKieSession.class);
 
-    private final AbstractBaseDroolsConfiguration droolsConfiguration;
+    private final RulesManager rulesManager;
     private final Executor executor;
 
     private Fact lastFact;
     private KieSession session;
 
-    public HAKieSession(AbstractBaseDroolsConfiguration droolsConfiguration, Executor executor) {
-        this.droolsConfiguration = droolsConfiguration;
+    public HAKieSession(RulesManager rulesManager, Executor executor) {
+        this.rulesManager = rulesManager;
         this.executor = executor;
     }
 
-    public HAKieSession(AbstractBaseDroolsConfiguration droolsConfiguration, Executor executor, KieSession session) {
-        this(droolsConfiguration, executor);
+    public HAKieSession(RulesManager rulesManager, Executor executor, KieSession session) {
+        this(rulesManager, executor);
         this.session = session;
     }
 
     public final HAKieSerializedSession wrapWithSerializedSession() {
         if (session != null) {
-            byte[] serializedSession = droolsConfiguration.serialize(session);
-            return new HAKieSerializedSession(droolsConfiguration, executor, serializedSession);
+            return new HAKieSerializedSession(rulesManager, executor, rulesManager.getReleaseId().getVersion(), this.toByteArray());
         }
-        return new HAKieSerializedSession(droolsConfiguration, executor);
+        return new HAKieSerializedSession(rulesManager, executor);
     }
 
     public void insert(Fact fact) {
         if (session == null) {
-            session = droolsConfiguration.newKieSession();
-            droolsConfiguration.getChannels().forEach(session::registerChannel);
+            session = rulesManager.newKieSession();
+            rulesManager.registerChannels(session);
         }
         lastFact = fact;
         KieSessionUtils.advanceClock(session, fact);
         session.insert(fact);
         session.fireAllRules();
+    }
+
+    private byte[] toByteArray() {
+        return rulesManager.serialize(session);
     }
 
     @Override
@@ -94,10 +97,8 @@ public class HAKieSession implements DeltaAware {
     }
 
     public void dispose() {
-        if (session != null) {
-            KieSessionUtils.dispose(session);
-            session = null;
-        }
+        KieSessionUtils.dispose(session);
+        session = null;
     }
 
     public boolean isSerialized() {
@@ -110,12 +111,10 @@ public class HAKieSession implements DeltaAware {
 
     public static class HASessionExternalizer implements AdvancedExternalizer<HAKieSession> {
 
-        private final AbstractBaseDroolsConfiguration droolsConfiguration;
-        private final Executor executor;
+        private final HAKieSessionBuilder builder;
 
-        public HASessionExternalizer(AbstractBaseDroolsConfiguration droolsConfiguration, Executor executor) {
-            this.droolsConfiguration = droolsConfiguration;
-            this.executor = executor;
+        public HASessionExternalizer(HAKieSessionBuilder builder) {
+            this.builder = builder;
         }
 
         @Override
@@ -131,24 +130,26 @@ public class HAKieSession implements DeltaAware {
         @Override
         public void writeObject(ObjectOutput output, HAKieSession object) throws IOException {
             if (object.session != null) {
-                byte[] buffer = droolsConfiguration.serialize(object.session);
+                byte[] buffer = object.toByteArray();
                 output.writeInt(buffer.length);
                 output.write(buffer);
+                output.writeUTF(builder.getVersion());
             } else {
                 output.writeInt(0);
             }
         }
-
         @Override
         public HAKieSession readObject(ObjectInput input) throws IOException, ClassNotFoundException {
             int len = input.readInt();
             if (len > 0) {
                 byte[] buffer = new byte[len];
                 input.read(buffer);
-                return new HAKieSerializedSession(droolsConfiguration, executor, buffer);
+                String version = input.readUTF();
+                return builder.buildSerialized(version, buffer);
             } else {
-                return new HAKieSerializedSession(droolsConfiguration, executor);
+                return builder.buildSerialized();
             }
         }
+
     }
 }

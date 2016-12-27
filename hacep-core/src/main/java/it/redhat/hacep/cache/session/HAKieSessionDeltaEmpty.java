@@ -17,7 +17,6 @@
 
 package it.redhat.hacep.cache.session;
 
-import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
 import org.infinispan.atomic.Delta;
 import org.infinispan.atomic.DeltaAware;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
@@ -27,22 +26,19 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Set;
-import java.util.concurrent.Executor;
 
 import static it.redhat.hacep.cache.session.JDGExternalizerIDs.HASessionDeltaID;
 
 public class HAKieSessionDeltaEmpty implements Delta {
 
-    private final Executor executor;
-    private final AbstractBaseDroolsConfiguration droolsConfiguration;
+    private final HAKieSessionBuilder builder;
 
     public HAKieSessionDeltaEmpty() {
-        this(null, null);
+        this(null);
     }
 
-    public HAKieSessionDeltaEmpty(AbstractBaseDroolsConfiguration droolsConfiguration, Executor executor) {
-        this.executor = executor;
-        this.droolsConfiguration = droolsConfiguration;
+    public HAKieSessionDeltaEmpty(HAKieSessionBuilder builder) {
+        this.builder = builder;
     }
 
     @Override
@@ -50,17 +46,15 @@ public class HAKieSessionDeltaEmpty implements Delta {
         if (d != null) {
             return d;
         }
-        return new HAKieSerializedSession(droolsConfiguration, executor);
+        return builder.buildSerialized();
     }
 
     public static class HASessionDeltaEmptyExternalizer implements AdvancedExternalizer<HAKieSessionDeltaEmpty> {
 
-        private final Executor executor;
-        private final AbstractBaseDroolsConfiguration droolsConfiguration;
+        private final HAKieSessionBuilder builder;
 
-        public HASessionDeltaEmptyExternalizer(AbstractBaseDroolsConfiguration droolsConfiguration, Executor executor) {
-            this.executor = executor;
-            this.droolsConfiguration = droolsConfiguration;
+        public HASessionDeltaEmptyExternalizer(HAKieSessionBuilder builder) {
+            this.builder = builder;
         }
 
         @Override
@@ -79,7 +73,7 @@ public class HAKieSessionDeltaEmpty implements Delta {
 
         @Override
         public HAKieSessionDeltaEmpty readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-            return new HAKieSessionDeltaEmpty(droolsConfiguration, executor);
+            return new HAKieSessionDeltaEmpty(builder);
         }
     }
 }

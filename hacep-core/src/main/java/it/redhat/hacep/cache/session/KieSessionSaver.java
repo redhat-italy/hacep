@@ -17,16 +17,13 @@
 
 package it.redhat.hacep.cache.session;
 
-import it.redhat.hacep.configuration.AbstractBaseDroolsConfiguration;
-import it.redhat.hacep.configuration.annotations.HACEPExecutorService;
-import it.redhat.hacep.configuration.annotations.HACEPSessionCache;
+import it.redhat.hacep.configuration.RulesManager;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
 import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -37,19 +34,16 @@ public class KieSessionSaver {
 
     private final ConcurrentMap<String, Object> locks = new ConcurrentHashMap<>();
 
-    @Inject
-    @HACEPSessionCache
-    private Cache<String, Object> sessionCache;
+    private final HAKieSessionBuilder haKieSessionBuilder;
 
-    @Inject
-    @HACEPExecutorService
-    private ExecutorService executorService;
+    private final Cache<String, Object> sessionCache;
 
-    @Inject
-    private AbstractBaseDroolsConfiguration droolsConfiguration;
+    public KieSessionSaver(HAKieSessionBuilder haKieSessionBuilder, Cache<String, Object> sessionCache) {
+        this.haKieSessionBuilder = haKieSessionBuilder;
+        this.sessionCache = sessionCache;
+    }
 
     public void insert(Key key, Fact fact) {
-        //SessionKey sessionKey = new SessionKey(key.getGroup());
         String sessionKey = key.getGroup();
 
         if (LOGGER.isDebugEnabled()) LOGGER.debug("Getting session for fact: " + fact + ", key: " + sessionKey);
@@ -60,7 +54,7 @@ public class KieSessionSaver {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Session doesn't exist, must create a new session");
                 }
-                haKieSession = new HAKieSession(droolsConfiguration, executorService);
+                haKieSession = haKieSessionBuilder.build();
                 sessionCache.put(sessionKey, haKieSession);
             } else {
                 haKieSession = (HAKieSession) value;
