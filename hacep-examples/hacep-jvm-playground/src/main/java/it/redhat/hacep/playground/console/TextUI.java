@@ -17,7 +17,7 @@
 
 package it.redhat.hacep.playground.console;
 
-import it.redhat.hacep.configuration.HACEP;
+import it.redhat.hacep.HACEP;
 import it.redhat.hacep.playground.console.commands.ConsoleCommand;
 import it.redhat.hacep.playground.console.support.ConsoleCommandComparator;
 import it.redhat.hacep.playground.console.support.ConsoleCommandNotFoundException;

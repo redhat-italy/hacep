@@ -17,12 +17,11 @@
 
 package it.redhat.hacep.playground.console.commands;
 
-import it.redhat.hacep.configuration.HACEP;
+import it.redhat.hacep.HACEP;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.playground.console.UI;
 import it.redhat.hacep.playground.console.support.IllegalParametersException;
 import org.infinispan.Cache;
-import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 
 import javax.inject.Inject;

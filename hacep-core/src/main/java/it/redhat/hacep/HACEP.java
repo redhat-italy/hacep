@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.configuration;
+package it.redhat.hacep;
 
 import it.redhat.hacep.model.Key;
 import org.infinispan.Cache;
@@ -31,7 +31,7 @@ public interface HACEP {
 
     void resume();
 
-    void removeKey(Key key);
+    void update(String groupId, String artifactId, String version);
 
     EmbeddedCacheManager getCacheManager();
 

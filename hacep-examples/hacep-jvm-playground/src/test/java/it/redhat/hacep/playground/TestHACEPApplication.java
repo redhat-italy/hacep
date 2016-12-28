@@ -1,6 +1,6 @@
 package it.redhat.hacep.playground;
 
-import it.redhat.hacep.configuration.HACEP;
+import it.redhat.hacep.HACEP;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.junit.Assert;

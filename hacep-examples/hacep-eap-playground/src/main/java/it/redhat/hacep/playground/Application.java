@@ -17,7 +17,7 @@
 
 package it.redhat.hacep.playground;
 
-import it.redhat.hacep.configuration.HACEP;
+import it.redhat.hacep.HACEP;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.configuration;
+package it.redhat.hacep;
 
 import it.redhat.hacep.cache.PutterImpl;
 import it.redhat.hacep.cache.listeners.FactListenerPost;
@@ -24,7 +24,7 @@ import it.redhat.hacep.cache.listeners.SessionListenerPre;
 import it.redhat.hacep.cache.listeners.UpdateVersionListener;
 import it.redhat.hacep.cache.session.HAKieSessionBuilder;
 import it.redhat.hacep.cache.session.KieSessionSaver;
-import it.redhat.hacep.model.Key;
+import it.redhat.hacep.configuration.*;
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 
@@ -115,8 +115,13 @@ public class HACEPImpl implements HACEP {
     }
 
     @Override
-    public void removeKey(Key key) {
-        dataGridManager.removeSession(key);
+    public void update(String groupId, String artifactId, String version) {
+        Cache<String, String> replicatedCache = dataGridManager.getReplicatedCache();
+        if (!replicatedCache.get(RulesManager.RULES_GROUP_ID).equals(rulesConfiguration.getGroupId()) ||
+                !replicatedCache.get(RulesManager.RULES_ARTIFACT_ID).equals(rulesConfiguration.getArtifactId())) {
+            throw new IllegalStateException("Update version in HACEP cannot change groupdId nor artifactId");
+        }
+        replicatedCache.put(RulesManager.RULES_VERSION, rulesConfiguration.getVersion());
     }
 
     @Override
