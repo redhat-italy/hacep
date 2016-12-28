@@ -17,6 +17,7 @@
 
 package it.redhat.hacep.camel;
 
+import it.redhat.hacep.camel.annotations.HACEPCamelContext;
 import it.redhat.hacep.configuration.JmsConfiguration;
 import it.redhat.hacep.configuration.Router;
 import it.redhat.hacep.model.Fact;
@@ -30,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Produces;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @ApplicationScoped
@@ -116,5 +118,11 @@ public class CamelRouter implements Router {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    @Produces
+    @HACEPCamelContext
+    public CamelContext getCamelContext() {
+        return camelContext;
     }
 }
