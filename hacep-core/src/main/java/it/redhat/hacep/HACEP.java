@@ -17,7 +17,6 @@
 
 package it.redhat.hacep;
 
-import it.redhat.hacep.model.Key;
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 
@@ -31,9 +30,7 @@ public interface HACEP {
 
     void resume();
 
-    void update(String groupId, String artifactId, String version);
-
     EmbeddedCacheManager getCacheManager();
 
-    Cache<String,Object> getSessionCache();
+    Cache<String, Object> getSessionCache();
 }

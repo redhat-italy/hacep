@@ -51,6 +51,15 @@ public class JmsConfigurationImpl implements JmsConfiguration {
     }
 
     @Override
+    public String getCommandsQueueName() {
+        try {
+            return System.getProperty("commands.queue.name", "commands");
+        } catch (IllegalArgumentException e) {
+            return "commands";
+        }
+    }
+
+    @Override
     public int getMaxConsumers() {
         try {
             return Integer.valueOf(System.getProperty("queue.consumers", "5"));

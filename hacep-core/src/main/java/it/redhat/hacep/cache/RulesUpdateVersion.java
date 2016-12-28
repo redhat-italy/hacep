@@ -15,17 +15,9 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.configuration;
+package it.redhat.hacep.cache;
 
-import javax.jms.ConnectionFactory;
+public interface RulesUpdateVersion {
 
-public interface JmsConfiguration {
-
-    ConnectionFactory getConnectionFactory();
-
-    String getQueueName();
-
-    int getMaxConsumers();
-
-    String getCommandsQueueName();
+    void execute(String release);
 }

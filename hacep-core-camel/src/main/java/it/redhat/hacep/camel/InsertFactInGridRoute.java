@@ -15,17 +15,23 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.configuration;
+package it.redhat.hacep.camel;
 
-import javax.jms.ConnectionFactory;
+import it.redhat.hacep.cache.Putter;
+import org.apache.camel.builder.RouteBuilder;
 
-public interface JmsConfiguration {
+public class InsertFactInGridRoute extends RouteBuilder {
 
-    ConnectionFactory getConnectionFactory();
+    private final Putter putter;
 
-    String getQueueName();
+    public InsertFactInGridRoute(Putter putter) {
+        this.putter = putter;
+    }
 
-    int getMaxConsumers();
+    @Override
+    public void configure() throws Exception {
+        from("direct:putInGrid")
+                .bean(putter, "put(${body})");
+    }
 
-    String getCommandsQueueName();
 }

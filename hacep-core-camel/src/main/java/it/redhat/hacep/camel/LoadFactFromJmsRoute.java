@@ -15,17 +15,31 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.configuration;
+package it.redhat.hacep.camel;
 
-import javax.jms.ConnectionFactory;
+import org.apache.camel.builder.RouteBuilder;
 
-public interface JmsConfiguration {
+public class LoadFactFromJmsRoute extends RouteBuilder {
 
-    ConnectionFactory getConnectionFactory();
 
-    String getQueueName();
+    private String routeId;
+    private String queueName;
+    private int maxConsumers;
 
-    int getMaxConsumers();
+    public LoadFactFromJmsRoute(String routeId, String queueName, int maxConsumers) {
+        this.routeId = routeId;
+        this.queueName = queueName;
+        this.maxConsumers = maxConsumers;
+    }
 
-    String getCommandsQueueName();
+    @Override
+    public void configure() throws Exception {
+        String uri = "jms:" + queueName
+                + "?concurrentConsumers=" + maxConsumers
+                + "&maxConcurrentConsumers=" + maxConsumers;
+
+        from(uri)
+                .routeId(routeId)
+                .to("direct:putInGrid");
+    }
 }

@@ -18,11 +18,11 @@
 package it.redhat.hacep.camel;
 
 import it.redhat.hacep.cache.Putter;
+import it.redhat.hacep.cache.RulesUpdateVersion;
 import it.redhat.hacep.camel.annotations.HACEPCamelContext;
 import it.redhat.hacep.configuration.JmsConfiguration;
 import it.redhat.hacep.configuration.Router;
 import org.apache.camel.CamelContext;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jms.JmsComponent;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.slf4j.Logger;
@@ -48,32 +48,15 @@ public class CamelRouter implements Router {
     }
 
     @Override
-    public void start(JmsConfiguration jmsConfiguration, Putter putter) {
+    public void start(JmsConfiguration jmsConfiguration, Putter putter, RulesUpdateVersion rulesUpdateVersion) {
         if (started.compareAndSet(false, true)) {
             try {
                 JmsComponent component = JmsComponent.jmsComponent(jmsConfiguration.getConnectionFactory());
                 camelContext.addComponent("jms", component);
-                camelContext.addRoutes(new RouteBuilder() {
-
-                    @Override
-                    public void configure() throws Exception {
-                        String uri = "jms:" + jmsConfiguration.getQueueName()
-                                + "?concurrentConsumers=" + jmsConfiguration.getMaxConsumers()
-                                + "&maxConcurrentConsumers=" + jmsConfiguration.getMaxConsumers();
-
-                        from(uri)
-                                .routeId(CAMEL_ROUTE)
-                                .to("direct:putInGrid");
-                    }
-                });
-
-                camelContext.addRoutes(new RouteBuilder() {
-                    @Override
-                    public void configure() throws Exception {
-                        from("direct:putInGrid")
-                                .bean(putter, "put(${body})");
-                    }
-                });
+                camelContext.addRoutes(new LoadFactFromJmsRoute(CAMEL_ROUTE, jmsConfiguration.getQueueName(), jmsConfiguration.getMaxConsumers()));
+                camelContext.addRoutes(new InsertFactInGridRoute(putter));
+                camelContext.addRoutes(new ExecuteCommandsFromJmsRoute(jmsConfiguration.getCommandsQueueName()));
+                camelContext.addRoutes(new UpgradeCommandRoute(rulesUpdateVersion));
                 camelContext.start();
             } catch (Exception e) {
                 throw new RuntimeException(e);

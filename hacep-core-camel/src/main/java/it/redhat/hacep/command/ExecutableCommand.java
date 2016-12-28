@@ -15,17 +15,10 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.configuration;
+package it.redhat.hacep.command;
 
-import javax.jms.ConnectionFactory;
+import it.redhat.hacep.command.model.CommandDTO;
 
-public interface JmsConfiguration {
-
-    ConnectionFactory getConnectionFactory();
-
-    String getQueueName();
-
-    int getMaxConsumers();
-
-    String getCommandsQueueName();
+public interface ExecutableCommand {
+    void execute(CommandDTO dto);
 }

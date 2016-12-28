@@ -56,6 +56,15 @@ public class JmsConfigurationImpl implements JmsConfiguration {
         }
     }
 
+    @Override
+    public String getCommandsQueueName() {
+        try {
+            return System.getProperty("commands.queue.name", "commands");
+        } catch (IllegalArgumentException e) {
+            return "commands";
+        }
+    }
+
     private String getQueueBrokerUrl() {
         try {
             return System.getProperty("queue.url", "tcp://localhost:61616");

@@ -84,6 +84,8 @@ public class DataGridManager {
                     .maxIdle(factsExpiration(), TimeUnit.MILLISECONDS);
 
             ConfigurationBuilder sessionCacheConfigurationBuilder = new ConfigurationBuilder().read(commonConfiguration);
+            ConfigurationBuilder replicatedInfos = new ConfigurationBuilder();
+            replicatedInfos.clustering().cacheMode(CacheMode.REPL_SYNC);
 
             if (persistence()) {
                 sessionCacheConfigurationBuilder
@@ -99,14 +101,23 @@ public class DataGridManager {
                         .singleton().enabled(false)
                         .eviction()
                         .strategy(EvictionStrategy.LRU).type(EvictionType.COUNT).size(evictionSize());
+
+                replicatedInfos
+                        .persistence()
+                        .passivation(false)
+                        .addSingleFileStore()
+                        .shared(false)
+                        .preload(true)
+                        .fetchPersistentState(true)
+                        .purgeOnStartup(false)
+                        .location(location())
+                        .async().threadPoolSize(threadPoolSize()).enabled(false)
+                        .singleton().enabled(false);
             }
 
             this.manager.defineConfiguration(FACT_CACHE_NAME, factCacheConfigurationBuilder.build());
             this.manager.defineConfiguration(SESSION_CACHE_NAME, sessionCacheConfigurationBuilder.build());
-
-            ConfigurationBuilder replicated = new ConfigurationBuilder();
-            replicated.clustering().cacheMode(CacheMode.REPL_SYNC);
-            this.manager.defineConfiguration(REPLICATED_CACHE_NAME, replicated.build());
+            this.manager.defineConfiguration(REPLICATED_CACHE_NAME, replicatedInfos.build());
 
             this.manager.start();
         }

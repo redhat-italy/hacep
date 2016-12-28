@@ -18,6 +18,7 @@
 package it.redhat.hacep;
 
 import it.redhat.hacep.cache.PutterImpl;
+import it.redhat.hacep.cache.RulesUpdateVersionImpl;
 import it.redhat.hacep.cache.listeners.FactListenerPost;
 import it.redhat.hacep.cache.listeners.SessionListenerPost;
 import it.redhat.hacep.cache.listeners.SessionListenerPre;
@@ -84,7 +85,9 @@ public class HACEPImpl implements HACEP {
                 this.rulesManager.start(groupId, artifactId, version);
                 infoCache.addListener(new UpdateVersionListener(this.router, this.rulesManager));
 
-                this.router.start(jmsConfiguration, new PutterImpl(dataGridManager.getFactCache()));
+                this.router.start(jmsConfiguration,
+                        new PutterImpl(dataGridManager.getFactCache()),
+                        new RulesUpdateVersionImpl(dataGridManager.getReplicatedCache()));
             } catch (Exception e) {
                 started.set(false);
                 throw new RuntimeException(e);
@@ -112,16 +115,6 @@ public class HACEPImpl implements HACEP {
     @Override
     public void resume() {
         this.router.resume();
-    }
-
-    @Override
-    public void update(String groupId, String artifactId, String version) {
-        Cache<String, String> replicatedCache = dataGridManager.getReplicatedCache();
-        if (!replicatedCache.get(RulesManager.RULES_GROUP_ID).equals(rulesConfiguration.getGroupId()) ||
-                !replicatedCache.get(RulesManager.RULES_ARTIFACT_ID).equals(rulesConfiguration.getArtifactId())) {
-            throw new IllegalStateException("Update version in HACEP cannot change groupdId nor artifactId");
-        }
-        replicatedCache.put(RulesManager.RULES_VERSION, rulesConfiguration.getVersion());
     }
 
     @Override

@@ -15,17 +15,28 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.configuration;
+package it.redhat.hacep.camel;
 
-import javax.jms.ConnectionFactory;
+import it.redhat.hacep.command.model.CommandDTO;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.dataformat.JsonLibrary;
 
-public interface JmsConfiguration {
+public class ExecuteCommandsFromJmsRoute extends RouteBuilder {
 
-    ConnectionFactory getConnectionFactory();
+    private String queueName;
 
-    String getQueueName();
+    public ExecuteCommandsFromJmsRoute(String queueName) {
+        this.queueName = queueName;
+    }
 
-    int getMaxConsumers();
+    @Override
+    public void configure() throws Exception {
+        from("jms:" + queueName)
+                .unmarshal().json(JsonLibrary.Jackson, CommandDTO.class)
+                .to("direct:execute-command");
 
-    String getCommandsQueueName();
+        from("direct:execute-command")
+                .recipientList()
+                .simple("direct:${body.command}");
+    }
 }
