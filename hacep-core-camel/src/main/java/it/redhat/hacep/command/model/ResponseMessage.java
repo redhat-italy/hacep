@@ -17,45 +17,48 @@
 
 package it.redhat.hacep.command.model;
 
-import java.util.List;
 import java.util.Objects;
 
-public class CommandDTO {
+public class ResponseMessage {
 
-    private String command;
+    private ResponseCode code;
+    private String message;
 
-    private List<KeyValueParam> params;
-
-    public CommandDTO() {
+    public ResponseMessage() {
     }
 
-    public String getCommand() {
-        return command;
+    public ResponseMessage(ResponseCode code, String message) {
+        this.code = code;
+        this.message = message;
     }
 
-    public void setCommand(String command) {
-        this.command = command;
+    public ResponseCode getCode() {
+        return code;
     }
 
-    public List<KeyValueParam> getParams() {
-        return params;
+    public void setCode(ResponseCode code) {
+        this.code = code;
     }
 
-    public void setParams(List<KeyValueParam> params) {
-        this.params = params;
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof CommandDTO)) return false;
-        CommandDTO that = (CommandDTO) o;
-        return Objects.equals(command, that.command) &&
-                Objects.equals(params, that.params);
+        if (!(o instanceof ResponseMessage)) return false;
+        ResponseMessage responseMessage = (ResponseMessage) o;
+        return code == responseMessage.code &&
+                Objects.equals(message, responseMessage.message);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(command, params);
+        return Objects.hash(code, message);
     }
 }

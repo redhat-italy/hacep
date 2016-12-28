@@ -49,7 +49,7 @@ public class RulesUpdateVersionImpl implements RulesUpdateVersion {
             String expectedArtifactId = replicatedCache.get(RulesManager.RULES_ARTIFACT_ID);
             if (expectedGroupId.equals(groupId) && expectedArtifactId.equals(artifactId)) {
                 replicatedCache.put(RulesManager.RULES_VERSION, version);
-                return "OK";
+                return releaseId;
             } else {
                 throw new IllegalStateException("Update version in HACEP cannot change groupdId nor artifactId");
             }

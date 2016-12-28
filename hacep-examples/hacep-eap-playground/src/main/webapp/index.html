@@ -253,7 +253,7 @@
         });
         if (element.length == 1) {
             element[0].data.points = event.points;
-            element[0].data.level = event.level;
+            element[0].data.code = event.code;
             element[0].event = true;
             drawNodes(data);
         }
@@ -325,7 +325,7 @@
         var event = {
             "name": "Session::Group::" + msg.playerId,
             "points": msg.points * 10,
-            "level": msg.level
+            "code": msg.code
         };
         rewardEvent(event);
     };

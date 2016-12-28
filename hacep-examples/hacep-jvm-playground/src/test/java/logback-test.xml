@@ -9,7 +9,7 @@
 
   <logger name="it.redhat.hacep" level="debug"/>
 
-  <root level="warn">
+  <root level="info">
     <appender-ref ref="consoleAppender" />
   </root>
 

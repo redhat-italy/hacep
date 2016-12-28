@@ -3,7 +3,7 @@ package it.redhat.hacep.playground.rules.reward.catalog;
 import it.redhat.hacep.playground.rules.model.Gameplay;
 import it.redhat.hacep.playground.rules.model.outcome.PlayerPointLevel;
 
-rule "User gains a point for each gameplay and every 10 points increases player level"
+rule "User gains a point for each gameplay and every 10 points increases player code"
 when
     $gamePlay : Gameplay($playerId : playerId) over window:length(1)
     $numberOfTimes : Number()

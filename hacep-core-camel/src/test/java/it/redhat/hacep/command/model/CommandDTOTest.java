@@ -18,12 +18,10 @@
 package it.redhat.hacep.command.model;
 
 import it.redhat.hacep.camel.ExecuteCommandsFromJmsRoute;
-import it.redhat.hacep.command.ExecutableCommand;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.builder.Builder;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Test;
 
@@ -81,7 +79,7 @@ public class CommandDTOTest extends CamelTestSupport {
         getMockEndpoint("mock:direct:execute-command", false).expectedMessageCount(1);
         getMockEndpoint("mock:direct:execute-command", false)
                 .message(0)
-                .predicate(isInstanceOf(body(), CommandDTO.class))
+                .predicate(isInstanceOf(body(), Command.class))
                 .predicate(isEqualTo(Builder.simple("${body.command}"), Builder.constant("NOME_COMMAND")))
                 .predicate(isEqualTo(Builder.simple("${body.params?.size}"), Builder.constant(2)))
                 .predicate(isInstanceOf(Builder.simple("${body.params[0]}"), KeyValueParam.class))

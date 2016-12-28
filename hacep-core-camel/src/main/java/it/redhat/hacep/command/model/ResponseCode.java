@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.command;
+package it.redhat.hacep.command.model;
 
-import it.redhat.hacep.command.model.Command;
+public enum ResponseCode {
 
-public interface ExecutableCommand {
-    void execute(Command dto);
+    SUCCESS,
+    WARNING,
+    ERROR;
 }
