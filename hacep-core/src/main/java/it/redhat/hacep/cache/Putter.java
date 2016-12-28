@@ -15,30 +15,10 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.camel;
+package it.redhat.hacep.cache;
 
 import it.redhat.hacep.model.Fact;
-import it.redhat.hacep.model.Key;
-import org.infinispan.Cache;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class Putter {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Putter.class);
-
-    private final Cache<Key, Fact> cache;
-
-    public Putter(Cache<Key, Fact> cache) {
-        this.cache = cache;
-    }
-
-    public void put(Fact fact) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Putting event in the grid");
-        }
-        if (cache != null) {
-            cache.put(fact.extractKey(), fact);
-        }
-    }
+public interface Putter {
+    void put(Fact fact);
 }

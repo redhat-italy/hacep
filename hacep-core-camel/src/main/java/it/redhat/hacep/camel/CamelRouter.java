@@ -17,16 +17,14 @@
 
 package it.redhat.hacep.camel;
 
+import it.redhat.hacep.cache.Putter;
 import it.redhat.hacep.camel.annotations.HACEPCamelContext;
 import it.redhat.hacep.configuration.JmsConfiguration;
 import it.redhat.hacep.configuration.Router;
-import it.redhat.hacep.model.Fact;
-import it.redhat.hacep.model.Key;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jms.JmsComponent;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +48,7 @@ public class CamelRouter implements Router {
     }
 
     @Override
-    public void start(Cache<Key, Fact> factCache, JmsConfiguration jmsConfiguration) {
+    public void start(JmsConfiguration jmsConfiguration, Putter putter) {
         if (started.compareAndSet(false, true)) {
             try {
                 JmsComponent component = JmsComponent.jmsComponent(jmsConfiguration.getConnectionFactory());
@@ -73,7 +71,7 @@ public class CamelRouter implements Router {
                     @Override
                     public void configure() throws Exception {
                         from("direct:putInGrid")
-                                .bean(new Putter(factCache), "put(${body})");
+                                .bean(putter, "put(${body})");
                     }
                 });
                 camelContext.start();

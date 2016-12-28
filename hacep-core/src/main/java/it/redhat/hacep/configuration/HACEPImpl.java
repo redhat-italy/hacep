@@ -17,6 +17,7 @@
 
 package it.redhat.hacep.configuration;
 
+import it.redhat.hacep.cache.PutterImpl;
 import it.redhat.hacep.cache.listeners.FactListenerPost;
 import it.redhat.hacep.cache.listeners.SessionListenerPost;
 import it.redhat.hacep.cache.listeners.SessionListenerPre;
@@ -83,7 +84,7 @@ public class HACEPImpl implements HACEP {
                 this.rulesManager.start(groupId, artifactId, version);
                 infoCache.addListener(new UpdateVersionListener(this.router, this.rulesManager));
 
-                this.router.start(dataGridManager.getFactCache(), jmsConfiguration);
+                this.router.start(jmsConfiguration, new PutterImpl(dataGridManager.getFactCache()));
             } catch (Exception e) {
                 started.set(false);
                 throw new RuntimeException(e);

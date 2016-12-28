@@ -15,28 +15,31 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.configuration;
+package it.redhat.hacep.cache;
 
-import it.redhat.hacep.cache.Putter;
+import it.redhat.hacep.model.Fact;
+import it.redhat.hacep.model.Key;
+import org.infinispan.Cache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public interface Router {
-    /**
-     * Start context.
-     */
-    void start(JmsConfiguration jmsConfiguration, Putter putter);
+public class PutterImpl implements Putter {
 
-    /**
-     * Stop context.
-     */
-    void stop();
+    private static final Logger LOGGER = LoggerFactory.getLogger(PutterImpl.class);
 
-    /**
-     * Suspend the route responsible for the messages ingestion.
-     */
-    void suspend();
+    private final Cache<Key, Fact> cache;
 
-    /**
-     * Resume the route responsible for the messages ingestion.
-     */
-    void resume();
+    public PutterImpl(Cache<Key, Fact> cache) {
+        this.cache = cache;
+    }
+
+    @Override
+    public void put(Fact fact) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Putting event in the grid");
+        }
+        if (cache != null) {
+            cache.put(fact.extractKey(), fact);
+        }
+    }
 }
