@@ -18,6 +18,7 @@
 package it.redhat.hacep.camel;
 
 import it.redhat.hacep.command.model.CommandDTO;
+import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 
@@ -32,10 +33,12 @@ public class ExecuteCommandsFromJmsRoute extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         from("jms:" + queueName)
+                .setExchangePattern(ExchangePattern.InOut)
                 .unmarshal().json(JsonLibrary.Jackson, CommandDTO.class)
                 .to("direct:execute-command");
 
         from("direct:execute-command")
+                .setExchangePattern(ExchangePattern.InOut)
                 .recipientList()
                 .simple("direct:${body.command}");
     }

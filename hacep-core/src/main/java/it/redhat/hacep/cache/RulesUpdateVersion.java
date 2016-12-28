@@ -19,5 +19,5 @@ package it.redhat.hacep.cache;
 
 public interface RulesUpdateVersion {
 
-    void execute(String release);
+    String execute(String release);
 }

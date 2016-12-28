@@ -20,6 +20,7 @@ package it.redhat.hacep.camel;
 import it.redhat.hacep.cache.RulesUpdateVersion;
 import it.redhat.hacep.command.model.CommandDTO;
 import it.redhat.hacep.command.model.KeyValueParam;
+import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
 
 public class UpgradeCommandRoute extends RouteBuilder {
@@ -33,6 +34,7 @@ public class UpgradeCommandRoute extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         from("direct:UPGRADE")
+                .setExchangePattern(ExchangePattern.InOut)
                 .process(exchange -> {
                     CommandDTO dto = exchange.getIn().getBody(CommandDTO.class);
                     String value = dto.getParams().stream()
