@@ -175,6 +175,20 @@ public class TestContainerUpdate {
         Assert.assertEquals(1, sessionCache1.size());
         Assert.assertEquals(1, sessionCache2.size());
 
+        reset(router1, router2, additionsChannel1, replayChannel1, additionsChannel2, replayChannel2);
+
+        //Add another fact on version 3 to check everything is working as before version upgrade
+        factCache.remove(keyForDatagrid1);
+        factCache.put(keyForDatagrid1, generateFactTenSecondsAfter(2L, 30L));
+
+        verify(additionsChannel1, times(1)).send(eq(90L));
+        verify(replayChannel1, never()).send(any());
+
+        verify(additionsChannel2, never()).send(any());
+        verify(replayChannel2, never()).send(any());
+
+        Assert.assertEquals(1, sessionCache1.size());
+        Assert.assertEquals(1, sessionCache2.size());
 
         dataGridManager1.stop();
         dataGridManager2.stop();
