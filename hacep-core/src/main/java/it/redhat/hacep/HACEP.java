@@ -17,6 +17,7 @@
 
 package it.redhat.hacep;
 
+import it.redhat.hacep.model.Fact;
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 
@@ -29,6 +30,10 @@ public interface HACEP {
     void suspend();
 
     void resume();
+
+    void insertFact(Fact fact);
+
+    String update(String releaseId);
 
     EmbeddedCacheManager getCacheManager();
 

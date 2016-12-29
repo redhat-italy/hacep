@@ -17,21 +17,23 @@
 
 package it.redhat.hacep.camel;
 
+import it.redhat.hacep.HACEP;
 import it.redhat.hacep.cache.Putter;
 import org.apache.camel.builder.RouteBuilder;
 
 public class InsertFactInGridRoute extends RouteBuilder {
 
-    private final Putter putter;
 
-    public InsertFactInGridRoute(Putter putter) {
-        this.putter = putter;
+    private final HACEP hacep;
+
+    public InsertFactInGridRoute(HACEP hacep) {
+        this.hacep = hacep;
     }
 
     @Override
     public void configure() throws Exception {
         from("direct:putInGrid")
-                .bean(putter, "put(${body})");
+                .bean(hacep, "insertFact(${body})");
     }
 
 }

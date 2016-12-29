@@ -17,6 +17,7 @@
 
 package it.redhat.hacep.camel;
 
+import it.redhat.hacep.HACEP;
 import it.redhat.hacep.cache.RulesUpdateVersion;
 import it.redhat.hacep.command.model.Command;
 import it.redhat.hacep.command.model.KeyValueParam;
@@ -30,10 +31,10 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 
 public class UpgradeCommandRoute extends RouteBuilder {
 
-    private RulesUpdateVersion ruleBean;
+    private final HACEP hacep;
 
-    public UpgradeCommandRoute(RulesUpdateVersion ruleBean) {
-        this.ruleBean = ruleBean;
+    public UpgradeCommandRoute(HACEP hacep) {
+        this.hacep = hacep;
     }
 
     @Override
@@ -58,7 +59,7 @@ public class UpgradeCommandRoute extends RouteBuilder {
                             .findFirst().orElseThrow(() -> new IllegalArgumentException("RELEASE_ID cannot be null"));
                     exchange.getOut().setBody(value);
                 })
-                .bean(ruleBean, "execute(${body})")
+                .bean(hacep, "update(${body})")
                 .process(exchange -> {
                     Object body = exchange.getIn().getBody();
                     ResponseMessage output = new ResponseMessage(ResponseCode.SUCCESS, "Upgraded completed to version [" + body + "]");

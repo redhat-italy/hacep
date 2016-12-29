@@ -26,6 +26,7 @@ import it.redhat.hacep.cache.listeners.UpdateVersionListener;
 import it.redhat.hacep.cache.session.HAKieSessionBuilder;
 import it.redhat.hacep.cache.session.KieSessionSaver;
 import it.redhat.hacep.configuration.*;
+import it.redhat.hacep.model.Fact;
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 
@@ -55,6 +56,8 @@ public class HACEPImpl implements HACEP {
     private RulesConfiguration rulesConfiguration;
 
     private final AtomicBoolean started = new AtomicBoolean(false);
+    private RulesUpdateVersionImpl rulesUpdateVersion;
+    private PutterImpl putter;
 
     public HACEPImpl() {
         this.executorService = Executors.newFixedThreadPool(4);
@@ -85,9 +88,9 @@ public class HACEPImpl implements HACEP {
                 this.rulesManager.start(groupId, artifactId, version);
                 infoCache.addListener(new UpdateVersionListener(this.router, this.rulesManager));
 
-                this.router.start(jmsConfiguration,
-                        new PutterImpl(dataGridManager.getFactCache()),
-                        new RulesUpdateVersionImpl(dataGridManager.getReplicatedCache()));
+                rulesUpdateVersion = new RulesUpdateVersionImpl(dataGridManager.getReplicatedCache());
+                putter = new PutterImpl(dataGridManager.getFactCache());
+                this.router.start(jmsConfiguration, this);
             } catch (Exception e) {
                 started.set(false);
                 throw new RuntimeException(e);
@@ -115,6 +118,16 @@ public class HACEPImpl implements HACEP {
     @Override
     public void resume() {
         this.router.resume();
+    }
+
+    @Override
+    public void insertFact(Fact fact) {
+        putter.put(fact);
+    }
+
+    @Override
+    public String update(String releaseId) {
+        return rulesUpdateVersion.execute(releaseId);
     }
 
     @Override

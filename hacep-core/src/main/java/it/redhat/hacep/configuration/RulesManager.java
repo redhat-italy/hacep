@@ -82,11 +82,12 @@ public class RulesManager {
         if (StringUtils.isEmpty(version)) {
             throw new IllegalArgumentException("Update to version cannot accept an empty version");
         }
-        this.releaseId = kieServices.newReleaseId(
+        ReleaseId releaseId = kieServices.newReleaseId(
                 rulesConfiguration.getGroupId(),
                 rulesConfiguration.getArtifactId(),
                 version);
         Results results = kieContainer.updateToVersion(releaseId);
+        this.releaseId = kieContainer.getReleaseId();
         KieSessionUtils.logResults(results);
         if (results.hasMessages(Message.Level.ERROR)) {
             LOGGER.error("Update to version {} aborted due to errors", version);

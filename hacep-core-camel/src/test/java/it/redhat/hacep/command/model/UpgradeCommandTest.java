@@ -17,14 +17,11 @@
 
 package it.redhat.hacep.command.model;
 
-import it.redhat.hacep.cache.RulesUpdateVersion;
+import it.redhat.hacep.HACEP;
 import it.redhat.hacep.camel.UpgradeCommandRoute;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
-import org.apache.camel.builder.Builder;
-import org.apache.camel.builder.PredicateBuilder;
 import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -39,11 +36,11 @@ import static org.mockito.Mockito.*;
 
 public class UpgradeCommandTest extends CamelTestSupport {
 
-    private RulesUpdateVersion rulesUpdateVersion = mock(RulesUpdateVersion.class);
+    private HACEP hacep = mock(HACEP.class);
 
     @Override
     protected RoutesBuilder createRouteBuilder() throws Exception {
-        return new UpgradeCommandRoute(rulesUpdateVersion);
+        return new UpgradeCommandRoute(hacep);
     }
 
     @Override
@@ -53,7 +50,7 @@ public class UpgradeCommandTest extends CamelTestSupport {
 
     @Test
     public void testInputCommand() throws Exception {
-        reset(rulesUpdateVersion);
+        reset(hacep);
 
         String expectedReleaseID = "groupId:artifactId:version";
 
@@ -73,7 +70,7 @@ public class UpgradeCommandTest extends CamelTestSupport {
         command.setCommand("UPGRADE");
         command.setParams(Arrays.asList(param1));
 
-        when(rulesUpdateVersion.execute(anyString())).thenReturn("OK");
+        when(hacep.update(anyString())).thenReturn("OK");
 
         context.start();
 
@@ -85,13 +82,13 @@ public class UpgradeCommandTest extends CamelTestSupport {
 
         Object object = template.requestBody("direct:test", command);
 
-        verify(rulesUpdateVersion, times(1)).execute(eq(expectedReleaseID));
+        verify(hacep, times(1)).update(eq(expectedReleaseID));
         assertMockEndpointsSatisfied(1, TimeUnit.MINUTES);
     }
 
     @Test
     public void testExceptionOnInputCommand() throws Exception {
-        reset(rulesUpdateVersion);
+        reset(hacep);
 
         String expectedReleaseID = "groupId:artifactId:version";
 
@@ -111,7 +108,7 @@ public class UpgradeCommandTest extends CamelTestSupport {
         command.setCommand("UPGRADE");
         command.setParams(Arrays.asList(param1));
 
-        when(rulesUpdateVersion.execute(anyString())).thenThrow(new IllegalStateException("CANNOT UPDATE"));
+        when(hacep.update(anyString())).thenThrow(new IllegalStateException("CANNOT UPDATE"));
 
         context.start();
 
@@ -123,7 +120,7 @@ public class UpgradeCommandTest extends CamelTestSupport {
 
         Object object = template.requestBody("direct:test", command);
 
-        verify(rulesUpdateVersion, times(1)).execute(eq(expectedReleaseID));
+        verify(hacep, times(1)).update(eq(expectedReleaseID));
     }
 
 

@@ -17,14 +17,13 @@
 
 package it.redhat.hacep.configuration;
 
-import it.redhat.hacep.cache.Putter;
-import it.redhat.hacep.cache.RulesUpdateVersion;
+import it.redhat.hacep.HACEP;
 
 public interface Router {
     /**
      * Start context.
      */
-    void start(JmsConfiguration jmsConfiguration, Putter putter, RulesUpdateVersion rulesUpdateVersion);
+    void start(JmsConfiguration jmsConfiguration, HACEP hacep);
 
     /**
      * Stop context.

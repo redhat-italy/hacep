@@ -17,8 +17,7 @@
 
 package it.redhat.hacep.camel;
 
-import it.redhat.hacep.cache.Putter;
-import it.redhat.hacep.cache.RulesUpdateVersion;
+import it.redhat.hacep.HACEP;
 import it.redhat.hacep.camel.annotations.HACEPCamelContext;
 import it.redhat.hacep.configuration.JmsConfiguration;
 import it.redhat.hacep.configuration.Router;
@@ -48,15 +47,15 @@ public class CamelRouter implements Router {
     }
 
     @Override
-    public void start(JmsConfiguration jmsConfiguration, Putter putter, RulesUpdateVersion rulesUpdateVersion) {
+    public void start(JmsConfiguration jmsConfiguration, HACEP hacep) {
         if (started.compareAndSet(false, true)) {
             try {
                 JmsComponent component = JmsComponent.jmsComponent(jmsConfiguration.getConnectionFactory());
                 camelContext.addComponent("jms", component);
                 camelContext.addRoutes(new LoadFactFromJmsRoute(CAMEL_ROUTE, jmsConfiguration.getQueueName(), jmsConfiguration.getMaxConsumers()));
-                camelContext.addRoutes(new InsertFactInGridRoute(putter));
+                camelContext.addRoutes(new InsertFactInGridRoute(hacep));
                 camelContext.addRoutes(new ExecuteCommandsFromJmsRoute(jmsConfiguration.getCommandsQueueName()));
-                camelContext.addRoutes(new UpgradeCommandRoute(rulesUpdateVersion));
+                camelContext.addRoutes(new UpgradeCommandRoute(hacep));
                 camelContext.start();
             } catch (Exception e) {
                 throw new RuntimeException(e);

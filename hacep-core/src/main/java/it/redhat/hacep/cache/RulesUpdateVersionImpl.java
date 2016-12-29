@@ -32,7 +32,6 @@ public class RulesUpdateVersionImpl implements RulesUpdateVersion {
         this.replicatedCache = replicatedCache;
     }
 
-
     @Override
     public String execute(String releaseId) {
         String[] tokens = releaseId.split(":");
@@ -48,7 +47,12 @@ public class RulesUpdateVersionImpl implements RulesUpdateVersion {
             String expectedGroupId = replicatedCache.get(RulesManager.RULES_GROUP_ID);
             String expectedArtifactId = replicatedCache.get(RulesManager.RULES_ARTIFACT_ID);
             if (expectedGroupId.equals(groupId) && expectedArtifactId.equals(artifactId)) {
-                replicatedCache.put(RulesManager.RULES_VERSION, version);
+                String oldVersion = replicatedCache.get(RulesManager.RULES_VERSION);
+                try {
+                    replicatedCache.put(RulesManager.RULES_VERSION, version);
+                } catch (Exception e) {
+                    replicatedCache.put(RulesManager.RULES_VERSION, oldVersion);
+                }
                 return releaseId;
             } else {
                 throw new IllegalStateException("Update version in HACEP cannot change groupdId nor artifactId");
