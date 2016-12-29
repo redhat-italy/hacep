@@ -17,12 +17,8 @@
 
 package it.redhat.hacep.cluster;
 
-import it.redhat.hacep.HACEP;
 import it.redhat.hacep.HACEPImpl;
-import it.redhat.hacep.cache.listeners.FactListenerPost;
 import it.redhat.hacep.cache.listeners.UpdateVersionListener;
-import it.redhat.hacep.cache.session.HAKieSessionBuilder;
-import it.redhat.hacep.cache.session.KieSessionSaver;
 import it.redhat.hacep.configuration.DataGridManager;
 import it.redhat.hacep.configuration.JmsConfiguration;
 import it.redhat.hacep.configuration.Router;
@@ -34,9 +30,9 @@ import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyAffinityServiceFactory;
 import org.infinispan.affinity.KeyGenerator;
-import org.infinispan.affinity.ListenerRegistration;
 import org.infinispan.remoting.transport.Address;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.kie.api.builder.ReleaseId;
 import org.kie.api.runtime.Channel;
@@ -48,7 +44,6 @@ import org.slf4j.LoggerFactory;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import static it.redhat.hacep.cluster.RulesConfigurationTestImpl.RulesTestBuilder;
 import static org.mockito.Mockito.any;
@@ -73,6 +68,16 @@ public class TestContainerUpdate {
     private Router router2 = mock(Router.class);
     private JmsConfiguration jmsConfig1 = mock(JmsConfiguration.class);
     private JmsConfiguration jmsConfig2 = mock(JmsConfiguration.class);
+
+    @Before
+    public void setSetsystemProperties(){
+        System.setProperty("jgroups.configuration", "jgroups-test-tcp.xml");
+    }
+
+    @Before
+    public void clearSetsystemProperties(){
+        System.clearProperty("jgroups.configuration");
+    }
 
     @Test
     public void testUpdate() throws InterruptedException {
@@ -214,7 +219,7 @@ public class TestContainerUpdate {
     }
 
     @Test
-    public void testFailedUpdate() {
+    public void testFailedUpdateOnAllNodes() {
         reset(router1, router2, additionsChannel1, replayChannel1, additionsChannel2, replayChannel2);
 
         RulesConfigurationTestImpl rulesConfigurationTest1 = RulesTestBuilder.buildV1();
@@ -282,13 +287,108 @@ public class TestContainerUpdate {
         }
 
         InOrder inOrder = Mockito.inOrder(router1);
-        inOrder.verify(router1, times(0)).suspend();
-        inOrder.verify(router1, times(0)).resume();
+        inOrder.verify(router1, times(1)).suspend();
+        inOrder.verify(router1, times(1)).resume();
         inOrder.verifyNoMoreInteractions();
 
         inOrder = Mockito.inOrder(router2);
-        inOrder.verify(router2, times(0)).suspend();
-        inOrder.verify(router2, times(0)).resume();
+        inOrder.verify(router2, times(1)).suspend();
+        inOrder.verify(router2, times(1)).resume();
+        inOrder.verifyNoMoreInteractions();
+
+        Assert.assertEquals("1.0.0", hacep1.getRulesManager().getReleaseId().getVersion());
+        Assert.assertEquals("1.0.0", hacep2.getRulesManager().getReleaseId().getVersion());
+        Assert.assertEquals("1.0.0", dataGridManager1.getReplicatedCache().get(RulesManager.RULES_VERSION));
+
+        factCache.remove(keyForDatagrid1);
+        hacep1.insertFact(generateFactTenSecondsAfter(1L, 20L, keyForDatagrid1));
+
+        verify(additionsChannel1, times(1)).send(eq(30L));
+        verify(replayChannel1, never()).send(any());
+
+        verify(additionsChannel2, never()).send(any());
+        verify(replayChannel2, never()).send(any());
+
+        Assert.assertEquals(1, sessionCache1.size());
+        Assert.assertEquals(1, sessionCache2.size());
+
+        hacep1.stop();
+        hacep2.stop();
+    }
+
+    @Test
+    public void testFailedUpdateOnOneNode() throws InterruptedException {
+        reset(router1, router2, additionsChannel1, replayChannel1, additionsChannel2, replayChannel2);
+
+        RulesConfigurationTestImpl rulesConfigurationTest1 = RulesTestBuilder.buildV1();
+        rulesConfigurationTest1.registerChannel("additions", additionsChannel1, replayChannel1);
+
+        HACEPImpl hacep1 = new HACEPImpl();
+        hacep1.setRouter( router1 );
+        hacep1.setJmsConfiguration( jmsConfig1 );
+        hacep1.setRulesConfiguration( rulesConfigurationTest1 );
+
+        RulesConfigurationTestImpl rulesConfigurationTest2 = RulesTestBuilder.buildV1();
+        rulesConfigurationTest2.registerChannel("additions", additionsChannel2, replayChannel2);
+
+        HACEPImpl hacep2 = new HACEPImpl();
+        hacep2.setRouter( router2 );
+        hacep2.setJmsConfiguration( jmsConfig2 );
+        hacep2.setRulesConfiguration( rulesConfigurationTest2 );
+
+        new Thread( () -> hacep1.start() ).start();
+        hacep2.start();
+
+        DataGridManager dataGridManager1 = hacep1.getDataGridManager();
+        DataGridManager dataGridManager2 = hacep2.getDataGridManager();
+
+        for( Object listner : dataGridManager2.getReplicatedCache().getListeners() ){
+            if( listner instanceof UpdateVersionListener ) dataGridManager2.getReplicatedCache().removeListener( listner );
+        }
+        dataGridManager2.getReplicatedCache().addListener(new UpdateVersionListnerError(router2, hacep2.getRulesManager()));
+
+        ReleaseId rulesV2 = RulesTestBuilder.buildV2();
+
+        Cache<Key, Fact> factCache = dataGridManager1.getFactCache();
+
+        KeyAffinityService<Key> affinityService = KeyAffinityServiceFactory.newKeyAffinityService(factCache, Executors.newSingleThreadExecutor(), new KeyGenerator<Key>() {
+            @Override
+            public Key getKey() {
+                long random = Math.round(Math.random() * 100000);
+                return new GameplayKey("1", "" + random);
+            }
+        }, 10, true);
+        Address address1 = dataGridManager1.getCacheManager().getAddress();
+        Address address2 = dataGridManager2.getCacheManager().getAddress();
+        Key keyForDatagrid1 = affinityService.getKeyForAddress(address1);
+
+        Cache<String, Object> sessionCache1 = dataGridManager1.getSessionCache();
+        Cache<String, Object> sessionCache2 = dataGridManager2.getSessionCache();
+        Assert.assertEquals(0, sessionCache1.size());
+        Assert.assertEquals(0, sessionCache2.size());
+
+        hacep1.insertFact(generateFactTenSecondsAfter(1L, 10L, keyForDatagrid1));
+
+        reset(router1, router2, additionsChannel1, replayChannel1, additionsChannel2, replayChannel2);
+
+        // Rules Update
+        try {
+            hacep1.update( rulesV2.toExternalForm() );
+        } catch ( Exception e ){
+            //let's pretend everything is ok
+            LOGGER.info("TestFailedUpdate: let's pretend everything is ok");
+        }
+
+        InOrder inOrder = Mockito.inOrder(router1);
+        inOrder.verify(router1, times(1)).suspend();
+        inOrder.verify(router1, times(1)).resume();
+        inOrder.verify(router1, times(1)).suspend();
+        inOrder.verify(router1, times(1)).resume();
+        inOrder.verifyNoMoreInteractions();
+
+        inOrder = Mockito.inOrder(router2);
+        inOrder.verify(router2, times(1)).suspend();
+        inOrder.verify(router2, times(1)).resume();
         inOrder.verifyNoMoreInteractions();
 
         Assert.assertEquals("1.0.0", hacep1.getRulesManager().getReleaseId().getVersion());
