@@ -43,7 +43,10 @@ import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static it.redhat.hacep.cluster.RulesConfigurationTestImpl.RulesTestBuilder;
 import static org.mockito.Mockito.any;
@@ -99,8 +102,11 @@ public class TestContainerUpdate {
         hacep2.setJmsConfiguration( jmsConfig2 );
         hacep2.setRulesConfiguration( rulesConfigurationTest2 );
 
-        new Thread( () -> hacep1.start() ).start();
-        hacep2.start();
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+        executorService.submit(hacep1::start);
+        executorService.submit(hacep2::start);
+        executorService.shutdown();
+        executorService.awaitTermination(1, TimeUnit.MINUTES);
 
         DataGridManager dataGridManager2 = hacep2.getDataGridManager();
         DataGridManager dataGridManager1 = hacep1.getDataGridManager();
@@ -219,7 +225,7 @@ public class TestContainerUpdate {
     }
 
     @Test
-    public void testFailedUpdateOnAllNodes() {
+    public void testFailedUpdateOnAllNodes() throws InterruptedException {
         reset(router1, router2, additionsChannel1, replayChannel1, additionsChannel2, replayChannel2);
 
         RulesConfigurationTestImpl rulesConfigurationTest1 = RulesTestBuilder.buildV1();
@@ -238,8 +244,11 @@ public class TestContainerUpdate {
         hacep2.setJmsConfiguration( jmsConfig2 );
         hacep2.setRulesConfiguration( rulesConfigurationTest2 );
 
-        new Thread( () -> hacep1.start() ).start();
-        hacep2.start();
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+        executorService.submit(hacep1::start);
+        executorService.submit(hacep2::start);
+        executorService.shutdown();
+        executorService.awaitTermination(1, TimeUnit.MINUTES);
 
         DataGridManager dataGridManager1 = hacep1.getDataGridManager();
         DataGridManager dataGridManager2 = hacep2.getDataGridManager();
@@ -336,8 +345,11 @@ public class TestContainerUpdate {
         hacep2.setJmsConfiguration( jmsConfig2 );
         hacep2.setRulesConfiguration( rulesConfigurationTest2 );
 
-        new Thread( () -> hacep1.start() ).start();
-        hacep2.start();
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+        executorService.submit(hacep1::start);
+        executorService.submit(hacep2::start);
+        executorService.shutdown();
+        executorService.awaitTermination(1, TimeUnit.MINUTES);
 
         DataGridManager dataGridManager1 = hacep1.getDataGridManager();
         DataGridManager dataGridManager2 = hacep2.getDataGridManager();
