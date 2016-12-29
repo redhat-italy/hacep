@@ -145,4 +145,35 @@ public class HACEPImpl implements HACEP {
         return dataGridManager.getSessionCache();
     }
 
+    public DataGridManager getDataGridManager() {
+        return dataGridManager;
+    }
+
+    public RulesManager getRulesManager() {
+        return rulesManager;
+    }
+
+    public Router getRouter() {
+        return router;
+    }
+
+    public void setRouter(Router router) {
+        this.router = router;
+    }
+
+    public JmsConfiguration getJmsConfiguration() {
+        return jmsConfiguration;
+    }
+
+    public void setJmsConfiguration(JmsConfiguration jmsConfiguration) {
+        this.jmsConfiguration = jmsConfiguration;
+    }
+
+    public RulesConfiguration getRulesConfiguration() {
+        return rulesConfiguration;
+    }
+
+    public void setRulesConfiguration(RulesConfiguration rulesConfiguration) {
+        this.rulesConfiguration = rulesConfiguration;
+    }
 }

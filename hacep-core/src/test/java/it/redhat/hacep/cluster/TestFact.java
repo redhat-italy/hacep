@@ -29,11 +29,13 @@ public class TestFact implements Fact {
     private final long ppid;
     private final long amount;
     private final Date instant;
+    private final Key key;
 
-    public TestFact(long ppid, long amount, Date instant) {
+    public TestFact(long ppid, long amount, Date instant, Key key) {
         this.ppid = ppid;
         this.amount = amount;
         this.instant = instant;
+        this.key = key;
     }
 
     public long getPpid() {
@@ -51,7 +53,7 @@ public class TestFact implements Fact {
 
     @Override
     public Key extractKey() {
-        return null;
+        return key;
     }
 
     @Override
