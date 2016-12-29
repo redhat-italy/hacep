@@ -163,6 +163,6 @@ public class TestSerializedRules {
 
     private Fact generateFactTenSecondsAfter(long ppid, long amount) {
         now = now.plusSeconds(10);
-        return new TestFact(ppid, amount, new Date(now.toInstant().toEpochMilli()));
+        return new TestFact(ppid, amount, new Date(now.toInstant().toEpochMilli()), null);
     }
 }
