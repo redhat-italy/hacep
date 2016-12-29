@@ -104,6 +104,7 @@ public class HACEPImpl implements HACEP {
             try {
                 this.router.stop();
                 this.dataGridManager.stop();
+                this.rulesManager.stop();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
