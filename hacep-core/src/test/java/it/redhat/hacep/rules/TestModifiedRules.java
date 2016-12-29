@@ -96,7 +96,7 @@ public class TestModifiedRules extends AbstractClusterTest {
 
         reset(replayChannel, additionsChannel);
 
-        String version = RulesTestBuilder.buildV2();
+        String version = RulesTestBuilder.buildV2().getVersion();
         rulesManager.updateToVersion(version);
 
         session1.insert(generateFactTenSecondsAfter(1L, 30L));
@@ -150,7 +150,7 @@ public class TestModifiedRules extends AbstractClusterTest {
         HAKieSerializedSession newSerializedSession = new HAKieSerializedSession(rulesManager, executorService, rulesConfigurationTest.getVersion(), serializedSession);
         HAKieSession rebuiltSession = newSerializedSession.rebuild();
 
-        String version = RulesTestBuilder.buildV2();
+        String version = RulesTestBuilder.buildV2().getVersion();
         rulesManager.updateToVersion(version);
 
         rebuiltSession.insert(generateFactTenSecondsAfter(1L, 20L));
@@ -227,7 +227,7 @@ public class TestModifiedRules extends AbstractClusterTest {
         byte[] serializedSession = ((HAKieSerializedSession) serializedSessionCopy).getSerializedSession();
         HAKieSession session2 = new HAKieSerializedSession(rulesManager, executorService, rulesConfigurationTest.getVersion(), serializedSession).rebuild();
 
-        String version = RulesTestBuilder.buildV2();
+        String version = RulesTestBuilder.buildV2().getVersion();
         rulesManager.updateToVersion(version);
 
         session2.insert(generateFactTenSecondsAfter(1L, 30L));
@@ -250,6 +250,6 @@ public class TestModifiedRules extends AbstractClusterTest {
 
     private Fact generateFactTenSecondsAfter(long ppid, long amount) {
         now = now.plusSeconds(10);
-        return new TestFact(ppid, amount, new Date(now.toInstant().toEpochMilli()));
+        return new TestFact(ppid, amount, new Date(now.toInstant().toEpochMilli()), null);
     }
 }

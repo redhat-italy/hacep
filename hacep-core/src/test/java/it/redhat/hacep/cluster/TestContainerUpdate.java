@@ -17,11 +17,14 @@
 
 package it.redhat.hacep.cluster;
 
+import it.redhat.hacep.HACEP;
+import it.redhat.hacep.HACEPImpl;
 import it.redhat.hacep.cache.listeners.FactListenerPost;
 import it.redhat.hacep.cache.listeners.UpdateVersionListener;
 import it.redhat.hacep.cache.session.HAKieSessionBuilder;
 import it.redhat.hacep.cache.session.KieSessionSaver;
 import it.redhat.hacep.configuration.DataGridManager;
+import it.redhat.hacep.configuration.JmsConfiguration;
 import it.redhat.hacep.configuration.Router;
 import it.redhat.hacep.configuration.RulesManager;
 import it.redhat.hacep.model.Fact;
@@ -31,6 +34,7 @@ import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyAffinityServiceFactory;
 import org.infinispan.affinity.KeyGenerator;
+import org.infinispan.affinity.ListenerRegistration;
 import org.infinispan.remoting.transport.Address;
 import org.junit.Assert;
 import org.junit.Test;
@@ -67,28 +71,37 @@ public class TestContainerUpdate {
     private Channel replayChannel2 = mock(Channel.class);
     private Router router1 = mock(Router.class);
     private Router router2 = mock(Router.class);
+    private JmsConfiguration jmsConfig1 = mock(JmsConfiguration.class);
+    private JmsConfiguration jmsConfig2 = mock(JmsConfiguration.class);
 
     @Test
-    public void testUpdate() {
+    public void testUpdate() throws InterruptedException {
         reset(router1, router2, additionsChannel1, replayChannel1, additionsChannel2, replayChannel2);
 
         RulesConfigurationTestImpl rulesConfigurationTest1 = RulesTestBuilder.buildV1();
         rulesConfigurationTest1.registerChannel("additions", additionsChannel1, replayChannel1);
-        RulesManager rulesManager1 = new RulesManager(rulesConfigurationTest1);
-        rulesManager1.start(rulesConfigurationTest1.getGroupId(), rulesConfigurationTest1.getArtifactId(), rulesConfigurationTest1.getVersion());
-        DataGridManager dataGridManager1 = buildDataGridManager(rulesManager1, router1);
+
+        HACEPImpl hacep1 = new HACEPImpl();
+        hacep1.setRouter( router1 );
+        hacep1.setJmsConfiguration( jmsConfig1 );
+        hacep1.setRulesConfiguration( rulesConfigurationTest1 );
 
         RulesConfigurationTestImpl rulesConfigurationTest2 = RulesTestBuilder.buildV1();
         rulesConfigurationTest2.registerChannel("additions", additionsChannel2, replayChannel2);
-        RulesManager rulesManager2 = new RulesManager(rulesConfigurationTest2);
-        rulesManager2.start(rulesConfigurationTest2.getGroupId(), rulesConfigurationTest2.getArtifactId(), rulesConfigurationTest2.getVersion());
-        DataGridManager dataGridManager2 = buildDataGridManager(rulesManager2, router2);
 
-        String rulesV2 = RulesTestBuilder.buildV2();
-        String rulesV3 = RulesTestBuilder.buildV3();
+        HACEPImpl hacep2 = new HACEPImpl();
+        hacep2.setRouter( router2 );
+        hacep2.setJmsConfiguration( jmsConfig2 );
+        hacep2.setRulesConfiguration( rulesConfigurationTest2 );
 
-        Assert.assertTrue(dataGridManager1.waitForMinimumOwners(1, TimeUnit.MINUTES));
-        Assert.assertTrue(dataGridManager2.waitForMinimumOwners(1, TimeUnit.MINUTES));
+        new Thread( () -> hacep1.start() ).start();
+        hacep2.start();
+
+        DataGridManager dataGridManager2 = hacep2.getDataGridManager();
+        DataGridManager dataGridManager1 = hacep1.getDataGridManager();
+
+        ReleaseId rulesV2 = RulesTestBuilder.buildV2();
+        ReleaseId rulesV3 = RulesTestBuilder.buildV3();
 
         Cache<Key, Fact> factCache = dataGridManager1.getFactCache();
 
@@ -108,7 +121,7 @@ public class TestContainerUpdate {
         Assert.assertEquals(0, sessionCache1.size());
         Assert.assertEquals(0, sessionCache2.size());
 
-        factCache.put(keyForDatagrid1, generateFactTenSecondsAfter(1L, 10L));
+        hacep1.insertFact(generateFactTenSecondsAfter(1L, 10L, keyForDatagrid1));
 
         verify(additionsChannel1, times(1)).send(eq(10L));
         verify(replayChannel1, never()).send(any());
@@ -122,7 +135,7 @@ public class TestContainerUpdate {
         reset(router1, router2, additionsChannel1, replayChannel1, additionsChannel2, replayChannel2);
 
         // Rules Update
-        dataGridManager1.getReplicatedCache().put(RulesManager.RULES_VERSION, rulesV2);
+        hacep1.update(rulesV2.toExternalForm());
 
         InOrder inOrder = Mockito.inOrder(router1);
         inOrder.verify(router1, times(1)).suspend();
@@ -134,11 +147,12 @@ public class TestContainerUpdate {
         inOrder.verify(router2, times(1)).resume();
         inOrder.verifyNoMoreInteractions();
 
-        Assert.assertEquals(rulesV2, rulesManager1.getReleaseId().getVersion());
-        Assert.assertEquals(rulesV2, rulesManager2.getReleaseId().getVersion());
+        Assert.assertEquals(rulesV2.getVersion(), hacep1.getRulesManager().getReleaseId().getVersion());
+        Assert.assertEquals(rulesV2.getVersion(), hacep2.getRulesManager().getReleaseId().getVersion());
+        Assert.assertEquals(rulesV2.getVersion(), dataGridManager1.getReplicatedCache().get(RulesManager.RULES_VERSION));
 
         factCache.remove(keyForDatagrid1);
-        factCache.put(keyForDatagrid1, generateFactTenSecondsAfter(1L, 20L));
+        hacep1.insertFact(generateFactTenSecondsAfter(1L, 20L, keyForDatagrid1));
 
         verify(additionsChannel1, times(1)).send(eq(60L));
         verify(replayChannel1, never()).send(any());
@@ -152,7 +166,7 @@ public class TestContainerUpdate {
         reset(router1, router2, additionsChannel1, replayChannel1, additionsChannel2, replayChannel2);
 
         // Rules Update
-        dataGridManager1.getReplicatedCache().put(RulesManager.RULES_VERSION, rulesV3);
+        hacep2.update(rulesV3.toExternalForm());
 
         inOrder = Mockito.inOrder(router1);
         inOrder.verify(router1, times(1)).suspend();
@@ -164,11 +178,12 @@ public class TestContainerUpdate {
         inOrder.verify(router2, times(1)).resume();
         inOrder.verifyNoMoreInteractions();
 
-        Assert.assertEquals(rulesV3, rulesManager1.getReleaseId().getVersion());
-        Assert.assertEquals(rulesV3, rulesManager2.getReleaseId().getVersion());
+        Assert.assertEquals(rulesV3.getVersion(), hacep1.getRulesManager().getReleaseId().getVersion());
+        Assert.assertEquals(rulesV3.getVersion(), hacep2.getRulesManager().getReleaseId().getVersion());
+        Assert.assertEquals(rulesV3.getVersion(), dataGridManager1.getReplicatedCache().get(RulesManager.RULES_VERSION));
 
         factCache.remove(keyForDatagrid1);
-        factCache.put(keyForDatagrid1, generateFactTenSecondsAfter(1L, 30L));
+        hacep1.insertFact(generateFactTenSecondsAfter(1L, 30L, keyForDatagrid1));
 
         verify(additionsChannel1, times(1)).send(eq(180L));
         verify(replayChannel1, never()).send(any());
@@ -183,7 +198,7 @@ public class TestContainerUpdate {
 
         //Add another fact on version 3 to check everything is working as before version upgrade
         factCache.remove(keyForDatagrid1);
-        factCache.put(keyForDatagrid1, generateFactTenSecondsAfter(2L, 30L));
+        hacep1.insertFact(generateFactTenSecondsAfter(2L, 30L, keyForDatagrid1));
 
         verify(additionsChannel1, times(1)).send(eq(90L));
         verify(replayChannel1, never()).send(any());
@@ -194,10 +209,8 @@ public class TestContainerUpdate {
         Assert.assertEquals(1, sessionCache1.size());
         Assert.assertEquals(1, sessionCache2.size());
 
-        dataGridManager1.stop();
-        dataGridManager2.stop();
-        rulesManager1.stop();
-        rulesManager2.stop();
+        hacep1.stop();
+        hacep2.stop();
     }
 
     @Test
@@ -206,20 +219,37 @@ public class TestContainerUpdate {
 
         RulesConfigurationTestImpl rulesConfigurationTest1 = RulesTestBuilder.buildV1();
         rulesConfigurationTest1.registerChannel("additions", additionsChannel1, replayChannel1);
-        RulesManager rulesManager1 = new RulesManager(rulesConfigurationTest1);
-        rulesManager1.start(rulesConfigurationTest1.getGroupId(), rulesConfigurationTest1.getArtifactId(), rulesConfigurationTest1.getVersion());
-        DataGridManager dataGridManager1 = buildDataGridManagerUpdateError(rulesManager1, router1);
+
+        HACEPImpl hacep1 = new HACEPImpl();
+        hacep1.setRouter( router1 );
+        hacep1.setJmsConfiguration( jmsConfig1 );
+        hacep1.setRulesConfiguration( rulesConfigurationTest1 );
 
         RulesConfigurationTestImpl rulesConfigurationTest2 = RulesTestBuilder.buildV1();
         rulesConfigurationTest2.registerChannel("additions", additionsChannel2, replayChannel2);
-        RulesManager rulesManager2 = new RulesManager(rulesConfigurationTest2);
-        rulesManager2.start(rulesConfigurationTest2.getGroupId(), rulesConfigurationTest2.getArtifactId(), rulesConfigurationTest2.getVersion());
-        DataGridManager dataGridManager2 = buildDataGridManagerUpdateError(rulesManager2, router2);
 
-        String rulesV2 = RulesTestBuilder.buildV2();
+        HACEPImpl hacep2 = new HACEPImpl();
+        hacep2.setRouter( router2 );
+        hacep2.setJmsConfiguration( jmsConfig2 );
+        hacep2.setRulesConfiguration( rulesConfigurationTest2 );
 
-        Assert.assertTrue(dataGridManager1.waitForMinimumOwners(1, TimeUnit.MINUTES));
-        Assert.assertTrue(dataGridManager2.waitForMinimumOwners(1, TimeUnit.MINUTES));
+        new Thread( () -> hacep1.start() ).start();
+        hacep2.start();
+
+        DataGridManager dataGridManager1 = hacep1.getDataGridManager();
+        DataGridManager dataGridManager2 = hacep2.getDataGridManager();
+
+        for( Object listner : dataGridManager1.getReplicatedCache().getListeners() ){
+            if( listner instanceof UpdateVersionListener ) dataGridManager1.getReplicatedCache().removeListener( listner );
+        }
+        dataGridManager1.getReplicatedCache().addListener(new UpdateVersionListnerError(router1, hacep1.getRulesManager()));
+
+        for( Object listner : dataGridManager2.getReplicatedCache().getListeners() ){
+            if( listner instanceof UpdateVersionListener ) dataGridManager2.getReplicatedCache().removeListener( listner );
+        }
+        dataGridManager2.getReplicatedCache().addListener(new UpdateVersionListnerError(router2, hacep2.getRulesManager()));
+
+        ReleaseId rulesV2 = RulesTestBuilder.buildV2();
 
         Cache<Key, Fact> factCache = dataGridManager1.getFactCache();
 
@@ -239,13 +269,13 @@ public class TestContainerUpdate {
         Assert.assertEquals(0, sessionCache1.size());
         Assert.assertEquals(0, sessionCache2.size());
 
-        factCache.put(keyForDatagrid1, generateFactTenSecondsAfter(1L, 10L));
+        hacep1.insertFact(generateFactTenSecondsAfter(1L, 10L, keyForDatagrid1));
 
         reset(router1, router2, additionsChannel1, replayChannel1, additionsChannel2, replayChannel2);
 
         // Rules Update
         try {
-            dataGridManager1.getReplicatedCache().put(RulesManager.RULES_VERSION, rulesV2);
+            hacep1.update( rulesV2.toExternalForm() );
         } catch ( Exception e ){
             //let's pretend everything is ok
             LOGGER.info("TestFailedUpdate: let's pretend everything is ok");
@@ -261,11 +291,12 @@ public class TestContainerUpdate {
         inOrder.verify(router2, times(0)).resume();
         inOrder.verifyNoMoreInteractions();
 
-        Assert.assertEquals("1.0.0", rulesManager1.getReleaseId().getVersion());
-        Assert.assertEquals("1.0.0", rulesManager2.getReleaseId().getVersion());
+        Assert.assertEquals("1.0.0", hacep1.getRulesManager().getReleaseId().getVersion());
+        Assert.assertEquals("1.0.0", hacep2.getRulesManager().getReleaseId().getVersion());
+        Assert.assertEquals("1.0.0", dataGridManager1.getReplicatedCache().get(RulesManager.RULES_VERSION));
 
         factCache.remove(keyForDatagrid1);
-        factCache.put(keyForDatagrid1, generateFactTenSecondsAfter(1L, 20L));
+        hacep1.insertFact(generateFactTenSecondsAfter(1L, 20L, keyForDatagrid1));
 
         verify(additionsChannel1, times(1)).send(eq(30L));
         verify(replayChannel1, never()).send(any());
@@ -276,45 +307,12 @@ public class TestContainerUpdate {
         Assert.assertEquals(1, sessionCache1.size());
         Assert.assertEquals(1, sessionCache2.size());
 
-        dataGridManager1.stop();
-        dataGridManager2.stop();
-        rulesManager1.stop();
-        rulesManager2.stop();
+        hacep1.stop();
+        hacep2.stop();
     }
 
-    private DataGridManager buildDataGridManager(RulesManager rulesManager, Router router) {
-        DataGridManager dataGridManager = buildCommonDataGridManager(rulesManager, router);
-
-        dataGridManager.getReplicatedCache().addListener(new UpdateVersionListener(router, rulesManager));
-
-        return dataGridManager;
-    }
-
-    private DataGridManager buildDataGridManagerUpdateError(RulesManager rulesManager, Router router) {
-        DataGridManager dataGridManager = buildCommonDataGridManager( rulesManager, router );
-
-        dataGridManager.getReplicatedCache().addListener(new UpdateVersionListnerError(router, rulesManager));
-
-        return dataGridManager;
-    }
-
-    private DataGridManager buildCommonDataGridManager(RulesManager rulesManager, Router router) {
-        DataGridManager dataGridManager2 = new DataGridManager();
-        HAKieSessionBuilder sessionBuilder2 = new HAKieSessionBuilder(rulesManager, Executors.newFixedThreadPool(4));
-        dataGridManager2.start(sessionBuilder2);
-        dataGridManager2.getFactCache().addListener(new FactListenerPost(new KieSessionSaver(sessionBuilder2, dataGridManager2.getSessionCache())));
-
-        Cache<String, String> infoCache = dataGridManager2.getReplicatedCache();
-        ReleaseId releaseId = rulesManager.getReleaseId();
-        infoCache.putIfAbsent(RulesManager.RULES_GROUP_ID, releaseId.getGroupId());
-        infoCache.putIfAbsent(RulesManager.RULES_ARTIFACT_ID, releaseId.getArtifactId());
-        infoCache.putIfAbsent(RulesManager.RULES_VERSION, releaseId.getVersion());
-
-        return dataGridManager2;
-    }
-
-    private Fact generateFactTenSecondsAfter(long ppid, long amount) {
+    private Fact generateFactTenSecondsAfter(long ppid, long amount, Key key) {
         now = now.plusSeconds(10);
-        return new TestFact(ppid, amount, new Date(now.toInstant().toEpochMilli()));
+        return new TestFact(ppid, amount, new Date(now.toInstant().toEpochMilli()), key);
     }
 }
