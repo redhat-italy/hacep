@@ -51,6 +51,9 @@ public class RulesUpdateVersionImpl implements RulesUpdateVersion {
                 try {
                     replicatedCache.put(RulesManager.RULES_VERSION, version);
                 } catch (Exception e) {
+                    if (LOGGER.isInfoEnabled()) {
+                        LOGGER.info(String.format("Rollback to rules version %s:%s:%s", groupId, artifactId, oldVersion));
+                    }
                     replicatedCache.put(RulesManager.RULES_VERSION, oldVersion);
                     throw new RuntimeException(e);
                 }

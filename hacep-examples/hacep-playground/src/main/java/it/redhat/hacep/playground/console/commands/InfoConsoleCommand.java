@@ -57,23 +57,10 @@ public class InfoConsoleCommand implements ConsoleCommand {
             }
 
         } catch (NoSuchElementException e) {
-            console.println(generalInfo());
+            console.println(application.info());
         }
         return true;
 
-    }
-
-    private String generalInfo() {
-        EmbeddedCacheManager cacheManager = application.getCacheManager();
-        StringBuilder info = new StringBuilder();
-        info.append("Cache Manager Status: ").append(cacheManager.getStatus()).append("\n");
-        info.append("Cache Manager Address: ").append(cacheManager.getAddress()).append("\n");
-        info.append("Coordinator address: ").append(cacheManager.getCoordinator()).append("\n");
-        info.append("Is Coordinator: ").append(cacheManager.isCoordinator()).append("\n");
-        info.append("Cluster Name: ").append(cacheManager.getClusterName()).append("\n");
-        info.append("Member list: ").append(cacheManager.getMembers()).append("\n");
-        info.append("Caches: ").append(cacheManager.getCacheNames()).append("\n");
-        return info.toString();
     }
 
     private String buildInfo(Cache<Key, Object> cache) {

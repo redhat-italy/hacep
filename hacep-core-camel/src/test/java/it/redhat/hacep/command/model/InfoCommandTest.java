@@ -18,6 +18,7 @@
 package it.redhat.hacep.command.model;
 
 import it.redhat.hacep.HACEP;
+import it.redhat.hacep.camel.InfoCommandRoute;
 import it.redhat.hacep.camel.UpgradeCommandRoute;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
@@ -34,13 +35,13 @@ import static org.apache.camel.builder.PredicateBuilder.isInstanceOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class UpgradeCommandTest extends CamelTestSupport {
+public class InfoCommandTest extends CamelTestSupport {
 
     private HACEP hacep = mock(HACEP.class);
 
     @Override
     protected RoutesBuilder createRouteBuilder() throws Exception {
-        return new UpgradeCommandRoute(hacep);
+        return new InfoCommandRoute(hacep);
     }
 
     @Override
@@ -52,7 +53,7 @@ public class UpgradeCommandTest extends CamelTestSupport {
     public void testInputCommand() throws Exception {
         reset(hacep);
 
-        String expectedReleaseID = "groupId:artifactId:version";
+        String expectedStatus = "STATUS OK";
 
         context.getRouteDefinitions().get(0).adviceWith(context, new AdviceWithRouteBuilder() {
                     @Override
@@ -62,15 +63,11 @@ public class UpgradeCommandTest extends CamelTestSupport {
                     }
                 }
         );
-        KeyValueParam param1 = new KeyValueParam();
-        param1.setKey("RELEASE_ID");
-        param1.setValue(expectedReleaseID);
 
         Command command = new Command();
-        command.setCommand("UPGRADE");
-        command.setParams(Arrays.asList(param1));
+        command.setCommand("INFO");
 
-        when(hacep.update(anyString())).thenReturn(expectedReleaseID);
+        when(hacep.info()).thenReturn(expectedStatus);
 
         context.start();
 
@@ -78,11 +75,12 @@ public class UpgradeCommandTest extends CamelTestSupport {
         getMockEndpoint("mock:direct:marshal-response")
                 .message(0)
                 .predicate(isInstanceOf(body(), ResponseMessage.class))
-                .predicate(isEqualTo(simple("${body.code}"), constant(ResponseCode.SUCCESS)));
+                .predicate(isEqualTo(simple("${body.code}"), constant(ResponseCode.SUCCESS)))
+                .predicate(isEqualTo(simple("${body.message}"), constant(expectedStatus)));
 
         Object object = template.requestBody("direct:test", command);
 
-        verify(hacep, times(1)).update(eq(expectedReleaseID));
+        verify(hacep, times(1)).info();
         assertMockEndpointsSatisfied(1, TimeUnit.MINUTES);
     }
 
@@ -90,8 +88,6 @@ public class UpgradeCommandTest extends CamelTestSupport {
     public void testExceptionOnInputCommand() throws Exception {
         reset(hacep);
 
-        String expectedReleaseID = "groupId:artifactId:version";
-
         context.getRouteDefinitions().get(0).adviceWith(context, new AdviceWithRouteBuilder() {
                     @Override
                     public void configure() throws Exception {
@@ -100,15 +96,11 @@ public class UpgradeCommandTest extends CamelTestSupport {
                     }
                 }
         );
-        KeyValueParam param1 = new KeyValueParam();
-        param1.setKey("RELEASE_ID");
-        param1.setValue(expectedReleaseID);
 
         Command command = new Command();
-        command.setCommand("UPGRADE");
-        command.setParams(Arrays.asList(param1));
+        command.setCommand("INFO");
 
-        when(hacep.update(anyString())).thenThrow(new IllegalStateException("CANNOT UPDATE"));
+        when(hacep.info()).thenThrow(new RuntimeException());
 
         context.start();
 
@@ -120,41 +112,7 @@ public class UpgradeCommandTest extends CamelTestSupport {
 
         Object object = template.requestBody("direct:test", command);
 
-        verify(hacep, times(1)).update(eq(expectedReleaseID));
-        assertMockEndpointsSatisfied(1, TimeUnit.MINUTES);
-    }
-
-
-    @Test
-    public void testInvalidInputCommand() throws Exception {
-        String expectedReleaseID = "groupId:artifactId:version";
-
-        context.getRouteDefinitions().get(0).adviceWith(context, new AdviceWithRouteBuilder() {
-                    @Override
-                    public void configure() throws Exception {
-                        mockEndpointsAndSkip("direct:marshal-response");
-                        replaceFromWith("direct:test");
-                    }
-                }
-        );
-        KeyValueParam param1 = new KeyValueParam();
-        param1.setKey("XRELEASE_ID");
-        param1.setValue(expectedReleaseID);
-
-        Command command = new Command();
-        command.setCommand("UPGRADE");
-        command.setParams(Arrays.asList(param1));
-
-        context.start();
-
-        getMockEndpoint("mock:direct:marshal-response").expectedMessageCount(1);
-        getMockEndpoint("mock:direct:marshal-response")
-                .message(0)
-                .predicate(isInstanceOf(body(), ResponseMessage.class))
-                .predicate(isEqualTo(simple("${body.code}"), constant(ResponseCode.ERROR)));
-
-        Object object = template.requestBody("direct:test", command);
-
+        verify(hacep, times(1)).info();
         assertMockEndpointsSatisfied(1, TimeUnit.MINUTES);
     }
 

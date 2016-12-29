@@ -131,11 +131,11 @@ public class DataGridManager {
         ExecutorService service = Executors.newSingleThreadExecutor();
         Future<Boolean> future = service.submit(() -> {
             int numOwners = getNumOwners();
-            if(LOGGER.isDebugEnabled()) LOGGER.debug("Waiting for minimum {} owners", numOwners);
+            if (LOGGER.isDebugEnabled()) LOGGER.debug("Waiting for minimum {} owners", numOwners);
             while (manager.getClusterSize() < numOwners) {
                 Thread.sleep(100);
             }
-            if(LOGGER.isDebugEnabled()) LOGGER.debug("Cluster minimum nodes are connected");
+            if (LOGGER.isDebugEnabled()) LOGGER.debug("Cluster minimum nodes are connected");
             return true;
         });
 
@@ -183,6 +183,18 @@ public class DataGridManager {
     public void removeSession(Key key) {
         checkStatus();
         this.getSessionCache().remove(key);
+    }
+
+    public String info() {
+        StringBuilder info = new StringBuilder();
+        info.append("Cache Manager Status: ").append(manager.getStatus()).append("\n");
+        info.append("Cache Manager Address: ").append(manager.getAddress()).append("\n");
+        info.append("Coordinator address: ").append(manager.getCoordinator()).append("\n");
+        info.append("Is Coordinator: ").append(manager.isCoordinator()).append("\n");
+        info.append("Cluster Name: ").append(manager.getClusterName()).append("\n");
+        info.append("Member list: ").append(manager.getMembers()).append("\n");
+        info.append("Caches: ").append(manager.getCacheNames()).append("\n");
+        return info.toString();
     }
 
     private CacheMode getCacheMode() {

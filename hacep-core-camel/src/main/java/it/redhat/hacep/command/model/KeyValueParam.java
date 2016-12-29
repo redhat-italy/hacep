@@ -56,4 +56,12 @@ public class KeyValueParam {
     public int hashCode() {
         return Objects.hash(key, value);
     }
+
+    @Override
+    public String toString() {
+        return "KeyValueParam{" +
+                "key='" + key + '\'' +
+                ", value='" + value + '\'' +
+                '}';
+    }
 }

@@ -58,4 +58,12 @@ public class Command {
     public int hashCode() {
         return Objects.hash(command, params);
     }
+
+    @Override
+    public String toString() {
+        return "Command{" +
+                "command='" + command + '\'' +
+                ", params=" + params +
+                '}';
+    }
 }

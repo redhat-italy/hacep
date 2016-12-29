@@ -15,29 +15,23 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep;
+package it.redhat.hacep.camel;
 
-import it.redhat.hacep.model.Fact;
-import org.infinispan.Cache;
-import org.infinispan.manager.EmbeddedCacheManager;
+import it.redhat.hacep.HACEP;
+import it.redhat.hacep.command.model.Command;
+import it.redhat.hacep.command.model.KeyValueParam;
+import it.redhat.hacep.command.model.ResponseCode;
+import it.redhat.hacep.command.model.ResponseMessage;
+import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePattern;
+import org.apache.camel.LoggingLevel;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.dataformat.JsonLibrary;
 
-public interface HACEP {
+public class ResponseToJSONRoute extends RouteBuilder {
 
-    void start();
-
-    void stop();
-
-    void suspend();
-
-    void resume();
-
-    String info();
-
-    void insertFact(Fact fact);
-
-    String update(String releaseId);
-
-    EmbeddedCacheManager getCacheManager();
-
-    Cache<String, Object> getSessionCache();
+    @Override
+    public void configure() throws Exception {
+        from("direct:marshal-response").marshal().json(JsonLibrary.Jackson, ResponseMessage.class);
+    }
 }

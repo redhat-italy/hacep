@@ -76,7 +76,6 @@
             <properties>
                 <version.org.infinispan>8.3.0.Final-redhat-1</version.org.infinispan>
                 <version.org.jboss.fuse>6.3.0.redhat-187</version.org.jboss.fuse>
-                <!--<version.org.jboss.fuse>6.2.1.redhat-084</version.org.jboss.fuse>-->
                 <version.org.jboss.bom.brms>6.4.0.GA-redhat-2</version.org.jboss.bom.brms>
                 <version.weld>1.1.33.Final</version.weld>
                 <version.org.jboss.bom.eap>6.4.5.GA</version.org.jboss.bom.eap>
@@ -142,7 +141,6 @@
             <properties>
                 <version.org.infinispan>8.3.0.Final-redhat-1</version.org.infinispan>
                 <version.org.jboss.fuse>6.3.0.redhat-187</version.org.jboss.fuse>
-                <!--<version.org.jboss.fuse>6.2.1.redhat-084</version.org.jboss.fuse>-->
                 <version.org.jboss.bom.brms>6.4.0.GA-redhat-2</version.org.jboss.bom.brms>
                 <version.weld>2.3.5.Final</version.weld>
                 <version.org.jboss.bom.eap>7.0.2.GA</version.org.jboss.bom.eap>
@@ -318,6 +316,62 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-aether-provider</artifactId>
+                <version>3.3.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-artifact</artifactId>
+                <version>3.3.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-builder-support</artifactId>
+                <version>3.3.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-compat</artifactId>
+                <version>3.3.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-core</artifactId>
+                <version>3.3.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-model</artifactId>
+                <version>3.3.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-model-builder</artifactId>
+                <version>3.3.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-plugin-api</artifactId>
+                <version>3.3.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-repository-metadata</artifactId>
+                <version>3.3.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-settings</artifactId>
+                <version>3.3.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-settings-builder</artifactId>
+                <version>3.3.3</version>
+            </dependency>
+
             <!--TEST-->
             <dependency>
                 <groupId>org.jboss.arquillian.container</groupId>
@@ -432,7 +486,7 @@
                             </goals>
                             <configuration>
                                 <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                                <overWriteReleases>false</overWriteReleases>
+                                <overWriteReleases>true</overWriteReleases>
                                 <overWriteSnapshots>false</overWriteSnapshots>
                                 <overWriteIfNewer>true</overWriteIfNewer>
                             </configuration>
