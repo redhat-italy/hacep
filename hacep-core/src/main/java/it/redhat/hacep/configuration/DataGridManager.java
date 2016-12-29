@@ -151,7 +151,21 @@ public class DataGridManager {
 
     public void stop() {
         if (started.compareAndSet(true, false)) {
+            LOGGER.info("Stopping cache manager");
             this.manager.stop();
+            ExecutorService service = Executors.newSingleThreadExecutor();
+            service.submit(() -> {
+                while (!this.manager.getStatus().isTerminated()) {
+                    Thread.sleep(100);
+                }
+                return true;
+            });
+            service.shutdown();
+            try {
+                service.awaitTermination(1, TimeUnit.MINUTES);
+            } catch (InterruptedException e) {
+                LOGGER.warn("Exceeded timeout waiting for manager stop.");
+            }
         }
     }
 
