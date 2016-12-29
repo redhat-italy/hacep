@@ -31,6 +31,7 @@ import org.infinispan.eviction.EvictionType;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.TransactionMode;
+import org.infinispan.transaction.lookup.TransactionManagerLookup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,8 +88,7 @@ public class DataGridManager {
             ConfigurationBuilder sessionCacheConfigurationBuilder = new ConfigurationBuilder().read(commonConfiguration);
             ConfigurationBuilder replicatedInfos = new ConfigurationBuilder();
             replicatedInfos
-                    .clustering().cacheMode(CacheMode.REPL_SYNC)
-                    .transaction().transactionMode(TransactionMode.TRANSACTIONAL).autoCommit(true);
+                    .clustering().cacheMode(CacheMode.REPL_SYNC);
 
             if (persistence()) {
                 sessionCacheConfigurationBuilder
