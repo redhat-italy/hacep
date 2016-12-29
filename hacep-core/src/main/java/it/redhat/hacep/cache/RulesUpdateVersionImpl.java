@@ -52,6 +52,7 @@ public class RulesUpdateVersionImpl implements RulesUpdateVersion {
                     replicatedCache.put(RulesManager.RULES_VERSION, version);
                 } catch (Exception e) {
                     replicatedCache.put(RulesManager.RULES_VERSION, oldVersion);
+                    throw new RuntimeException(e);
                 }
                 return releaseId;
             } else {
