@@ -80,6 +80,7 @@ public class TestContainerUpdate {
     @Before
     public void setup() throws InterruptedException {
         System.setProperty("jgroups.configuration", "jgroups-test-tcp.xml");
+
         additionsChannel1 = mock(Channel.class);
         additionsChannel2 = mock(Channel.class);
         replayChannel1 = mock(Channel.class);
@@ -367,18 +368,14 @@ public class TestContainerUpdate {
             LOGGER.info("TestFailedUpdate: let's pretend everything is ok");
         }
 
-        verify(router1, times(2)).suspend();
-        verify(router1, times(2)).resume();
-/*
         InOrder inOrder = Mockito.inOrder(router1);
         inOrder.verify(router1, times(1)).suspend();
         inOrder.verify(router1, times(1)).resume();
         inOrder.verify(router1, times(1)).suspend();
         inOrder.verify(router1, times(1)).resume();
         inOrder.verifyNoMoreInteractions();
-*/
 
-        InOrder inOrder = Mockito.inOrder(router2);
+        inOrder = Mockito.inOrder(router2);
         inOrder.verify(router2, times(1)).suspend();
         inOrder.verify(router2, times(1)).resume();
         inOrder.verifyNoMoreInteractions();
