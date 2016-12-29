@@ -30,8 +30,6 @@ import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.eviction.EvictionType;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.transaction.TransactionMode;
-import org.infinispan.transaction.lookup.TransactionManagerLookup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,11 +50,11 @@ public class DataGridManager {
 
     private DefaultCacheManager manager;
 
-    public void start(HAKieSessionBuilder builder) {
+    public void start(HAKieSessionBuilder builder, String nodeName) {
         if (started.compareAndSet(false, true)) {
             GlobalConfiguration globalConfiguration = new GlobalConfigurationBuilder().clusteredDefault()
                     .transport().addProperty("configurationFile", System.getProperty("jgroups.configuration", "jgroups-tcp.xml"))
-                    .clusterName("HACEP")
+                    .clusterName("HACEP").nodeName(nodeName)
                     .globalJmxStatistics().allowDuplicateDomains(true).enable()
                     .serialization()
                     .addAdvancedExternalizer(new HAKieSession.HASessionExternalizer(builder))

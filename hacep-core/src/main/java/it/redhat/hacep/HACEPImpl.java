@@ -32,6 +32,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -40,6 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @ApplicationScoped
 public class HACEPImpl implements HACEP {
 
+    private final String nodeName;
     private DataGridManager dataGridManager;
     private RulesManager rulesManager;
     private ExecutorService executorService;
@@ -60,6 +62,12 @@ public class HACEPImpl implements HACEP {
     private PutterImpl putter;
 
     public HACEPImpl() {
+        this("hacep-node");
+        this.executorService = Executors.newFixedThreadPool(4);
+    }
+
+    public HACEPImpl(String nodeName) {
+        this.nodeName = nodeName;
         this.executorService = Executors.newFixedThreadPool(4);
     }
 
@@ -71,7 +79,7 @@ public class HACEPImpl implements HACEP {
                 this.dataGridManager = new DataGridManager();
                 this.haKieSessionBuilder = new HAKieSessionBuilder(rulesManager, executorService);
 
-                this.dataGridManager.start(haKieSessionBuilder);
+                this.dataGridManager.start(haKieSessionBuilder, nodeName);
 
                 this.dataGridManager.waitForMinimumOwners(1, TimeUnit.MINUTES);
 
