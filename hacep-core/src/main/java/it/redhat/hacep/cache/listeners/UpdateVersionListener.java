@@ -39,7 +39,7 @@ public class UpdateVersionListener {
     }
 
     @CacheEntryModified
-    public void eventReceived(CacheEntryModifiedEvent event) {
+    public synchronized void eventReceived(CacheEntryModifiedEvent event) {
         Object key = event.getKey();
         Object value = event.getValue();
         if (LOGGER.isDebugEnabled()) LOGGER.debug("Received MODIFIED key on INFOS key=[{}] value=[{}]", key, value);

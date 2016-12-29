@@ -44,12 +44,20 @@ import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static it.redhat.hacep.cluster.RulesConfigurationTestImpl.RulesTestBuilder;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class TestContainerUpdate {
 
@@ -234,15 +242,21 @@ public class TestContainerUpdate {
         DataGridManager dataGridManager1 = hacep1.getDataGridManager();
         DataGridManager dataGridManager2 = hacep2.getDataGridManager();
 
-        for (Object listner : dataGridManager1.getReplicatedCache().getListeners()) {
-            if (listner instanceof UpdateVersionListener)
-                dataGridManager1.getReplicatedCache().removeListener(listner);
+        Set<Object> toBeRemoved = new HashSet<>();
+        for( Object listener : dataGridManager1.getReplicatedCache().getListeners() ){
+            if( listener instanceof UpdateVersionListener ) toBeRemoved.add(listener);
+        }
+        for( Object listener : toBeRemoved ){
+            dataGridManager1.getReplicatedCache().removeListener( listener );
         }
         dataGridManager1.getReplicatedCache().addListener(new UpdateVersionListnerError(router1, hacep1.getRulesManager()));
 
-        for (Object listner : dataGridManager2.getReplicatedCache().getListeners()) {
-            if (listner instanceof UpdateVersionListener)
-                dataGridManager2.getReplicatedCache().removeListener(listner);
+        toBeRemoved = new HashSet<>();
+        for( Object listener : dataGridManager2.getReplicatedCache().getListeners() ){
+            if( listener instanceof UpdateVersionListener ) toBeRemoved.add(listener);
+        }
+        for( Object listener : toBeRemoved ){
+            dataGridManager2.getReplicatedCache().removeListener( listener );
         }
         dataGridManager2.getReplicatedCache().addListener(new UpdateVersionListnerError(router2, hacep2.getRulesManager()));
 
@@ -312,9 +326,12 @@ public class TestContainerUpdate {
         DataGridManager dataGridManager1 = hacep1.getDataGridManager();
         DataGridManager dataGridManager2 = hacep2.getDataGridManager();
 
-        for (Object listner : dataGridManager2.getReplicatedCache().getListeners()) {
-            if (listner instanceof UpdateVersionListener)
-                dataGridManager2.getReplicatedCache().removeListener(listner);
+        Set<Object> toBeRemoved = new HashSet<>();
+        for( Object listener : dataGridManager2.getReplicatedCache().getListeners() ){
+            if( listener instanceof UpdateVersionListener ) toBeRemoved.add(listener);
+        }
+        for( Object listener : toBeRemoved ){
+            dataGridManager2.getReplicatedCache().removeListener( listener );
         }
         dataGridManager2.getReplicatedCache().addListener(new UpdateVersionListnerError(router2, hacep2.getRulesManager()));
 
