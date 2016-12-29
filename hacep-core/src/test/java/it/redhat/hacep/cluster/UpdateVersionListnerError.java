@@ -47,8 +47,19 @@ public class UpdateVersionListnerError {
         if (RulesManager.RULES_ARTIFACT_ID.equals(key) || RulesManager.RULES_GROUP_ID.equals(key)) {
             throw new IllegalStateException("Cannot change rules artifact or group id.");
         }
-        if (RulesManager.RULES_VERSION.equals(key)) {
+        if ( RulesManager.RULES_VERSION.equals(key) && !value.equals("1.0.0") ) {
             throw new RuntimeException( "Upgrade rules version failed!!!" );
+        } else if ( RulesManager.RULES_VERSION.equals(key) ){
+            updateVersion((String) value);
+        }
+    }
+
+    private void updateVersion(String value) {
+        try {
+            router.suspend();
+            rulesManager.updateToVersion(value);
+        } finally {
+            router.resume();
         }
     }
 
