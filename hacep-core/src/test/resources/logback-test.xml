@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date{HH:mm:ss.SSS} [%thread] %-5level %class{36}.%method:%line - %msg%n</pattern>
+        </encoder>
+    </appender>
 
-  <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder>
-      <pattern>%date{HH:mm:ss.SSS} [%thread] %-5level %class{36}.%method:%line - %msg%n</pattern>
-    </encoder>
-  </appender>
+    <logger name="it.redhat.hacep" level="INFO" />
 
-  <logger name="it.redhat.hacep" level="debug"/>
+    <logger name="org.infinispan.remoting.transport.jgroups" level="DEBUG" />
 
-  <root level="warn">
-    <appender-ref ref="consoleAppender" />
-  </root>
+    <root level="ERROR">
+        <appender-ref ref="STDOUT"/>
+    </root>
 
 </configuration>

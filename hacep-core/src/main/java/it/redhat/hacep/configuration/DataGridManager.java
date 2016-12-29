@@ -33,7 +33,9 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DataGridManager {
@@ -85,8 +87,7 @@ public class DataGridManager {
 
             ConfigurationBuilder sessionCacheConfigurationBuilder = new ConfigurationBuilder().read(commonConfiguration);
             ConfigurationBuilder replicatedInfos = new ConfigurationBuilder();
-            replicatedInfos
-                    .clustering().cacheMode(CacheMode.REPL_SYNC);
+            replicatedInfos.clustering().cacheMode(CacheMode.REPL_SYNC);
 
             if (persistence()) {
                 sessionCacheConfigurationBuilder
@@ -126,8 +127,9 @@ public class DataGridManager {
 
     public boolean waitForMinimumOwners(long timeout, TimeUnit unit) {
         checkStatus();
+
         ExecutorService service = Executors.newSingleThreadExecutor();
-        Future<Boolean> future = service.submit(() -> {
+        service.submit(() -> {
             int numOwners = getNumOwners();
             if (LOGGER.isDebugEnabled()) LOGGER.debug("Waiting for minimum {} owners", numOwners);
             while (manager.getClusterSize() < numOwners) {
@@ -136,14 +138,14 @@ public class DataGridManager {
             if (LOGGER.isDebugEnabled()) LOGGER.debug("Cluster minimum nodes are connected");
             return true;
         });
+        service.shutdown();
 
         try {
-            return future.get(timeout, unit);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            service.awaitTermination(timeout, unit);
+            return true;
+        } catch (InterruptedException e) {
             LOGGER.warn("WaitForMinimumOwners exception", e);
             return false;
-        } finally {
-            service.shutdown();
         }
     }
 
