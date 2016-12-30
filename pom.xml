@@ -57,6 +57,8 @@
         <version.arquillian>1.1.11.Final</version.arquillian>
         <version.arquillian.container.weld>1.0.0.CR9</version.arquillian.container.weld>
         <version.org.jboss.spec.jboss.javaee.6.0>3.0.2.Final-redhat-15</version.org.jboss.spec.jboss.javaee.6.0>
+
+        <version.org.apache.maven>3.3.3</version.org.apache.maven>
     </properties>
 
     <modules>
@@ -83,17 +85,17 @@
             <dependencyManagement>
                 <dependencies>
                     <dependency>
-                        <groupId>org.jboss.bom.eap</groupId>
-                        <artifactId>jboss-javaee-6.0-with-tools</artifactId>
-                        <version>${version.org.jboss.bom.eap}</version>
+                        <groupId>org.infinispan</groupId>
+                        <artifactId>infinispan-bom</artifactId>
+                        <version>${version.org.infinispan}</version>
                         <type>pom</type>
                         <scope>import</scope>
                     </dependency>
 
                     <dependency>
-                        <groupId>org.infinispan</groupId>
-                        <artifactId>infinispan-bom</artifactId>
-                        <version>${version.org.infinispan}</version>
+                        <groupId>org.jboss.bom.eap</groupId>
+                        <artifactId>jboss-javaee-6.0-with-tools</artifactId>
+                        <version>${version.org.jboss.bom.eap}</version>
                         <type>pom</type>
                         <scope>import</scope>
                     </dependency>
@@ -319,57 +321,57 @@
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-aether-provider</artifactId>
-                <version>3.3.3</version>
+                <version>${version.org.apache.maven}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-artifact</artifactId>
-                <version>3.3.3</version>
+                <version>${version.org.apache.maven}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-builder-support</artifactId>
-                <version>3.3.3</version>
+                <version>${version.org.apache.maven}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-compat</artifactId>
-                <version>3.3.3</version>
+                <version>${version.org.apache.maven}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-core</artifactId>
-                <version>3.3.3</version>
+                <version>${version.org.apache.maven}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-model</artifactId>
-                <version>3.3.3</version>
+                <version>${version.org.apache.maven}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-model-builder</artifactId>
-                <version>3.3.3</version>
+                <version>${version.org.apache.maven}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-plugin-api</artifactId>
-                <version>3.3.3</version>
+                <version>${version.org.apache.maven}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-repository-metadata</artifactId>
-                <version>3.3.3</version>
+                <version>${version.org.apache.maven}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-settings</artifactId>
-                <version>3.3.3</version>
+                <version>${version.org.apache.maven}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-settings-builder</artifactId>
-                <version>3.3.3</version>
+                <version>${version.org.apache.maven}</version>
             </dependency>
 
             <!--TEST-->
