@@ -61,4 +61,12 @@ public class ResponseMessage {
     public int hashCode() {
         return Objects.hash(code, message);
     }
+
+    @Override
+    public String toString() {
+        return "ResponseMessage{" +
+                "code=" + code +
+                ", message='" + message + '\'' +
+                '}';
+    }
 }

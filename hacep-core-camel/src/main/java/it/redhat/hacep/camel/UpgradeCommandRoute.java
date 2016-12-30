@@ -50,7 +50,7 @@ public class UpgradeCommandRoute extends RouteBuilder {
                     .to("direct:marshal-response")
                 .end()
                 .setExchangePattern(ExchangePattern.InOut)
-                .log(LoggingLevel.INFO, "Upgrade to version ${body}")
+                .log(LoggingLevel.INFO, "Upgrade to version ${body.toString()}")
                 .process(exchange -> {
                     Command dto = exchange.getIn().getBody(Command.class);
                     String value = dto.getParams().stream()
@@ -65,6 +65,7 @@ public class UpgradeCommandRoute extends RouteBuilder {
                     ResponseMessage output = new ResponseMessage(ResponseCode.SUCCESS, "Upgraded completed to version [" + body + "]");
                     exchange.getOut().setBody(output);
                 })
+                .log(LoggingLevel.INFO, "Upgrade complete to version ${body.toString()}")
                 .to("direct:marshal-response");
     }
 }
