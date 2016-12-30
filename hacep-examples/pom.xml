@@ -21,47 +21,14 @@
         <module>hacep-eap-playground</module>
     </modules>
 
-    <profiles>
-        <profile>
-            <id>supported-GA-ee6</id>
-            <dependencyManagement>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.jboss.weld.se</groupId>
-                        <artifactId>weld-se</artifactId>
-                        <version>${version.weld}</version>
-                    </dependency>
-                </dependencies>
-            </dependencyManagement>
-        </profile>
-        <profile>
-            <id>supported-GA-ee7</id>
-            <dependencyManagement>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.jboss.weld.se</groupId>
-                        <artifactId>weld-se</artifactId>
-                        <version>${version.weld}</version>
-                    </dependency>
-                </dependencies>
-            </dependencyManagement>
-        </profile>
-        <profile>
-            <id>community</id>
-            <dependencyManagement>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.jboss.weld.se</groupId>
-                        <artifactId>weld-se</artifactId>
-                        <version>${version.weld}</version>
-                    </dependency>
-                </dependencies>
-            </dependencyManagement>
-        </profile>
-    </profiles>
-
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.jboss.weld.se</groupId>
+                <artifactId>weld-se</artifactId>
+                <version>${version.weld}</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
