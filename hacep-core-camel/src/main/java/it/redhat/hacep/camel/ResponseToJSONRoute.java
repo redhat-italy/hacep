@@ -32,6 +32,6 @@ public class ResponseToJSONRoute extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        from("direct:marshal-response").marshal().json(JsonLibrary.Jackson, ResponseMessage.class);
+        from("direct:marshal-response").marshal().json(JsonLibrary.Jackson, ResponseMessage.class).convertBodyTo(String.class);
     }
 }
