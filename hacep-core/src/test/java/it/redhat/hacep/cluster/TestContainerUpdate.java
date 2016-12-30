@@ -131,15 +131,8 @@ public class TestContainerUpdate {
 
         Cache<Key, Fact> factCache = dataGridManager1.getFactCache();
 
-        KeyAffinityService<Key> affinityService = KeyAffinityServiceFactory.newKeyAffinityService(factCache, Executors.newSingleThreadExecutor(), new KeyGenerator<Key>() {
-            @Override
-            public Key getKey() {
-                long random = Math.round(Math.random() * 100000);
-                return new GameplayKey("1", "" + random);
-            }
-        }, 10, true);
+        KeyAffinityService<Key> affinityService = getKeyAffinityService(factCache);
         Address address1 = dataGridManager1.getCacheManager().getAddress();
-        Address address2 = dataGridManager2.getCacheManager().getAddress();
         Key keyForDatagrid1 = affinityService.getKeyForAddress(address1);
 
         Cache<String, Object> sessionCache1 = dataGridManager1.getSessionCache();
@@ -265,15 +258,8 @@ public class TestContainerUpdate {
 
         Cache<Key, Fact> factCache = dataGridManager1.getFactCache();
 
-        KeyAffinityService<Key> affinityService = KeyAffinityServiceFactory.newKeyAffinityService(factCache, Executors.newSingleThreadExecutor(), new KeyGenerator<Key>() {
-            @Override
-            public Key getKey() {
-                long random = Math.round(Math.random() * 100000);
-                return new GameplayKey("1", "" + random);
-            }
-        }, 10, true);
+        KeyAffinityService<Key> affinityService = getKeyAffinityService(factCache);
         Address address1 = dataGridManager1.getCacheManager().getAddress();
-        Address address2 = dataGridManager2.getCacheManager().getAddress();
         Key keyForDatagrid1 = affinityService.getKeyForAddress(address1);
 
         Cache<String, Object> sessionCache1 = dataGridManager1.getSessionCache();
@@ -340,15 +326,8 @@ public class TestContainerUpdate {
 
         Cache<Key, Fact> factCache = dataGridManager1.getFactCache();
 
-        KeyAffinityService<Key> affinityService = KeyAffinityServiceFactory.newKeyAffinityService(factCache, Executors.newSingleThreadExecutor(), new KeyGenerator<Key>() {
-            @Override
-            public Key getKey() {
-                long random = Math.round(Math.random() * 100000);
-                return new GameplayKey("1", "" + random);
-            }
-        }, 10, true);
+        KeyAffinityService<Key> affinityService = getKeyAffinityService(factCache);
         Address address1 = dataGridManager1.getCacheManager().getAddress();
-        Address address2 = dataGridManager2.getCacheManager().getAddress();
         Key keyForDatagrid1 = affinityService.getKeyForAddress(address1);
 
         Cache<String, Object> sessionCache1 = dataGridManager1.getSessionCache();
@@ -368,17 +347,31 @@ public class TestContainerUpdate {
             LOGGER.info("TestFailedUpdate: let's pretend everything is ok");
         }
 
-        InOrder inOrder = Mockito.inOrder(router1);
-        inOrder.verify(router1, times(1)).suspend();
-        inOrder.verify(router1, times(1)).resume();
-        inOrder.verify(router1, times(1)).suspend();
-        inOrder.verify(router1, times(1)).resume();
-        inOrder.verifyNoMoreInteractions();
+        try {
+            LOGGER.info("Let's pretend key "+RulesManager.RULES_VERSION+" is owned by node1");
+            InOrder inOrder = Mockito.inOrder(router1);
+            inOrder.verify(router1, times(1)).suspend();
+            inOrder.verify(router1, times(1)).resume();
+            inOrder.verify(router1, times(1)).suspend();
+            inOrder.verify(router1, times(1)).resume();
+            inOrder.verifyNoMoreInteractions();
 
-        inOrder = Mockito.inOrder(router2);
-        inOrder.verify(router2, times(1)).suspend();
-        inOrder.verify(router2, times(1)).resume();
-        inOrder.verifyNoMoreInteractions();
+            inOrder = Mockito.inOrder(router2);
+            inOrder.verify(router2, times(1)).suspend();
+            inOrder.verify(router2, times(1)).resume();
+            inOrder.verifyNoMoreInteractions();
+        } catch (org.mockito.exceptions.verification.VerificationInOrderFailure e  ){
+            LOGGER.info("Key "+RulesManager.RULES_VERSION+" was actually owned by node2!");
+            InOrder inOrder = Mockito.inOrder(router2);
+            inOrder.verify(router2, times(1)).suspend();
+            inOrder.verify(router2, times(1)).resume();
+            inOrder.verifyNoMoreInteractions();
+
+            inOrder = Mockito.inOrder(router1);
+            inOrder.verify(router1, times(1)).suspend();
+            inOrder.verify(router1, times(1)).resume();
+            inOrder.verifyNoMoreInteractions();
+        }
 
         Assert.assertEquals("1.0.0", hacep1.getRulesManager().getReleaseId().getVersion());
         Assert.assertEquals("1.0.0", hacep2.getRulesManager().getReleaseId().getVersion());
@@ -400,5 +393,15 @@ public class TestContainerUpdate {
     private Fact generateFactTenSecondsAfter(long ppid, long amount, Key key) {
         now = now.plusSeconds(10);
         return new TestFact(ppid, amount, new Date(now.toInstant().toEpochMilli()), key);
+    }
+
+    private KeyAffinityService<Key> getKeyAffinityService(Cache<Key, Fact> factCache) {
+        return KeyAffinityServiceFactory.newKeyAffinityService(factCache, Executors.newSingleThreadExecutor(), new KeyGenerator<Key>() {
+            @Override
+            public Key getKey() {
+                long random = Math.round(Math.random() * 100000);
+                return new GameplayKey("1", "" + random);
+            }
+        }, 10, true);
     }
 }
