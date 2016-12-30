@@ -135,6 +135,11 @@ public class HACEPImpl implements HACEP {
     }
 
     @Override
+    public String status() {
+        return dataGridManager.status();
+    }
+
+    @Override
     public void insertFact(Fact fact) {
         putter.put(fact);
     }

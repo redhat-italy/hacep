@@ -15,33 +15,34 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.command.model;
+package it.redhat.hacep.command;
 
 import it.redhat.hacep.HACEP;
 import it.redhat.hacep.camel.InfoCommandRoute;
-import it.redhat.hacep.camel.UpgradeCommandRoute;
+import it.redhat.hacep.camel.StatusCommandRoute;
+import it.redhat.hacep.command.model.Command;
+import it.redhat.hacep.command.model.ResponseCode;
+import it.redhat.hacep.command.model.ResponseMessage;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.camel.builder.Builder.constant;
 import static org.apache.camel.builder.Builder.simple;
 import static org.apache.camel.builder.PredicateBuilder.isEqualTo;
 import static org.apache.camel.builder.PredicateBuilder.isInstanceOf;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class InfoCommandTest extends CamelTestSupport {
+public class StatusCommandTest extends CamelTestSupport {
 
     private HACEP hacep = mock(HACEP.class);
 
     @Override
     protected RoutesBuilder createRouteBuilder() throws Exception {
-        return new InfoCommandRoute(hacep);
+        return new StatusCommandRoute(hacep);
     }
 
     @Override
@@ -53,7 +54,7 @@ public class InfoCommandTest extends CamelTestSupport {
     public void testInputCommand() throws Exception {
         reset(hacep);
 
-        String expectedStatus = "STATUS OK";
+        String expectedStatus = "RUNNING";
 
         context.getRouteDefinitions().get(0).adviceWith(context, new AdviceWithRouteBuilder() {
                     @Override
@@ -65,9 +66,9 @@ public class InfoCommandTest extends CamelTestSupport {
         );
 
         Command command = new Command();
-        command.setCommand("INFO");
+        command.setCommand("STATUS");
 
-        when(hacep.info()).thenReturn(expectedStatus);
+        when(hacep.status()).thenReturn(expectedStatus);
 
         context.start();
 
@@ -80,7 +81,7 @@ public class InfoCommandTest extends CamelTestSupport {
 
         Object object = template.requestBody("direct:test", command);
 
-        verify(hacep, times(1)).info();
+        verify(hacep, times(1)).status();
         assertMockEndpointsSatisfied(1, TimeUnit.MINUTES);
     }
 
@@ -100,7 +101,7 @@ public class InfoCommandTest extends CamelTestSupport {
         Command command = new Command();
         command.setCommand("INFO");
 
-        when(hacep.info()).thenThrow(new RuntimeException());
+        when(hacep.status()).thenThrow(new RuntimeException());
 
         context.start();
 
@@ -112,7 +113,7 @@ public class InfoCommandTest extends CamelTestSupport {
 
         Object object = template.requestBody("direct:test", command);
 
-        verify(hacep, times(1)).info();
+        verify(hacep, times(1)).status();
         assertMockEndpointsSatisfied(1, TimeUnit.MINUTES);
     }
 

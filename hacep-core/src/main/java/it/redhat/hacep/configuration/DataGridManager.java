@@ -211,6 +211,10 @@ public class DataGridManager {
         return info.toString();
     }
 
+    public String status() {
+        return manager.getStatus().toString();
+    }
+
     private CacheMode getCacheMode() {
         try {
             return CacheMode.valueOf(System.getProperty("grid.mode", "DIST_SYNC"));

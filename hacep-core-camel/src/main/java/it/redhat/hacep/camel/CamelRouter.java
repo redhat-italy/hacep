@@ -58,6 +58,7 @@ public class CamelRouter implements Router {
                 camelContext.addRoutes(new ResponseToJSONRoute());
                 camelContext.addRoutes(new UpgradeCommandRoute(hacep));
                 camelContext.addRoutes(new InfoCommandRoute(hacep));
+                camelContext.addRoutes(new StatusCommandRoute(hacep));
                 camelContext.start();
             } catch (Exception e) {
                 throw new RuntimeException(e);

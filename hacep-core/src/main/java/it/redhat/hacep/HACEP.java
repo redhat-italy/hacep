@@ -33,6 +33,8 @@ public interface HACEP {
 
     String info();
 
+    String status();
+
     void insertFact(Fact fact);
 
     String update(String releaseId);
