@@ -15,10 +15,14 @@
  * limitations under the License.
  */
 
-package it.redhat.hacep.command.model;
+package it.redhat.hacep.command;
 
 import it.redhat.hacep.HACEP;
 import it.redhat.hacep.camel.UpgradeCommandRoute;
+import it.redhat.hacep.command.model.Command;
+import it.redhat.hacep.command.model.KeyValueParam;
+import it.redhat.hacep.command.model.ResponseCode;
+import it.redhat.hacep.command.model.ResponseMessage;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.test.junit4.CamelTestSupport;
