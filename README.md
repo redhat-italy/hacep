@@ -11,6 +11,11 @@ To build the HACEP core code you need Maven. Default builds code using the Red H
 ```shell
 mvn -s example-maven-settings/settings.xml clean install
 ```
+Alternatively, you can build the core using community repository: simply add the "community" profile to the Maven command:
+
+```shell
+mvn clean install -P community
+```
 
 Build with Docker
 -----------------
@@ -33,12 +38,6 @@ docker run -it --rm -u $(id -u):$(id -g) --name hacep \
     -v </path/to/your/.m2/repository>:/tmp/maven/.m2/repository \
     -e HACEP_REPO=/tmp/haceprepo -w /tmp/hacep maven:3.3.3-jdk-8 \
     mvn -Duser.home=/tmp/maven -s ./example-maven-settings/settings.xml clean install
-```
-
-Alternatively, you can build the core using community repository: simply add the "community" profile to the Maven command:
-
-```shell
-mvn clean install -P community
 ```
 
 Install the Red Hat supported Maven repositories
