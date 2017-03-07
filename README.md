@@ -17,24 +17,22 @@ Build with Docker
 If you like a more isolated environment and a one liner (after have followed [Install the Red Hat supported Maven repositories](#install-the-red-hat-supported-maven-repositories)) you can build using docker with (remember to change `</path/to/extracted/repos>`):
  
 ```shell
-docker run -it --rm --name hacep \ 
-    -v "$PWD":/usr/src/hacep \
-    -v </path/to/extracted/repos>:/usr/src/haceprepo \ 
-    -e HACEP_REPO=/usr/src/haceprepo \
-    -w /usr/src/hacep \
-    maven:3.3.9-jdk-8 mvn -s ./example-maven-settings/settings.xml clean install
+docker run -it --rm -u $(id -u):$(id -g) --name hacep \
+    -v "$PWD":/tmp/hacep \
+    -v </path/to/extracted/repos>:/tmp/haceprepo \
+    -e HACEP_REPO=/tmp/haceprepo -w /tmp/hacep maven:3.3.3-jdk-8 \
+    mvn -Duser.home=/tmp/maven -s ./example-maven-settings/settings.xml clean install
 ```
 
-to speed things up, but having less isolation, you can also pass as a volume your `.m2/repository` directory (remember to change both `</path/to/extracted/repos>` and `</path/to/your/.m2/repository`):
+to speed things up, but having less isolation, you can also pass as a volume your `.m2/repository` directory (remember to change both `</path/to/extracted/repos>` and `</path/to/your/.m2/repository>`):
 
 ```shell
-docker run -it --rm --name hacep \
-    -v "$PWD":/usr/src/hacep \
-    -v </path/to/extracted/repos>:/usr/src/haceprepo \
-    -v </path/to/your/.m2/repository>:/.m2/repository> \
-    -e HACEP_REPO=/usr/src/haceprepo \
-    -w /usr/src/hacep \
-    maven:3.3.9-jdk-8 mvn -s ./example-maven-settings/settings.xml clean install
+docker run -it --rm -u $(id -u):$(id -g) --name hacep \
+    -v "$PWD":/tmp/hacep \
+    -v </path/to/extracted/repos>:/tmp/haceprepo \
+    -v </path/to/your/.m2/repository>:/tmp/maven/.m2/repository \
+    -e HACEP_REPO=/tmp/haceprepo -w /tmp/hacep maven:3.3.3-jdk-8 \
+    mvn -Duser.home=/tmp/maven -s ./example-maven-settings/settings.xml clean install
 ```
 
 Alternatively, you can build the core using community repository: simply add the "community" profile to the Maven command:
