@@ -117,21 +117,4 @@
         </dependency>
     </dependencies>
 
-    <!-- TODO: remove when bump brms version to >= 6.4 (or drools >= 6.5)
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.19.1</version>
-                <configuration>
-                    <excludes>
-                        <exclude>**/TestSerializedRetractRules.java</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-    -->
-
 </project>
