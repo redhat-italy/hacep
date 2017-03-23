@@ -22,7 +22,7 @@
                     </snapshots>
                 </repository>
                 <repository>
-                    <id>jboss-eap7.02-incremental-repository</id>
+                    <id>jboss-eap7.0.4-incremental-repository</id>
                     <url>file://${env.HACEP_REPO}/maven-repository</url>
 
                     <releases>
@@ -35,7 +35,7 @@
             </repositories>
             <pluginRepositories>
                 <pluginRepository>
-                    <id>jboss-eap6.4-plugin-repository</id>
+                    <id>jboss-eap7.0-plugin-repository</id>
                     <url>file://${env.HACEP_REPO}/jboss-eap-7.0.0.GA-maven-repository/maven-repository</url>
 
                     <releases>
@@ -46,7 +46,7 @@
                     </snapshots>
                 </pluginRepository>
                 <pluginRepository>
-                    <id>jboss-eap7.0.2-incremental-plugin-repository</id>
+                    <id>jboss-eap7.0.4-incremental-plugin-repository</id>
                     <url>file://${env.HACEP_REPO}/maven-repository</url>
 
                     <releases>
