@@ -145,7 +145,7 @@
                 <version.org.jboss.fuse>6.3.0.redhat-187</version.org.jboss.fuse>
                 <version.org.jboss.bom.brms>6.4.0.GA-redhat-2</version.org.jboss.bom.brms>
                 <version.weld>2.3.5.Final</version.weld>
-                <version.org.jboss.bom.eap>7.0.2.GA</version.org.jboss.bom.eap>
+                <version.org.jboss.bom.eap>7.0.4.GA</version.org.jboss.bom.eap>
             </properties>
             <dependencyManagement>
                 <dependencies>

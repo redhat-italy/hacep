@@ -26,6 +26,7 @@ To install the JBoss A-MQ platform:
 ```admin=admin,admin,manager,viewer,Operator, Maintainer, Deployer, Auditor, Administrator, SuperUser```
 * Start the JBoss A-MQ platform using the `amq` (Linux, Max OS X) or `amq.bat` (Windows) script.
 * The A-MQ web-console can be found at http://localhost:8181, u:admin / p:admin.
+* If you are in a virtual environment A-MQ might take a wile to start due to lack of entropy generated, a workaround to speed thing up is to pass `-Djava.security.egd=file:/dev/./urandom` option to use the pseudo-random device see: [https://issues.jboss.org/browse/ENTESB-3938](https://issues.jboss.org/browse/ENTESB-3938). 
 
 Installing JBoss EAP 7
 --------------------
@@ -83,6 +84,11 @@ deploy /opt/jboss/activemq-rar-5.11.0.redhat-621084.rar --server-groups=hacep
 * Set JBoss A-MQ related system properties:
 ```
 /server-group=hacep/system-property=org.apache.activemq.SERIALIZABLE_PACKAGES:add(value="*")
+```
+* If you have built the project directly using one fo the maven settings files in `hacep/example-maven-settings` remember to instruct hacep runtime to use the same using `kie.maven.settings.custom` property and also set `HACEP_REPO` env variable:
+```
+/server-group=hacep/system-property=kie.maven.settings.custom:add(value="<path_to_settings_xml_used>")
+/server-group=hacep/jvm=default/:write-attribute(name=environment-variables.HACEP_REPO,value=</path/to/extracted/repos>)
 ```
 * We now need to configure the A-MQ Resource Adapter to provide a ConnectionFactory which creates connections to the JBoss A-MQ platform we installed earlier. This requires the following CLI commands:
 ```

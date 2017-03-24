@@ -64,7 +64,7 @@ docker run -it --rm -u $(id -u):$(id -g) --name hacep \
     mvn -Duser.home=/tmp/maven -s ./example-maven-settings/settings.xml clean install
 ```
 
-## Build with Red Hat EAP 7.0.2
+## Build with Red Hat EAP 7.0.4
 First of all you need to download and install the supported dependencies:
 
 ### Install the Red Hat supported Maven repositories
@@ -72,7 +72,7 @@ If you want to use the Red Hat bits, you must install JDG/BRMS/EAP repos. To do 
 * [JDG 7.0 maven repository](https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=45411&product=data.grid)
 * [BRMS 6.4.0 maven repository](https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=48311&product=brms)
 * [EAP 7.0 maven repository](https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=43861&product=appplatform)
-* [EAP 7.0.2 incremental maven repository](https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=46391&product=appplatform)
+* [EAP 7.0.4 incremental maven repository](https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=49291&product=appplatform)
 
 and extract them all in one place (let's call it as an example `/path/to/extracted/repos`) each one under a different folder named as the archive; at the end of the process you should have a folder structure similar to this:
 ```shell
@@ -94,7 +94,7 @@ Windows: set HACEP_REPO=c:\path\to\extracted\repos
 
 Then you can build with:
 ```shell
-mvn -s example-maven-settings/settingsEAP7.xml clean install
+mvn -s example-maven-settings/settingsEAP7.xml -Psupported-GA-ee7 clean install
 ```
 
 ### Build with Docker
@@ -104,7 +104,7 @@ docker run -it --rm -u $(id -u):$(id -g) --name hacep \
     -v "$PWD":/tmp/hacep \
     -v </path/to/extracted/repos>:/tmp/haceprepo \
     -e HACEP_REPO=/tmp/haceprepo -w /tmp/hacep maven:3.3.3-jdk-8 \
-    mvn -Duser.home=/tmp/maven -s ./example-maven-settings/settingsEAP7.xml clean install
+    mvn -Duser.home=/tmp/maven -s ./example-maven-settings/settingsEAP7.xml -Psupported-GA-ee7 clean install
 ```
 
 to speed things up, but having less isolation, you can also pass as a volume your `.m2/repository` directory (remember to change both `</path/to/extracted/repos>` and `</path/to/your/.m2/repository>`):
@@ -114,7 +114,7 @@ docker run -it --rm -u $(id -u):$(id -g) --name hacep \
     -v </path/to/extracted/repos>:/tmp/haceprepo \
     -v </path/to/your/.m2/repository>:/tmp/maven/.m2/repository \
     -e HACEP_REPO=/tmp/haceprepo -w /tmp/hacep maven:3.3.3-jdk-8 \
-    mvn -Duser.home=/tmp/maven -s ./example-maven-settings/settingsEAP7.xml clean install
+    mvn -Duser.home=/tmp/maven -s ./example-maven-settings/settingsEAP7.xml -Psupported-GA-ee7 clean install
 ```
 
 # Run an HACEP example
