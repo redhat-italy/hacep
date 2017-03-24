@@ -38,12 +38,18 @@ cd playground
 mvn -P run -Djava.net.preferIPv4Stack=true -Djgroups.bind_addr=localhost -Dgrid.buffer=5000 -Dqueue.url=tcp://localhost:61616 -Dqueue.security=true -Dqueue.usr=admin -Dqueue.pwd=admin
 ```
 
+If you have built the project directly using one fo the maven settings files in `hacep/example-maven-settings` remember to instruct CEP runtime to use the same by passing `-Dkie.maven.settings.custom=../../hacep/example-maven-settings/<settings_xml_used>` and also set `HACEP_REPO` env variable:
+```shell
+Linux/OSX: export HACEP_REPO=/path/to/extracted/repos
+Windows: set HACEP_REPO=c:\path\to\extracted\repos
+```
+
 Configuring HACEP
 -----------------
 
 You can override HACEP behaviour passing -D options from the CLI. 
 
-TOD: update with final version of parameters
+//TODO: update with final version of parameters
 
 Default values are:
 
