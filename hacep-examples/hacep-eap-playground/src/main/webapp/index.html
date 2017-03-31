@@ -323,7 +323,7 @@
     var receive = function (message) {
         var msg = JSON.parse(message.body);
         var event = {
-            "name": msg.playerId,
+            "name": "" + msg.playerId,
             "points": msg.points * 10,
             "code": msg.code
         };
