@@ -10,8 +10,8 @@ In this example, a HACEP enabled application (WAR) is deployed on a JBoss EAP 7 
 Required Software
 --------------------
 The HACEP EAP Playground demo requires the following software:
-* JBoss A-MQ 6.2.1 (or higher)
-* JBoss EAP 7.0 (or higher)
+* [JBoss A-MQ 6.2.1](https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=41271)
+* [JBoss EAP 7.0] (https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=43891)
 
 Conventions
 --------------------
