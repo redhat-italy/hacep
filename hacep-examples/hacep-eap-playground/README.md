@@ -22,7 +22,7 @@ Installing JBoss A-MQ
 --------------------
 To install the JBoss A-MQ platform:
 * Unzip the `jboss-a-mq-6.2.1.redhat-084.zip` distribution in `/opt/jboss`.
-* Enabled the *admin* user by opening the `/opt/jboss/jboss-a-mq-6.2.1.redhat-084/etc/user.properties` file and uncommenting the line 
+* Enabled the *admin* user by opening the `/opt/jboss/jboss-a-mq-6.2.1.redhat-084/etc/users.properties` file and uncommenting the line
 ```admin=admin,admin,manager,viewer,Operator, Maintainer, Deployer, Auditor, Administrator, SuperUser```
 * Start the JBoss A-MQ platform using the `amq` (Linux, Max OS X) or `amq.bat` (Windows) script.
 * The A-MQ web-console can be found at http://localhost:8181, u:admin / p:admin.
