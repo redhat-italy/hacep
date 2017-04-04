@@ -10,8 +10,8 @@ In this example, a HACEP enabled application (WAR) is deployed on a JBoss EAP 7 
 Required Software
 --------------------
 The HACEP EAP Playground demo requires the following software:
-* JBoss A-MQ 6.2.1 (or higher)
-* JBoss EAP 7.0 (or higher)
+* [JBoss A-MQ 6.2.1](https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=41271)
+* [JBoss EAP 7.0] (https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=43891)
 
 Conventions
 --------------------
@@ -22,7 +22,7 @@ Installing JBoss A-MQ
 --------------------
 To install the JBoss A-MQ platform:
 * Unzip the `jboss-a-mq-6.2.1.redhat-084.zip` distribution in `/opt/jboss`.
-* Enabled the *admin* user by opening the `/opt/jboss/jboss-a-mq-6.2.1.redhat-084/etc/user.properties` file and uncommenting the line 
+* Enabled the *admin* user by opening the `/opt/jboss/jboss-a-mq-6.2.1.redhat-084/etc/users.properties` file and uncommenting the line
 ```admin=admin,admin,manager,viewer,Operator, Maintainer, Deployer, Auditor, Administrator, SuperUser```
 * Start the JBoss A-MQ platform using the `amq` (Linux, Max OS X) or `amq.bat` (Windows) script.
 * The A-MQ web-console can be found at http://localhost:8181, u:admin / p:admin.
@@ -104,7 +104,7 @@ The platform is now fully configured and the HACEP EAP Playground application ca
 
 Deploying the application
 --------------------
-Before we can deploy the application, we first need to build it. This is explained in the *Build instruction* in the main `README.md` file of the project. After the libraries and applications have been built, we can deploy the application on the EAP 7 runtime. The WAR file to be deployed is located in your Maven (.m2) repository after you've built the project. On my machine, the location is `/Users/ddoyle/.m2/repository/it/redhat/jdg/examples/hacep-eap-playground/1.0-SNAPSHOT/hacep-eap-playground-1.0-SNAPSHOT.war`. Copy this WAR file to `/opt/jboss`.
+Before we can deploy the application, we first need to build it. This is explained in the *Build instruction* in the main `README.md` file of the project. After the libraries and applications have been built, we can deploy the application on the EAP 7 runtime. The WAR file to be deployed is located in your Maven (.m2) repository after you've built the project. On my machine, the location is `~/.m2/repository/it/redhat/jdg/examples/hacep-eap-playground/1.0-SNAPSHOT/hacep-eap-playground-1.0-SNAPSHOT.war`. Copy this WAR file to `/opt/jboss`.
 
 The application can be deployed to the `hacep` server-group with the following CLI command:
 ```
@@ -126,7 +126,7 @@ To run the demo, we need to feed events into the JBoss A-MQ queue. This can be d
 mvn exec:java -Dduration=480 -Dconcurrent.players=20 -Ddelay.range=5 -Devent.interval=1 -Dtest.preload=true -Dtest.messages=10 -Dbroker.host="localhost:61616" -Dbroker.authentication=true -Dbroker.usr=admin -Dbroker.pwd=admin -Dorg.apache.activemq.SERIALIZABLE_PACKAGES="*"
 ```
 
-In the HACEP GUI, sessions (balls in UI) will be shown, connected to the black dots representing the server nodes. The larger balls represent live sessions running in their primary owner, the smaller balls represent the backups of these sessions on their backup nodes, proividing high availability characteristics.
+In the HACEP GUI, sessions (balls in UI) will be shown, connected to the black dots representing the server nodes. The larger balls represent live sessions running in their primary owner, the smaller balls represent the backups of these sessions on their backup nodes, providing high availability.
 
 To demonstrate the HA characteristics of the platform you can stop and start nodes of the cluster. The HACEP Playground GUI will show how the JDG cluster rebalances and performs its state-transfer, transferring and starting the Drools/BRMS CEP sessions on correct nodes. You can start and stop nodes using the following commands:
 ```
