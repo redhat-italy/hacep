@@ -126,7 +126,7 @@ To run the demo, we need to feed events into the JBoss A-MQ queue. This can be d
 mvn exec:java -Dduration=480 -Dconcurrent.players=20 -Ddelay.range=5 -Devent.interval=1 -Dtest.preload=true -Dtest.messages=10 -Dbroker.host="localhost:61616" -Dbroker.authentication=true -Dbroker.usr=admin -Dbroker.pwd=admin -Dorg.apache.activemq.SERIALIZABLE_PACKAGES="*"
 ```
 
-In the HACEP GUI, sessions (balls in UI) will be shown, connected to the black dots representing the server nodes. The larger balls represent live sessions running in their primary owner, the smaller balls represent the backups of these sessions on their backup nodes, proividing high availability characteristics.
+In the HACEP GUI, sessions (balls in UI) will be shown, connected to the black dots representing the server nodes. The larger balls represent live sessions running in their primary owner, the smaller balls represent the backups of these sessions on their backup nodes, providing high availability.
 
 To demonstrate the HA characteristics of the platform you can stop and start nodes of the cluster. The HACEP Playground GUI will show how the JDG cluster rebalances and performs its state-transfer, transferring and starting the Drools/BRMS CEP sessions on correct nodes. You can start and stop nodes using the following commands:
 ```
