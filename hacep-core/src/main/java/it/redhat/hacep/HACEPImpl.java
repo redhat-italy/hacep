@@ -79,6 +79,17 @@ public class HACEPImpl implements HACEP {
                 this.dataGridManager = new DataGridManager();
                 this.haKieSessionBuilder = new HAKieSessionBuilder(rulesManager, executorService);
 
+                this.dataGridManager.startCacheInfo(nodeName);
+                Cache<String, String> infoCache = this.dataGridManager.getReplicatedCache();
+                String groupId = infoCache.putIfAbsent(RulesManager.RULES_GROUP_ID, rulesConfiguration.getGroupId());
+                String artifactId = infoCache.putIfAbsent(RulesManager.RULES_ARTIFACT_ID, rulesConfiguration.getArtifactId());
+                String version = infoCache.putIfAbsent(RulesManager.RULES_VERSION, rulesConfiguration.getVersion());
+                this.rulesManager.start(groupId, artifactId, version);
+                infoCache.addListener(new UpdateVersionListener(this.router, this.rulesManager));
+
+                rulesUpdateVersion = new RulesUpdateVersionImpl(dataGridManager.getReplicatedCache());
+
+
                 this.dataGridManager.start(haKieSessionBuilder, nodeName);
 
                 this.dataGridManager.waitForMinimumOwners(1, TimeUnit.MINUTES);
@@ -89,14 +100,14 @@ public class HACEPImpl implements HACEP {
                 this.dataGridManager.getSessionCache().addListener(new SessionListenerPre(this.router));
                 this.dataGridManager.getSessionCache().addListener(new SessionListenerPost(this.router));
 
-                Cache<String, String> infoCache = this.dataGridManager.getReplicatedCache();
-                String groupId = infoCache.putIfAbsent(RulesManager.RULES_GROUP_ID, rulesConfiguration.getGroupId());
-                String artifactId = infoCache.putIfAbsent(RulesManager.RULES_ARTIFACT_ID, rulesConfiguration.getArtifactId());
-                String version = infoCache.putIfAbsent(RulesManager.RULES_VERSION, rulesConfiguration.getVersion());
-                this.rulesManager.start(groupId, artifactId, version);
-                infoCache.addListener(new UpdateVersionListener(this.router, this.rulesManager));
-
-                rulesUpdateVersion = new RulesUpdateVersionImpl(dataGridManager.getReplicatedCache());
+//                Cache<String, String> infoCache = this.dataGridManager.getReplicatedCache();
+//                String groupId = infoCache.putIfAbsent(RulesManager.RULES_GROUP_ID, rulesConfiguration.getGroupId());
+//                String artifactId = infoCache.putIfAbsent(RulesManager.RULES_ARTIFACT_ID, rulesConfiguration.getArtifactId());
+//                String version = infoCache.putIfAbsent(RulesManager.RULES_VERSION, rulesConfiguration.getVersion());
+//                this.rulesManager.start(groupId, artifactId, version);
+//                infoCache.addListener(new UpdateVersionListener(this.router, this.rulesManager));
+//
+//                rulesUpdateVersion = new RulesUpdateVersionImpl(dataGridManager.getReplicatedCache());
                 putter = new PutterImpl(dataGridManager.getFactCache());
                 this.router.start(jmsConfiguration, this);
             } catch (Exception e) {

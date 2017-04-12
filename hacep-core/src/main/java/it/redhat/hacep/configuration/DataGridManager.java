@@ -52,6 +52,56 @@ public class DataGridManager {
 
     private DefaultCacheManager manager;
 
+    private final AtomicBoolean startedCacheInfo = new AtomicBoolean(false);
+
+    private DefaultCacheManager managerCacheInfo;
+
+    public void startCacheInfo(String nodeName) {
+        if (startedCacheInfo.compareAndSet(false, true)) {
+            GlobalConfiguration globalConfiguration = new GlobalConfigurationBuilder().clusteredDefault()
+                    .transport().addProperty("configurationFile", System.getProperty("jgroups.configuration.info", "jgroups-tcp-info.xml"))
+                    .clusterName("HACEPINFO").nodeName(nodeName+"INFO")
+                    .globalJmxStatistics().allowDuplicateDomains(true).enable()
+                    .serialization()
+                    .build();
+
+            ConfigurationBuilder commonConfigurationBuilder = new ConfigurationBuilder();
+            CacheMode cacheMode = getCacheMode();
+            if (cacheMode.isDistributed()) {
+                commonConfigurationBuilder
+                        .clustering().cacheMode(cacheMode)
+                        .hash().numOwners(getNumOwners())
+                        .groups().enabled();
+            } else {
+                commonConfigurationBuilder.clustering().cacheMode(cacheMode);
+            }
+
+            Configuration commonConfiguration = commonConfigurationBuilder.build();
+            this.managerCacheInfo = new DefaultCacheManager(globalConfiguration, commonConfiguration, false);
+
+            ConfigurationBuilder replicatedInfos = new ConfigurationBuilder();
+            replicatedInfos.clustering().cacheMode(CacheMode.REPL_SYNC);
+
+            if (persistence()) {
+                replicatedInfos
+                        .persistence()
+                        .passivation(false)
+                        .addSingleFileStore()
+                        .shared(false)
+                        .preload(true)
+                        .fetchPersistentState(true)
+                        .purgeOnStartup(false)
+                        .location(location())
+                        .async().threadPoolSize(threadPoolSize()).enabled(false)
+                        .singleton().enabled(false);
+            }
+
+            this.managerCacheInfo.defineConfiguration(REPLICATED_CACHE_NAME, replicatedInfos.build());
+
+            this.managerCacheInfo.start();
+        }
+    }
+
     public void start(HAKieSessionBuilder builder, String nodeName) {
         if (started.compareAndSet(false, true)) {
             GlobalConfiguration globalConfiguration = new GlobalConfigurationBuilder().clusteredDefault()
@@ -86,8 +136,6 @@ public class DataGridManager {
                     .maxIdle(factsExpiration(), TimeUnit.MILLISECONDS);
 
             ConfigurationBuilder sessionCacheConfigurationBuilder = new ConfigurationBuilder().read(commonConfiguration);
-            ConfigurationBuilder replicatedInfos = new ConfigurationBuilder();
-            replicatedInfos.clustering().cacheMode(CacheMode.REPL_SYNC);
 
             if (persistence()) {
                 sessionCacheConfigurationBuilder
@@ -103,23 +151,10 @@ public class DataGridManager {
                         .singleton().enabled(false)
                         .eviction()
                         .strategy(EvictionStrategy.LRU).type(EvictionType.COUNT).size(evictionSize());
-
-                replicatedInfos
-                        .persistence()
-                        .passivation(false)
-                        .addSingleFileStore()
-                        .shared(false)
-                        .preload(true)
-                        .fetchPersistentState(true)
-                        .purgeOnStartup(false)
-                        .location(location())
-                        .async().threadPoolSize(threadPoolSize()).enabled(false)
-                        .singleton().enabled(false);
             }
 
             this.manager.defineConfiguration(FACT_CACHE_NAME, factCacheConfigurationBuilder.build());
             this.manager.defineConfiguration(SESSION_CACHE_NAME, sessionCacheConfigurationBuilder.build());
-            this.manager.defineConfiguration(REPLICATED_CACHE_NAME, replicatedInfos.build());
 
             this.manager.start();
         }
@@ -167,6 +202,23 @@ public class DataGridManager {
                 LOGGER.warn("Exceeded timeout waiting for manager stop.");
             }
         }
+        if (startedCacheInfo.compareAndSet(true, false)) {
+            LOGGER.info("Stopping cache managerCahceInfo");
+            this.managerCacheInfo.stop();
+            ExecutorService service = Executors.newSingleThreadExecutor();
+            service.submit(() -> {
+                while (!this.managerCacheInfo.getStatus().isTerminated()) {
+                    Thread.sleep(100);
+                }
+                return true;
+            });
+            service.shutdown();
+            try {
+                service.awaitTermination(1, TimeUnit.MINUTES);
+            } catch (InterruptedException e) {
+                LOGGER.warn("Exceeded timeout waiting for managerChaceInfo stop.");
+            }
+        }
     }
 
     public Cache<Key, Fact> getFactCache() {
@@ -175,8 +227,8 @@ public class DataGridManager {
     }
 
     public Cache<String, String> getReplicatedCache() {
-        checkStatus();
-        return this.manager.getCache(REPLICATED_CACHE_NAME, true);
+        checkStatusCacheInfo();
+        return this.managerCacheInfo.getCache(REPLICATED_CACHE_NAME, true);
     }
 
     public Cache<String, Object> getSessionCache() {
@@ -191,6 +243,12 @@ public class DataGridManager {
     private void checkStatus() {
         if (!started.get()) {
             throw new IllegalStateException("Datagrid manager needs to be started!");
+        }
+    }
+
+    private void checkStatusCacheInfo() {
+        if (!startedCacheInfo.get()) {
+            throw new IllegalStateException("Datagrid managerCacheInfo needs to be started!");
         }
     }
 

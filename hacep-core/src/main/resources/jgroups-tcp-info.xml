@@ -25,7 +25,7 @@
         oob_thread_pool.queue_enabled="false"
    />
    <MPING bind_addr="${jgroups.tcp.address:127.0.0.1}"
-          mcast_addr="${jgroups.mping.mcast_addr:228.2.4.6}"
+          mcast_addr="${jgroups.mping.mcast_addr:228.2.4.7}"
           mcast_port="${jgroups.mping.mcast_port:43366}"
           ip_ttl="${jgroups.udp.ip_ttl:2}" 
    />
