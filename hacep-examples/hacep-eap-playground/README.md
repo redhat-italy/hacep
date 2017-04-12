@@ -79,7 +79,7 @@ You are disconnected at the moment. Type 'connect' to connect to the server or '
 ```
 * Deploy the A-MQ Resource Adapter (the RAR file we copied to `/opt/jboss`) to the `hacep` server group:
 ```
-deploy /opt/jboss/activemq-rar-5.11.0.redhat-621084.rar --server-groups=hacep
+deploy /opt/jboss/activemq-rar-5.11.0.redhat-621084.rar --name=activemq-rar.rar --server-groups=hacep
 ```
 * Set JBoss A-MQ related system properties:
 ```
@@ -88,15 +88,15 @@ deploy /opt/jboss/activemq-rar-5.11.0.redhat-621084.rar --server-groups=hacep
 * If you have built the project directly using one fo the maven settings files in `hacep/example-maven-settings` remember to instruct hacep runtime to use the same using `kie.maven.settings.custom` property and also set `HACEP_REPO` env variable:
 ```
 /server-group=hacep/system-property=kie.maven.settings.custom:add(value="<path_to_settings_xml_used>")
+/server-group=hacep/jvm=default:add(heap-size=2G,max-heap-size=2G)
 /server-group=hacep/jvm=default/:write-attribute(name=environment-variables.HACEP_REPO,value=</path/to/extracted/repos>)
 ```
 * We now need to configure the A-MQ Resource Adapter to provide a ConnectionFactory which creates connections to the JBoss A-MQ platform we installed earlier. This requires the following CLI commands:
 ```
-/profile=hacep-full/subsystem=resource-adapters/resource-adapter=activemq-rar.rar:add(archive="activemq-rar-5.11.0.redhat-621084.rar", transaction-support=XATransaction)
+/profile=hacep-full/subsystem=resource-adapters/resource-adapter=activemq-rar.rar:add(archive="activemq-rar.rar", transaction-support=XATransaction)
 /profile=hacep-full/subsystem=resource-adapters/resource-adapter=activemq-rar.rar/config-properties=UserName:add(value="admin")
 /profile=hacep-full/subsystem=resource-adapters/resource-adapter=activemq-rar.rar/config-properties=Password:add(value="admin")
 /profile=hacep-full/subsystem=resource-adapters/resource-adapter=activemq-rar.rar/config-properties=ServerUrl:add(value="tcp://localhost:61616?jms.rmIdFromConnectionId=true")
-
 /profile=hacep-full/subsystem=resource-adapters/resource-adapter=activemq-rar.rar/connection-definitions=ConnectionFactory:add(class-name="org.apache.activemq.ra.ActiveMQManagedConnectionFactory", jndi-name="java:/HACEPConnectionFactory", enabled=true, min-pool-size=1, max-pool-size=20, pool-prefill=false, same-rm-override=false, recovery-username="admin", recovery-password="admin", recovery-plugin-class-name="org.jboss.jca.core.recovery.ConfigurableRecoveryPlugin", recovery-plugin-properties={"EnableIsValid" => "false","IsValidOverride" => "true"})
 ```
 The platform is now fully configured and the HACEP EAP Playground application can be deployed.
