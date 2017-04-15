@@ -31,6 +31,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
         <dependency>
             <groupId>it.redhat.jdg.examples</groupId>
             <artifactId>hacep-rules</artifactId>
+            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>

@@ -143,8 +143,6 @@ public class TestStartupWithFactInserts {
         reset(router1, additionsChannel1, replayChannel1, router2, additionsChannel2, replayChannel2, router3, additionsChannel3, replayChannel3);
 
         DataGridManager dataGridManager1 = hacep1.getDataGridManager();
-//        DataGridManager dataGridManager2 = hacep2.getDataGridManager();
-//        DataGridManager dataGridManager3 = hacep3.getDataGridManager();
 
         Thread.sleep(5000);
 
@@ -157,7 +155,7 @@ public class TestStartupWithFactInserts {
                 try {
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
-//                    e.printStackTrace();
+                    //
                 }
             }
         } );
@@ -177,122 +175,5 @@ public class TestStartupWithFactInserts {
             executorService.shutdownNow();
         }
 
-
-//        ReleaseId rulesV2 = RulesTestBuilder.buildV2();
-//        ReleaseId rulesV3 = RulesTestBuilder.buildV3();
-
-//        Cache<Key, Fact> factCache = dataGridManager1.getFactCache();
-//
-//        KeyAffinityService<Key> affinityService = getKeyAffinityService(factCache);
-//        Address address1 = dataGridManager1.getCacheManager().getAddress();
-//        Key keyForDatagrid1 = affinityService.getKeyForAddress(address1);
-//
-//        Cache<String, Object> sessionCache1 = dataGridManager1.getSessionCache();
-//        Cache<String, Object> sessionCache2 = dataGridManager2.getSessionCache();
-//        Assert.assertEquals(0, sessionCache1.size());
-//        Assert.assertEquals(0, sessionCache2.size());
-//
-//        hacep1.insertFact(generateFactTenSecondsAfter(1L, 10L, keyForDatagrid1));
-//
-//        verify(additionsChannel1, times(1)).send(eq(10L));
-//        verify(replayChannel1, never()).send(any());
-//
-//        verify(additionsChannel2, never()).send(any());
-//        verify(replayChannel2, never()).send(any());
-//
-//        Assert.assertEquals(1, sessionCache1.size());
-//        Assert.assertEquals(1, sessionCache2.size());
-//
-//        reset(router1, router2, additionsChannel1, replayChannel1, additionsChannel2, replayChannel2);
-//
-//        // Rules Update
-//        hacep1.update(rulesV2.toExternalForm());
-//
-//        InOrder inOrder = Mockito.inOrder(router1);
-//        inOrder.verify(router1, times(1)).suspend();
-//        inOrder.verify(router1, times(1)).resume();
-//        inOrder.verifyNoMoreInteractions();
-//
-//        inOrder = Mockito.inOrder(router2);
-//        inOrder.verify(router2, times(1)).suspend();
-//        inOrder.verify(router2, times(1)).resume();
-//        inOrder.verifyNoMoreInteractions();
-//
-//        Assert.assertEquals(rulesV2.getVersion(), hacep1.getRulesManager().getReleaseId().getVersion());
-//        Assert.assertEquals(rulesV2.getVersion(), hacep2.getRulesManager().getReleaseId().getVersion());
-//        Assert.assertEquals(rulesV2.getVersion(), dataGridManager1.getReplicatedCache().get(RulesManager.RULES_VERSION));
-//
-//        factCache.remove(keyForDatagrid1);
-//        hacep1.insertFact(generateFactTenSecondsAfter(1L, 20L, keyForDatagrid1));
-//
-//        verify(additionsChannel1, times(1)).send(eq(60L));
-//        verify(replayChannel1, never()).send(any());
-//
-//        verify(additionsChannel2, never()).send(any());
-//        verify(replayChannel2, times(1)).send(eq(10L));
-//
-//        Assert.assertEquals(1, sessionCache1.size());
-//        Assert.assertEquals(1, sessionCache2.size());
-//
-//        reset(router1, router2, additionsChannel1, replayChannel1, additionsChannel2, replayChannel2);
-//
-//        // Rules Update
-//        hacep2.update(rulesV3.toExternalForm());
-//
-//        inOrder = Mockito.inOrder(router1);
-//        inOrder.verify(router1, times(1)).suspend();
-//        inOrder.verify(router1, times(1)).resume();
-//        inOrder.verifyNoMoreInteractions();
-//
-//        inOrder = Mockito.inOrder(router2);
-//        inOrder.verify(router2, times(1)).suspend();
-//        inOrder.verify(router2, times(1)).resume();
-//        inOrder.verifyNoMoreInteractions();
-//
-//        Assert.assertEquals(rulesV3.getVersion(), hacep1.getRulesManager().getReleaseId().getVersion());
-//        Assert.assertEquals(rulesV3.getVersion(), hacep2.getRulesManager().getReleaseId().getVersion());
-//        Assert.assertEquals(rulesV3.getVersion(), dataGridManager1.getReplicatedCache().get(RulesManager.RULES_VERSION));
-//
-//        factCache.remove(keyForDatagrid1);
-//        hacep1.insertFact(generateFactTenSecondsAfter(1L, 30L, keyForDatagrid1));
-//
-//        verify(additionsChannel1, times(1)).send(eq(180L));
-//        verify(replayChannel1, never()).send(any());
-//
-//        verify(additionsChannel2, never()).send(any());
-//        verify(replayChannel2, times(1)).send(eq(60L));
-//
-//        Assert.assertEquals(1, sessionCache1.size());
-//        Assert.assertEquals(1, sessionCache2.size());
-//
-//        reset(router1, router2, additionsChannel1, replayChannel1, additionsChannel2, replayChannel2);
-//
-//        //Add another fact on version 3 to check everything is working as before version upgrade
-//        factCache.remove(keyForDatagrid1);
-//        hacep1.insertFact(generateFactTenSecondsAfter(2L, 30L, keyForDatagrid1));
-//
-//        verify(additionsChannel1, times(1)).send(eq(90L));
-//        verify(replayChannel1, never()).send(any());
-//
-//        verify(additionsChannel2, never()).send(any());
-//        verify(replayChannel2, never()).send(any());
-//
-//        Assert.assertEquals(1, sessionCache1.size());
-//        Assert.assertEquals(1, sessionCache2.size());
-    }
-
-    private Fact generateFactTenSecondsAfter(long ppid, long amount, Key key) {
-        now = now.plusSeconds(10);
-        return new TestFact(ppid, amount, new Date(now.toInstant().toEpochMilli()), key);
-    }
-
-    private KeyAffinityService<Key> getKeyAffinityService(Cache<Key, Fact> factCache) {
-        return KeyAffinityServiceFactory.newKeyAffinityService(factCache, Executors.newSingleThreadExecutor(), new KeyGenerator<Key>() {
-            @Override
-            public Key getKey() {
-                long random = Math.round(Math.random() * 100000);
-                return new GameplayKey("1", "" + random);
-            }
-        }, 10, true);
     }
 }
