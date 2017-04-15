@@ -21,6 +21,10 @@
         <module>hacep-eap-playground</module>
     </modules>
 
+    <properties>
+        <rules.version>1.0</rules.version>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -33,6 +37,16 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>13.0.1</version>
+            </dependency>
+            <dependency>
+                <groupId>it.redhat.jdg.examples</groupId>
+                <artifactId>hacep-model</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>it.redhat.jdg.examples</groupId>
+                <artifactId>hacep-rules</artifactId>
+                <version>${rules.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
