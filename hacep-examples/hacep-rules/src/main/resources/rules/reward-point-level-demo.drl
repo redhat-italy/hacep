@@ -3,6 +3,20 @@ package it.redhat.hacep.playground.rules.reward.catalog;
 import it.redhat.hacep.playground.rules.model.Gameplay;
 import it.redhat.hacep.playground.rules.model.outcome.PlayerPointLevel;
 
+import accumulate it.redhat.hacep.playground.rules.reward.catalog.ConsecutiveDaysAccumulateFunction consecutivedays;
+
+declare Gameplay
+    @role( event )
+    @timestamp( timestamp.getTime() )
+    @expires( 60d )
+end
+
+declare GameplayBet
+    @role( event )
+    @timestamp ( timestamp.getTime() )
+    @expires( 60d )
+end
+
 rule "User gains a point for each gameplay and every 10 points increases player code"
 when
     $gamePlay : Gameplay($playerId : playerId) over window:length(1)
