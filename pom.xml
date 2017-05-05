@@ -76,7 +76,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <version.org.infinispan>8.3.0.Final-redhat-1</version.org.infinispan>
+                <version.org.infinispan>8.4.0.Final-redhat-2</version.org.infinispan>
                 <version.org.jboss.fuse>6.3.0.redhat-187</version.org.jboss.fuse>
                 <version.org.jboss.bom.brms>6.4.0.GA-redhat-2</version.org.jboss.bom.brms>
                 <version.weld>1.1.33.Final</version.weld>
@@ -141,7 +141,7 @@
         <profile>
             <id>supported-GA-ee7</id>
             <properties>
-                <version.org.infinispan>8.3.0.Final-redhat-1</version.org.infinispan>
+                <version.org.infinispan>8.4.0.Final-redhat-2</version.org.infinispan>
                 <version.org.jboss.fuse>6.3.0.redhat-187</version.org.jboss.fuse>
                 <version.org.jboss.bom.brms>6.4.0.GA-redhat-2</version.org.jboss.bom.brms>
                 <version.weld>2.3.5.Final</version.weld>

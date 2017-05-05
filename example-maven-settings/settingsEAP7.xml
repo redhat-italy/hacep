@@ -109,7 +109,7 @@
                 <repository>
                     <id>jboss-datagrid-repository</id>
                     <name>JBoss Data Grid Maven Repository</name>
-                    <url>file://${env.HACEP_REPO}/jboss-datagrid-7.0.0-maven-repository</url>
+                    <url>file://${env.HACEP_REPO}/jboss-datagrid-7.1.0-maven-repository</url>
                     <layout>default</layout>
                     <releases>
                         <enabled>true</enabled>
@@ -139,7 +139,7 @@
                 <pluginRepository>
                     <id>jboss-datagrid-repository</id>
                     <name>JBoss Data Grid Maven Repository</name>
-                    <url>file://${env.HACEP_REPO}/jboss-datagrid-7.0.0-maven-repository</url>
+                    <url>file://${env.HACEP_REPO}/jboss-datagrid-7.1.0-maven-repository</url>
                     <layout>default</layout>
                     <releases>
                         <enabled>true</enabled>
