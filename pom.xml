@@ -72,9 +72,6 @@
     <profiles>
         <profile>
             <id>supported-GA-ee6</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <properties>
                 <version.org.infinispan>8.4.0.Final-redhat-2</version.org.infinispan>
                 <version.org.jboss.fuse>6.3.0.redhat-187</version.org.jboss.fuse>
@@ -140,6 +137,9 @@
         </profile>
         <profile>
             <id>supported-GA-ee7</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <properties>
                 <version.org.infinispan>8.4.0.Final-redhat-2</version.org.infinispan>
                 <version.org.jboss.fuse>6.3.0.redhat-187</version.org.jboss.fuse>
