@@ -66,15 +66,7 @@ public class DataGridManager {
                     .build();
 
             ConfigurationBuilder commonConfigurationBuilder = new ConfigurationBuilder();
-            CacheMode cacheMode = getCacheMode();
-            if (cacheMode.isDistributed()) {
-                commonConfigurationBuilder
-                        .clustering().cacheMode(cacheMode)
-                        .hash().numOwners(getNumOwners())
-                        .groups().enabled();
-            } else {
-                commonConfigurationBuilder.clustering().cacheMode(cacheMode);
-            }
+            commonConfigurationBuilder.clustering().cacheMode(CacheMode.REPL_SYNC);
 
             Configuration commonConfiguration = commonConfigurationBuilder.build();
             this.managerCacheInfo = new DefaultCacheManager(globalConfiguration, commonConfiguration, false);
