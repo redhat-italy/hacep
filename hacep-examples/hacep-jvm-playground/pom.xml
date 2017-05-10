@@ -170,6 +170,7 @@
                 <configuration>
                     <argLine>-Xms1024M</argLine>
                     <argLine>-Xmx2048M</argLine>
+                    <argLine>-Djava.net.preferIPv4Stack=true</argLine>
                     <excludes>
                         <exclude>**/OrderTest.java</exclude>
                     </excludes>
