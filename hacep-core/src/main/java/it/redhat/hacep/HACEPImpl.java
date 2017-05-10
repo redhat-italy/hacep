@@ -29,6 +29,8 @@ import it.redhat.hacep.configuration.*;
 import it.redhat.hacep.model.Fact;
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -40,6 +42,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @ApplicationScoped
 public class HACEPImpl implements HACEP {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(HACEPImpl.class);
+
 
     private final String nodeName;
     private DataGridManager dataGridManager;
@@ -100,16 +105,10 @@ public class HACEPImpl implements HACEP {
                 this.dataGridManager.getSessionCache().addListener(new SessionListenerPre(this.router));
                 this.dataGridManager.getSessionCache().addListener(new SessionListenerPost(this.router));
 
-//                Cache<String, String> infoCache = this.dataGridManager.getReplicatedCache();
-//                String groupId = infoCache.putIfAbsent(RulesManager.RULES_GROUP_ID, rulesConfiguration.getGroupId());
-//                String artifactId = infoCache.putIfAbsent(RulesManager.RULES_ARTIFACT_ID, rulesConfiguration.getArtifactId());
-//                String version = infoCache.putIfAbsent(RulesManager.RULES_VERSION, rulesConfiguration.getVersion());
-//                this.rulesManager.start(groupId, artifactId, version);
-//                infoCache.addListener(new UpdateVersionListener(this.router, this.rulesManager));
-//
-//                rulesUpdateVersion = new RulesUpdateVersionImpl(dataGridManager.getReplicatedCache());
                 putter = new PutterImpl(dataGridManager.getFactCache());
                 this.router.start(jmsConfiguration, this);
+
+                if (LOGGER.isDebugEnabled()) LOGGER.debug("Node [{}] finished starting.", this.nodeName);
             } catch (Exception e) {
                 started.set(false);
                 throw new RuntimeException(e);

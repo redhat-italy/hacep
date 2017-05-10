@@ -18,46 +18,31 @@
 package it.redhat.hacep.cluster;
 
 import it.redhat.hacep.HACEPImpl;
-import it.redhat.hacep.cache.listeners.UpdateVersionListener;
 import it.redhat.hacep.configuration.DataGridManager;
 import it.redhat.hacep.configuration.JmsConfiguration;
 import it.redhat.hacep.configuration.Router;
-import it.redhat.hacep.configuration.RulesManager;
 import it.redhat.hacep.model.Fact;
 import it.redhat.hacep.model.Key;
 import it.redhat.hacep.rules.model.GameplayKey;
 import org.infinispan.Cache;
-import org.infinispan.affinity.KeyAffinityService;
-import org.infinispan.affinity.KeyAffinityServiceFactory;
-import org.infinispan.affinity.KeyGenerator;
-import org.infinispan.remoting.transport.Address;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.kie.api.builder.ReleaseId;
 import org.kie.api.runtime.Channel;
-import org.mockito.InOrder;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static it.redhat.hacep.cluster.RulesConfigurationTestImpl.RulesTestBuilder;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 public class TestStartupWithFactInserts {
 
@@ -83,7 +68,7 @@ public class TestStartupWithFactInserts {
     private HACEPImpl hacep3;
 
     @Before
-    public void setup() throws InterruptedException {
+    public void setup() throws InterruptedException, ExecutionException {
         System.setProperty("jgroups.configuration", "jgroups-test-tcp.xml");
 
         additionsChannel1 = mock(Channel.class);
@@ -132,10 +117,13 @@ public class TestStartupWithFactInserts {
     }
 
     @After
-    public void cleanup() {
-        hacep1.stop();
-        hacep2.stop();
-        hacep3.stop();
+    public void cleanup() throws InterruptedException {
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        executorService.submit(hacep1::stop);
+        executorService.submit(hacep2::stop);
+        executorService.submit(hacep3::stop);
+        executorService.shutdown();
+        executorService.awaitTermination(1, TimeUnit.MINUTES);
     }
 
     @Test
@@ -146,34 +134,41 @@ public class TestStartupWithFactInserts {
 
         Thread.sleep(5000);
 
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
-        executorService.submit( () -> {
+        ExecutorService factExecutorService = Executors.newFixedThreadPool(1);
+        factExecutorService.submit( () -> {
             for(int i = 0; i<=Integer.MAX_VALUE; i++){
-                Cache<Key, Fact> factCache = dataGridManager1.getFactCache();
-                Key key =new GameplayKey(Integer.toString(i), "" +(i % 20) );
-                factCache.put(key, new TestFact(i % 20, 100L, new Date(now.toInstant().toEpochMilli()), key));
                 try {
+                    Cache<Key, Fact> factCache = dataGridManager1.getFactCache();
+                    Key key = new GameplayKey(Integer.toString(i), "" +(i % 20) );
+                    factCache.put(key, new TestFact(i % 20, 100L, new Date(now.toInstant().toEpochMilli()), key));
+                    LOGGER.info("Message [{}] sent!", i);
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
                     //
+                } catch (Exception e) {
+                    throw new RuntimeException( "This should not happen!" );
                 }
             }
         } );
 
+        //let's have some messages flowing through
         Thread.sleep(5000);
 
-        hacep3.stop();
+        //stop
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        executorService.submit(hacep3::stop);
+        executorService.shutdown();
+        executorService.awaitTermination(1, TimeUnit.MINUTES);
+
+        //let's have some more messages flowing through
         Thread.sleep(5000);
-        hacep3.start();
 
-        try {
-            executorService.awaitTermination(100, TimeUnit.MILLISECONDS);
-            executorService.shutdown();
-        } catch ( InterruptedException e){
-            //
-        } finally {
-            executorService.shutdownNow();
-        }
+        //start
+        executorService = Executors.newFixedThreadPool(1);
+        executorService.submit(hacep3::start);
+        executorService.shutdown();
+        executorService.awaitTermination(1, TimeUnit.MINUTES);
 
+        factExecutorService.shutdownNow();
     }
 }
