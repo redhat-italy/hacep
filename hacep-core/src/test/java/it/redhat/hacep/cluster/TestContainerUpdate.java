@@ -243,7 +243,7 @@ public class TestContainerUpdate {
         for( Object listener : toBeRemoved ){
             dataGridManager1.getReplicatedCache().removeListener( listener );
         }
-        dataGridManager1.getReplicatedCache().addListener(new UpdateVersionListnerError(router1, hacep1.getRulesManager()));
+        dataGridManager1.getReplicatedCache().addListener(new UpdateVersionListenerError(router1, hacep1.getRulesManager()));
 
         toBeRemoved = new HashSet<>();
         for( Object listener : dataGridManager2.getReplicatedCache().getListeners() ){
@@ -252,7 +252,7 @@ public class TestContainerUpdate {
         for( Object listener : toBeRemoved ){
             dataGridManager2.getReplicatedCache().removeListener( listener );
         }
-        dataGridManager2.getReplicatedCache().addListener(new UpdateVersionListnerError(router2, hacep2.getRulesManager()));
+        dataGridManager2.getReplicatedCache().addListener(new UpdateVersionListenerError(router2, hacep2.getRulesManager()));
 
         ReleaseId rulesV2 = RulesTestBuilder.buildV2();
 
@@ -320,7 +320,7 @@ public class TestContainerUpdate {
         for( Object listener : toBeRemoved ){
             dataGridManager2.getReplicatedCache().removeListener( listener );
         }
-        dataGridManager2.getReplicatedCache().addListener(new UpdateVersionListnerError(router2, hacep2.getRulesManager()));
+        dataGridManager2.getReplicatedCache().addListener(new UpdateVersionListenerError(router2, hacep2.getRulesManager()));
 
         ReleaseId rulesV2 = RulesTestBuilder.buildV2();
 

@@ -27,14 +27,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Listener(primaryOnly = false, sync = true, observation = Listener.Observation.POST)
-public class UpdateVersionListnerError {
+public class UpdateVersionListenerError {
 
     private final Logger LOGGER = LoggerFactory.getLogger(UpdateVersionListener.class);
 
     private final Router router;
     private final RulesManager rulesManager;
 
-    public UpdateVersionListnerError(Router router, RulesManager rulesManager) {
+    public UpdateVersionListenerError(Router router, RulesManager rulesManager) {
         this.router = router;
         this.rulesManager = rulesManager;
     }
