@@ -168,11 +168,33 @@
                         <enabled>false</enabled>
                     </snapshots>
                 </repository>
+                <repository>
+                    <id>jboss-brms-bpmsuite-incremental-repository</id>
+                    <url>file://${env.HACEP_REPO}/jboss-brms-bpmsuite-6.4.8.GA-incremental-maven-repository/maven-repository</url>
+
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
             </repositories>
             <pluginRepositories>
                 <pluginRepository>
                     <id>jboss-brms-bpmsuite-plugin-repository</id>
                     <url>file://${env.HACEP_REPO}/jboss-brms-bpmsuite-6.4.0.GA-maven-repository/maven-repository</url>
+
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </pluginRepository>
+                <pluginRepository>
+                    <id>jboss-brms-bpmsuite-incremental-plugin-repository</id>
+                    <url>file://${env.HACEP_REPO}/jboss-brms-bpmsuite-6.4.8.GA-incremental-maven-repository/maven-repository</url>
 
                     <releases>
                         <enabled>true</enabled>
