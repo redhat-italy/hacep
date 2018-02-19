@@ -153,18 +153,12 @@ public class TestContainerUpdate {
 
         reset(router1, router2, additionsChannel1, replayChannel1, additionsChannel2, replayChannel2);
 
+        hacep1.suspend();
+        hacep2.suspend();
         // Rules Update
         hacep1.update(rulesV2.toExternalForm());
-
-        InOrder inOrder = Mockito.inOrder(router1);
-        inOrder.verify(router1, times(1)).suspend();
-        inOrder.verify(router1, times(1)).resume();
-        inOrder.verifyNoMoreInteractions();
-
-        inOrder = Mockito.inOrder(router2);
-        inOrder.verify(router2, times(1)).suspend();
-        inOrder.verify(router2, times(1)).resume();
-        inOrder.verifyNoMoreInteractions();
+        hacep1.resume();
+        hacep2.resume();
 
         Assert.assertEquals(rulesV2.getVersion(), hacep1.getRulesManager().getReleaseId().getVersion());
         Assert.assertEquals(rulesV2.getVersion(), hacep2.getRulesManager().getReleaseId().getVersion());
@@ -184,18 +178,12 @@ public class TestContainerUpdate {
 
         reset(router1, router2, additionsChannel1, replayChannel1, additionsChannel2, replayChannel2);
 
+        hacep1.suspend();
+        hacep2.suspend();
         // Rules Update
         hacep2.update(rulesV3.toExternalForm());
-
-        inOrder = Mockito.inOrder(router1);
-        inOrder.verify(router1, times(1)).suspend();
-        inOrder.verify(router1, times(1)).resume();
-        inOrder.verifyNoMoreInteractions();
-
-        inOrder = Mockito.inOrder(router2);
-        inOrder.verify(router2, times(1)).suspend();
-        inOrder.verify(router2, times(1)).resume();
-        inOrder.verifyNoMoreInteractions();
+        hacep1.resume();
+        hacep2.resume();
 
         Assert.assertEquals(rulesV3.getVersion(), hacep1.getRulesManager().getReleaseId().getVersion());
         Assert.assertEquals(rulesV3.getVersion(), hacep2.getRulesManager().getReleaseId().getVersion());
@@ -237,20 +225,20 @@ public class TestContainerUpdate {
         DataGridManager dataGridManager2 = hacep2.getDataGridManager();
 
         Set<Object> toBeRemoved = new HashSet<>();
-        for( Object listener : dataGridManager1.getReplicatedCache().getListeners() ){
-            if( listener instanceof UpdateVersionListener ) toBeRemoved.add(listener);
+        for (Object listener : dataGridManager1.getReplicatedCache().getListeners()) {
+            if (listener instanceof UpdateVersionListener) toBeRemoved.add(listener);
         }
-        for( Object listener : toBeRemoved ){
-            dataGridManager1.getReplicatedCache().removeListener( listener );
+        for (Object listener : toBeRemoved) {
+            dataGridManager1.getReplicatedCache().removeListener(listener);
         }
         dataGridManager1.getReplicatedCache().addListener(new UpdateVersionListenerError(router1, hacep1.getRulesManager()));
 
         toBeRemoved = new HashSet<>();
-        for( Object listener : dataGridManager2.getReplicatedCache().getListeners() ){
-            if( listener instanceof UpdateVersionListener ) toBeRemoved.add(listener);
+        for (Object listener : dataGridManager2.getReplicatedCache().getListeners()) {
+            if (listener instanceof UpdateVersionListener) toBeRemoved.add(listener);
         }
-        for( Object listener : toBeRemoved ){
-            dataGridManager2.getReplicatedCache().removeListener( listener );
+        for (Object listener : toBeRemoved) {
+            dataGridManager2.getReplicatedCache().removeListener(listener);
         }
         dataGridManager2.getReplicatedCache().addListener(new UpdateVersionListenerError(router2, hacep2.getRulesManager()));
 
@@ -314,11 +302,11 @@ public class TestContainerUpdate {
         DataGridManager dataGridManager2 = hacep2.getDataGridManager();
 
         Set<Object> toBeRemoved = new HashSet<>();
-        for( Object listener : dataGridManager2.getReplicatedCache().getListeners() ){
-            if( listener instanceof UpdateVersionListener ) toBeRemoved.add(listener);
+        for (Object listener : dataGridManager2.getReplicatedCache().getListeners()) {
+            if (listener instanceof UpdateVersionListener) toBeRemoved.add(listener);
         }
-        for( Object listener : toBeRemoved ){
-            dataGridManager2.getReplicatedCache().removeListener( listener );
+        for (Object listener : toBeRemoved) {
+            dataGridManager2.getReplicatedCache().removeListener(listener);
         }
         dataGridManager2.getReplicatedCache().addListener(new UpdateVersionListenerError(router2, hacep2.getRulesManager()));
 
@@ -348,7 +336,7 @@ public class TestContainerUpdate {
         }
 
         try {
-            LOGGER.info("Let's pretend key "+RulesManager.RULES_VERSION+" is owned by node1");
+            LOGGER.info("Let's pretend key " + RulesManager.RULES_VERSION + " is owned by node1");
             InOrder inOrder = Mockito.inOrder(router1);
             inOrder.verify(router1, times(1)).suspend();
             inOrder.verify(router1, times(1)).resume();
@@ -360,8 +348,8 @@ public class TestContainerUpdate {
             inOrder.verify(router2, times(1)).suspend();
             inOrder.verify(router2, times(1)).resume();
             inOrder.verifyNoMoreInteractions();
-        } catch (org.mockito.exceptions.verification.VerificationInOrderFailure e  ){
-            LOGGER.info("Key "+RulesManager.RULES_VERSION+" was actually owned by node2!");
+        } catch (org.mockito.exceptions.verification.VerificationInOrderFailure e) {
+            LOGGER.info("Key " + RulesManager.RULES_VERSION + " was actually owned by node2!");
             InOrder inOrder = Mockito.inOrder(router2);
             inOrder.verify(router2, times(1)).suspend();
             inOrder.verify(router2, times(1)).resume();

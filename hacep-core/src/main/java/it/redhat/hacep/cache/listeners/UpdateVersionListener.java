@@ -30,11 +30,9 @@ public class UpdateVersionListener {
 
     private final Logger LOGGER = LoggerFactory.getLogger(UpdateVersionListener.class);
 
-    private final Router router;
     private final RulesManager rulesManager;
 
     public UpdateVersionListener(Router router, RulesManager rulesManager) {
-        this.router = router;
         this.rulesManager = rulesManager;
     }
 
@@ -43,9 +41,9 @@ public class UpdateVersionListener {
         Object key = event.getKey();
         Object value = event.getValue();
         if (LOGGER.isDebugEnabled()) LOGGER.debug("Received MODIFIED key on INFOS key=[{}] value=[{}]", key, value);
-        if ( (RulesManager.RULES_ARTIFACT_ID.equals(key) && !rulesManager.getReleaseId().getArtifactId().equals(key))
-                || (RulesManager.RULES_GROUP_ID.equals(key) && !rulesManager.getReleaseId().getGroupId().equals(key)) ) {
-            throw new IllegalStateException("Cannot change rules artifact or group id to ["+key+"].");
+        if ((RulesManager.RULES_ARTIFACT_ID.equals(key) && !rulesManager.getReleaseId().getArtifactId().equals(key))
+                || (RulesManager.RULES_GROUP_ID.equals(key) && !rulesManager.getReleaseId().getGroupId().equals(key))) {
+            throw new IllegalStateException("Cannot change rules artifact or group id to [" + key + "].");
         }
         if (RulesManager.RULES_VERSION.equals(key)) {
             updateVersion((String) value);
@@ -53,12 +51,7 @@ public class UpdateVersionListener {
     }
 
     private void updateVersion(String value) {
-        try {
-            router.suspend();
-            rulesManager.updateToVersion(value);
-        } finally {
-            router.resume();
-        }
+        rulesManager.updateToVersion(value);
     }
 
 }
