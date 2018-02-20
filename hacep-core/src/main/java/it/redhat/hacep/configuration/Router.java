@@ -39,4 +39,7 @@ public interface Router {
      * Resume the route responsible for the messages ingestion.
      */
     void resume();
+
+    public final static String SUSPEND = "SUSPEND_ROUTE";
+    public final static String RESUME = "RESUME_ROUTE";
 }

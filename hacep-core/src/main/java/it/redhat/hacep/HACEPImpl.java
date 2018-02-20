@@ -19,10 +19,7 @@ package it.redhat.hacep;
 
 import it.redhat.hacep.cache.PutterImpl;
 import it.redhat.hacep.cache.RulesUpdateVersionImpl;
-import it.redhat.hacep.cache.listeners.FactListenerPost;
-import it.redhat.hacep.cache.listeners.SessionListenerPost;
-import it.redhat.hacep.cache.listeners.SessionListenerPre;
-import it.redhat.hacep.cache.listeners.UpdateVersionListener;
+import it.redhat.hacep.cache.listeners.*;
 import it.redhat.hacep.cache.session.HAKieSessionBuilder;
 import it.redhat.hacep.cache.session.KieSessionSaver;
 import it.redhat.hacep.configuration.*;
@@ -34,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -92,6 +88,10 @@ public class HACEPImpl implements HACEP {
                 this.rulesManager.start(groupId, artifactId, version);
                 infoCache.addListener(new UpdateVersionListener(this.router, this.rulesManager));
 
+                infoCache.put(Router.SUSPEND, "0");
+                infoCache.put(Router.RESUME, "0");
+                infoCache.addListener(new SuspendResumeListener(this.router));
+
                 rulesUpdateVersion = new RulesUpdateVersionImpl(dataGridManager.getReplicatedCache());
 
 
@@ -131,12 +131,16 @@ public class HACEPImpl implements HACEP {
 
     @Override
     public void suspend() {
-        this.router.suspend();
+        //this.router.suspend();
+        Cache<String, String> replicatedCache = dataGridManager.getReplicatedCache();
+        replicatedCache.put(Router.SUSPEND, String.valueOf(System.currentTimeMillis()));
     }
 
     @Override
     public void resume() {
-        this.router.resume();
+        //this.router.resume();
+        Cache<String, String> replicatedCache = dataGridManager.getReplicatedCache();
+        replicatedCache.put(Router.RESUME, String.valueOf(System.currentTimeMillis()));
     }
 
     @Override
