@@ -88,8 +88,8 @@ public class HACEPImpl implements HACEP {
                 this.rulesManager.start(groupId, artifactId, version);
                 infoCache.addListener(new UpdateVersionListener(this.router, this.rulesManager));
 
-                infoCache.put(Router.SUSPEND, "0");
-                infoCache.put(Router.RESUME, "0");
+                infoCache.putIfAbsent(Router.SUSPEND, "0");
+                infoCache.putIfAbsent(Router.RESUME, "0");
                 infoCache.addListener(new SuspendResumeListener(this.router));
 
                 rulesUpdateVersion = new RulesUpdateVersionImpl(dataGridManager.getReplicatedCache());

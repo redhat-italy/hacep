@@ -103,7 +103,8 @@ public class TestSuspendAndResume {
 
         verify(router1, times(1)).suspend();
         verify(router2, times(1)).suspend();
-
+        verify(router1, times(0)).resume();
+        verify(router2, times(0)).resume();
     }
 
     @Test

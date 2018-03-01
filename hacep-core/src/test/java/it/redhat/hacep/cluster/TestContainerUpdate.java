@@ -259,6 +259,8 @@ public class TestContainerUpdate {
 
         reset(router1, router2, additionsChannel1, replayChannel1, additionsChannel2, replayChannel2);
 
+        hacep1.suspend();
+
         // Rules Update
         try {
             hacep1.update(rulesV2.toExternalForm());
@@ -266,19 +268,9 @@ public class TestContainerUpdate {
             //let's pretend everything is ok
             LOGGER.info("TestFailedUpdate: let's pretend everything is ok");
         }
+        
+        hacep1.resume();
 
-        /* @todo check this "verify" after the new manual managing for kjar update
-
-        InOrder inOrder = Mockito.inOrder(router1);
-        inOrder.verify(router1, times(1)).suspend();
-        inOrder.verify(router1, times(1)).resume();
-        inOrder.verifyNoMoreInteractions();
-
-        inOrder = Mockito.inOrder(router2);
-        inOrder.verify(router2, times(1)).suspend();
-        inOrder.verify(router2, times(1)).resume();
-        inOrder.verifyNoMoreInteractions();
-        */
 
         Assert.assertEquals("1.0.0", hacep1.getRulesManager().getReleaseId().getVersion());
         Assert.assertEquals("1.0.0", hacep2.getRulesManager().getReleaseId().getVersion());
@@ -330,6 +322,7 @@ public class TestContainerUpdate {
 
         reset(router1, router2, additionsChannel1, replayChannel1, additionsChannel2, replayChannel2);
 
+        hacep1.suspend();
         // Rules Update
         try {
             hacep1.update(rulesV2.toExternalForm());
@@ -337,33 +330,9 @@ public class TestContainerUpdate {
             //let's pretend everything is ok
             LOGGER.info("TestFailedUpdate: let's pretend everything is ok");
         }
-        /* @todo check this "verify" after the new manual managing for kjar update
-        try {
-            LOGGER.info("Let's pretend key " + RulesManager.RULES_VERSION + " is owned by node1");
-            InOrder inOrder = Mockito.inOrder(router1);
-            inOrder.verify(router1, times(1)).suspend();
-            inOrder.verify(router1, times(1)).resume();
-            inOrder.verify(router1, times(1)).suspend();
-            inOrder.verify(router1, times(1)).resume();
-            inOrder.verifyNoMoreInteractions();
 
-            inOrder = Mockito.inOrder(router2);
-            inOrder.verify(router2, times(1)).suspend();
-            inOrder.verify(router2, times(1)).resume();
-            inOrder.verifyNoMoreInteractions();
-        } catch (org.mockito.exceptions.verification.VerificationInOrderFailure e) {
-            LOGGER.info("Key " + RulesManager.RULES_VERSION + " was actually owned by node2!");
-            InOrder inOrder = Mockito.inOrder(router2);
-            inOrder.verify(router2, times(1)).suspend();
-            inOrder.verify(router2, times(1)).resume();
-            inOrder.verifyNoMoreInteractions();
+        hacep1.resume();
 
-            inOrder = Mockito.inOrder(router1);
-            inOrder.verify(router1, times(1)).suspend();
-            inOrder.verify(router1, times(1)).resume();
-            inOrder.verifyNoMoreInteractions();
-        }
-        */
         Assert.assertEquals("1.0.0", hacep1.getRulesManager().getReleaseId().getVersion());
         Assert.assertEquals("1.0.0", hacep2.getRulesManager().getReleaseId().getVersion());
         Assert.assertEquals("1.0.0", dataGridManager1.getReplicatedCache().get(RulesManager.RULES_VERSION));
