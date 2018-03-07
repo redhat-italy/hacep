@@ -18,7 +18,6 @@
 package it.redhat.hacep.cache.listeners;
 
 import it.redhat.hacep.configuration.Router;
-import it.redhat.hacep.configuration.RulesManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
@@ -26,32 +25,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Listener(primaryOnly = false, sync = true, observation = Listener.Observation.POST)
-public class UpdateVersionListener {
+public class SuspendResumeListener {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(UpdateVersionListener.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(SuspendResumeListener.class);
+    private final Router router;
 
-    private final RulesManager rulesManager;
 
-    public UpdateVersionListener(Router router, RulesManager rulesManager) {
-        this.rulesManager = rulesManager;
+    public SuspendResumeListener(Router router) {
+        this.router = router;
     }
 
     @CacheEntryModified
     public synchronized void eventReceived(CacheEntryModifiedEvent event) {
         Object key = event.getKey();
         Object value = event.getValue();
-        if (LOGGER.isDebugEnabled()) LOGGER.debug("Received MODIFIED key on INFOS key=[{}] value=[{}]", key, value);
-        if ((RulesManager.RULES_ARTIFACT_ID.equals(key) && !rulesManager.getReleaseId().getArtifactId().equals(key))
-                || (RulesManager.RULES_GROUP_ID.equals(key) && !rulesManager.getReleaseId().getGroupId().equals(key))) {
-            throw new IllegalStateException("Cannot change rules artifact or group id to [" + key + "].");
+
+        if (LOGGER.isDebugEnabled()) LOGGER.debug("Received Suspend Event key=[{}] value=[{}]", key, value);
+
+        if (Router.SUSPEND.equals(key)) {
+            router.suspend();
         }
-        if (RulesManager.RULES_VERSION.equals(key)) {
-            updateVersion((String) value);
+
+        if (Router.RESUME.equals(key)) {
+            router.resume();
         }
     }
 
-    private void updateVersion(String value) {
-        rulesManager.updateToVersion(value);
-    }
 
 }
