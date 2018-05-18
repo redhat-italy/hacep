@@ -27,9 +27,14 @@ import org.kie.api.runtime.KieSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.Arrays;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -230,7 +235,15 @@ public class HAKieSerializedSession extends HAKieSession {
                 output.write(object.session);
                 output.writeUTF(object.version);
             }
-            output.writeObject(object.buffer);
+
+            Fact[] fa = new Fact[object.buffer.size()];
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oo = new ObjectOutputStream(baos);
+
+            oo.writeObject( object.buffer.toArray(fa) );
+            byte[] ba = baos.toByteArray();
+            output.writeInt( ba.length );
+            output.write( ba );
         }
 
         @Override
@@ -242,7 +255,15 @@ public class HAKieSerializedSession extends HAKieSession {
                 input.read(object.session);
                 object.version = input.readUTF();
             }
-            object.buffer = (Queue<Fact>) input.readObject();
+
+            int lenBa = input.readInt();
+            byte[] ba = new byte[lenBa];
+            input.read(ba);
+
+            ByteArrayInputStream bais = new ByteArrayInputStream( ba );
+            ObjectInputStream oi = new ObjectInputStream( bais );
+
+            object.buffer = new ConcurrentLinkedQueue<>( Arrays.asList((Fact[]) oi.readObject()));
             return object;
         }
     }
