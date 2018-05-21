@@ -41,6 +41,7 @@ public class HAKieSession implements DeltaAware {
 
     private final RulesManager rulesManager;
     private final Executor executor;
+    private final HAKieSessionBuilder builder;
 
     private Fact lastFact;
     private KieSession session;
@@ -48,6 +49,7 @@ public class HAKieSession implements DeltaAware {
     public HAKieSession(RulesManager rulesManager, Executor executor) {
         this.rulesManager = rulesManager;
         this.executor = executor;
+        this.builder = new HAKieSessionBuilder(rulesManager, executor);
     }
 
     public HAKieSession(RulesManager rulesManager, Executor executor, KieSession session) {
@@ -80,9 +82,9 @@ public class HAKieSession implements DeltaAware {
     @Override
     public Delta delta() {
         if (lastFact != null) {
-            return new HAKieSessionDeltaFact(lastFact);
+            return new HAKieSessionDeltaFact(builder, lastFact);
         }
-        return new HAKieSessionDeltaEmpty();
+        return new HAKieSessionDeltaEmpty(builder);
     }
 
     @Override

@@ -203,6 +203,126 @@ public class TestPassivation extends AbstractClusterTest {
         rulesManager.stop();
     }
 
+    @Test
+    public void testMultiNodePassivation() {
+        System.setProperty("grid.buffer", "10");
+
+        reset(additionsChannel, replayChannel, locksChannel);
+
+        logger.info("Start test serialized rules");
+
+        RulesConfigurationTestImpl rulesConfigurationTest = RulesConfigurationTestImpl.RulesTestBuilder.buildRulesWithRetract();
+        rulesConfigurationTest.registerChannel("additions", additionsChannel, replayChannel);
+        rulesConfigurationTest.registerChannel("locks", locksChannel, replayChannel);
+
+        RulesManager rulesManager = new RulesManager(rulesConfigurationTest);
+        rulesManager.start(null, null, null);
+
+        Cache<String, Object> cache = startNodes(2, rulesManager).getCache(CACHE_NAME);
+        Cache<String, Object> cache2 = startNodes(2, rulesManager).getCache(CACHE_NAME);
+        Cache<String, Object> cache3 = startNodes(2, rulesManager).getCache(CACHE_NAME);
+
+        String key3 = "3";
+        HAKieSession session3 = new HAKieSession(rulesManager, executorService);
+        session3.insert(generateFactTenSecondsAfter(3, 1L));
+        cache3.put(key3, session3);
+
+        String key2 = "2";
+        HAKieSession session2 = new HAKieSession(rulesManager, executorService);
+        session2.insert(generateFactTenSecondsAfter(2, 1L));
+        cache2.put(key2, session2);
+
+        String key = "1";
+        HAKieSession session1 = new HAKieSession(rulesManager, executorService);
+
+        session1.insert(generateFactTenSecondsAfter(1, 1L));
+        cache.put(key, session1);
+
+        session1.insert(generateFactTenSecondsAfter(1, 2L));
+        cache.put(key, session1);
+
+        session1.insert(generateFactTenSecondsAfter(1, 3L));
+        cache.put(key, session1);
+
+        session1.insert(generateFactTenSecondsAfter(1, 4L));
+        cache.put(key, session1);
+
+        session1.insert(generateFactTenSecondsAfter(1, 5L));
+        cache.put(key, session1);
+
+        session1.insert(generateFactTenSecondsAfter(1, 6L));
+        cache.put(key, session1);
+
+        session1.insert(generateFactTenSecondsAfter(1, 7L));
+        cache.put(key, session1);
+
+        session1.insert(generateFactTenSecondsAfter(1, 8L));
+        cache.put(key, session1);
+
+        session1.insert(generateFactTenSecondsAfter(1, 9L));
+        cache.put(key, session1);
+
+        session1.insert(generateFactTenSecondsAfter(1, 10L));
+        // LOCK inserted expires in 25 sec.
+        cache.put(key, session1);
+
+
+        session1.insert(generateFactTenSecondsAfter(1, 1L));
+        cache.put(key, session1);
+
+        session1.insert(generateFactTenSecondsAfter(1, 2L));
+        cache.put(key, session1);
+
+        // 30 sec after - lock should be expired
+        session1.insert(generateFactTenSecondsAfter(1, 3L));
+        cache.put(key, session1);
+
+        session1.insert(generateFactTenSecondsAfter(1, 10L));
+        // LOCK inserted expires in 25 sec.
+        cache.put(key, session1);
+
+        stopNodes();
+
+//        Cache<String, Object> cacheDeserialized = startNodes(1, rulesManager).getCache(CACHE_NAME);
+//
+//        Object o = cacheDeserialized.get(key);
+//        Assert.assertTrue(o instanceof HAKieSerializedSession);
+//        HAKieSerializedSession haKieSerializedSession = (HAKieSerializedSession) o;
+//        HAKieSession sessionRebuilt = haKieSerializedSession.rebuild();
+//
+//        sessionRebuilt.insert(generateFactTenSecondsAfter(1, 0L));
+//        cacheDeserialized.put(key, sessionRebuilt);
+//
+//        sessionRebuilt.insert(generateFactTenSecondsAfter(1, 0L));
+//        cacheDeserialized.put(key, sessionRebuilt);
+//
+//        // 30 sec after - lock should be expired
+//        // And inserted again by this fact (expires in 25 sec)
+//        sessionRebuilt.insert(generateFactTenSecondsAfter(1, 10L));
+//        cacheDeserialized.put(key, sessionRebuilt);
+//
+//        InOrder order = Mockito.inOrder(additionsChannel, locksChannel);
+//        order.verify(additionsChannel).send(eq(1L));
+//        order.verify(additionsChannel).send(eq(2L));
+//        order.verify(additionsChannel).send(eq(3L));
+//        order.verify(additionsChannel).send(eq(4L));
+//        order.verify(additionsChannel).send(eq(5L));
+//        order.verify(additionsChannel).send(eq(6L));
+//        order.verify(additionsChannel).send(eq(7L));
+//        order.verify(additionsChannel).send(eq(8L));
+//        order.verify(additionsChannel).send(eq(9L));
+//        order.verify(locksChannel).send(eq("INSERTED"));
+//        order.verify(locksChannel).send(eq("REMOVED"));
+//        order.verify(additionsChannel).send(eq(3L));
+//        order.verify(locksChannel).send(eq("INSERTED"));
+//        order.verify(locksChannel).send(eq("REMOVED"));
+//        order.verify(locksChannel).send(eq("INSERTED"));
+//        order.verifyNoMoreInteractions();
+//
+//        logger.info("End test serialized rules");
+//        rulesManager.stop();
+    }
+
     @Override
     protected Channel getReplayChannel() {
         return replayChannel;

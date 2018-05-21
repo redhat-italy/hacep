@@ -92,7 +92,7 @@ public abstract class AbstractClusterTest {
                 .addAdvancedExternalizer(new HAKieSession.HASessionExternalizer(sessionBuilder))
                 .addAdvancedExternalizer(new HAKieSerializedSession.HASerializedSessionExternalizer(sessionBuilder))
                 .addAdvancedExternalizer(new HAKieSessionDeltaEmpty.HASessionDeltaEmptyExternalizer(sessionBuilder))
-                .addAdvancedExternalizer(new HAKieSessionDeltaFact.HASessionDeltaFactExternalizer())
+                .addAdvancedExternalizer(new HAKieSessionDeltaFact.HASessionDeltaFactExternalizer(sessionBuilder))
                 .build();
 
         ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();

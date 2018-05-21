@@ -33,10 +33,6 @@ public class HAKieSessionDeltaEmpty implements Delta {
 
     private final HAKieSessionBuilder builder;
 
-    public HAKieSessionDeltaEmpty() {
-        this(null);
-    }
-
     public HAKieSessionDeltaEmpty(HAKieSessionBuilder builder) {
         this.builder = builder;
     }

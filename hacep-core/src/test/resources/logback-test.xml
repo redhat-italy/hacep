@@ -8,6 +8,7 @@
 
     <logger name="it.redhat.hacep" level="INFO" />
     <logger name="it.redhat.hacep.cache.listeners" level="DEBUG" />
+    <logger name="it.redhat.hacep.cache.session" level="DEBUG" />
 
     <logger name="org.infinispan.remoting.transport.jgroups" level="DEBUG" />
 
