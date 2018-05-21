@@ -49,4 +49,12 @@ public abstract class Key<T> implements Serializable {
     public int hashCode() {
         return Objects.hash(group);
     }
+
+    @Override
+    public String toString() {
+        return "Key{" +
+                "group='" + group + '\'' +
+                "id='" + getId() == null ? "null" : getId().toString() + '\'' +
+                '}';
+    }
 }
