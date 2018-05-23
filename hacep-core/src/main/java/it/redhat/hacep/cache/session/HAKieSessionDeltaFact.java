@@ -46,8 +46,10 @@ public class HAKieSessionDeltaFact implements Delta {
     @Override
     public DeltaAware merge(DeltaAware d) {
         if (d == null) {
-            LOGGER.info("[HAKieSessionDeltaFact: {}, FactKey {}, FactInstant: {}], merged with null, this should only happen during key remove", fact, fact == null ? null : fact.extractKey(), fact == null ? null : fact.getInstant());
-            return d;
+            LOGGER.debug("[HAKieSessionDeltaFact: {}, FactKey {}, FactInstant: {}], merged with null.", fact, fact == null ? null : fact.extractKey(), fact == null ? null : fact.getInstant());
+            HAKieSerializedSession haSession = builder.buildSerialized();
+            haSession.add(fact);
+            return haSession;
         }
 
         HAKieSerializedSession haSession;
@@ -57,8 +59,7 @@ public class HAKieSessionDeltaFact implements Delta {
             if (HAKieSession.class.isAssignableFrom(d.getClass())) {
                 haSession = ((HAKieSession) d).wrapWithSerializedSession();
             } else {
-                //XXX: This should never happen
-                throw new IllegalArgumentException("Class [" + d.getClass() + "]");
+                throw new IllegalArgumentException("This should never happen HAKieSessionDeltaFact.merge() called with DeltaAware's Class [" + d.getClass() + "]");
             }
         }
         haSession.add(fact);
