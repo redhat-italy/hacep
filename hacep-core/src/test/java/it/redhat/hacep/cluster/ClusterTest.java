@@ -229,6 +229,49 @@ public class ClusterTest extends AbstractClusterTest {
     }
 
     @Test
+    public void testNonEmptyHASessionRemoveKey() throws InterruptedException {
+        System.setProperty("grid.buffer", "10");
+
+        LOGGER.info("Start test non empty HASessionID Remove Key");
+
+        RulesConfigurationTestImpl rulesConfigurationTest = RulesTestBuilder.buildV1();
+        rulesConfigurationTest.registerChannel("additions", additionsChannel, replayChannel);
+
+        RulesManager rulesManager = new RulesManager(rulesConfigurationTest);
+        rulesManager.start(null, null, null);
+
+        Cache<String, Object> cache1 = startNodes(2, rulesManager).getCache();
+        Cache<String, Object> cache2 = startNodes(2, rulesManager).getCache();
+
+        String key = "2";
+        HAKieSession session1 = new HAKieSession(rulesManager, executorService);
+
+        cache1.put(key, session1);
+
+        session1.insert(generateFactTenSecondsAfter(1L, 10L));
+        cache1.put(key, session1);
+
+        session1.insert(generateFactTenSecondsAfter(1L, 20L));
+        cache1.put(key, session1);
+
+        session1.insert(generateFactTenSecondsAfter(1L, 30L));
+        cache1.put(key, session1);
+
+        Object serializedSessionCopy = cache2.get(key);
+
+        Assert.assertNotNull(serializedSessionCopy);
+        Assert.assertTrue(HAKieSerializedSession.class.isAssignableFrom(serializedSessionCopy.getClass()));
+
+        reset(replayChannel, additionsChannel);
+
+        cache1.remove(key);
+        cache1.put(key, session1);
+
+        LOGGER.info("End test non empty HASessionID Remove Key");
+        rulesManager.stop();
+    }
+
+    @Test
     public void testHASessionAddNode() {
         System.setProperty("grid.buffer", "10");
 

@@ -24,6 +24,10 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.configuration.global.GlobalJmxStatisticsConfigurationBuilder;
+import org.infinispan.configuration.global.GlobalStateConfigurationBuilder;
+import org.infinispan.configuration.global.TransportConfiguration;
+import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.junit.After;
@@ -46,8 +50,12 @@ public abstract class AbstractClusterTest {
     protected abstract Channel getReplayChannel();
 
     protected EmbeddedCacheManager startNodes(int owners, RulesManager droolsConfiguration) {
+        return startNodes(owners, droolsConfiguration, null, null);
+    }
+
+    protected EmbeddedCacheManager startNodes(int owners, RulesManager droolsConfiguration, String nodeName, String globalStateLocation) {
         LOGGER.info("Start node with owners({})", owners);
-        DefaultCacheManager cacheManager = clusteredCacheManager(CacheMode.DIST_SYNC, owners, droolsConfiguration);
+        DefaultCacheManager cacheManager = clusteredCacheManager(CacheMode.DIST_SYNC, owners, droolsConfiguration, nodeName, globalStateLocation);
         nodes.add(cacheManager);
         return cacheManager;
     }
@@ -80,19 +88,32 @@ public abstract class AbstractClusterTest {
         }
     }
 
-    private DefaultCacheManager clusteredCacheManager(CacheMode mode, int owners, RulesManager rulesManager) {
+    private DefaultCacheManager clusteredCacheManager(CacheMode mode, int owners, RulesManager rulesManager, String nodeName, String globalStateLocation) {
         ExecutorService executorService = Executors.newFixedThreadPool(4);
         HAKieSessionBuilder sessionBuilder = new HAKieSessionBuilder(rulesManager, executorService);
 
-        GlobalConfiguration glob = new GlobalConfigurationBuilder().clusteredDefault()
+         TransportConfigurationBuilder tcb = new GlobalConfigurationBuilder().clusteredDefault()
                 .transport().addProperty("configurationFile", System.getProperty("jgroups.configuration", "jgroups-test-tcp.xml"))
-                .clusterName("HACEP")
-                .globalJmxStatistics().allowDuplicateDomains(true).enable()
-                .serialization()
+                .clusterName("HACEP");
+
+                if(nodeName != null){
+                    tcb.nodeName(nodeName);
+                }
+
+        GlobalJmxStatisticsConfigurationBuilder gjscb = tcb.globalJmxStatistics().allowDuplicateDomains(true).enable();
+
+        GlobalStateConfigurationBuilder gscb;
+                if(globalStateLocation!=null){
+                    gscb = gjscb.globalState().enable().persistentLocation(globalStateLocation);
+                } else {
+                    gscb = gjscb.globalState().disable();
+                }
+
+        GlobalConfiguration glob = gscb.serialization()
                 .addAdvancedExternalizer(new HAKieSession.HASessionExternalizer(sessionBuilder))
                 .addAdvancedExternalizer(new HAKieSerializedSession.HASerializedSessionExternalizer(sessionBuilder))
                 .addAdvancedExternalizer(new HAKieSessionDeltaEmpty.HASessionDeltaEmptyExternalizer(sessionBuilder))
-                .addAdvancedExternalizer(new HAKieSessionDeltaFact.HASessionDeltaFactExternalizer())
+                .addAdvancedExternalizer(new HAKieSessionDeltaFact.HASessionDeltaFactExternalizer(sessionBuilder))
                 .build();
 
         ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();

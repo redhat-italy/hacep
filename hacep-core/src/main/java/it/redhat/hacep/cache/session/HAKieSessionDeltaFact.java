@@ -34,16 +34,22 @@ public class HAKieSessionDeltaFact implements Delta {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(HAKieSessionDeltaFact.class);
 
+    private final HAKieSessionBuilder builder;
+
     private final Fact fact;
 
-    public HAKieSessionDeltaFact(Fact fact) {
+    public HAKieSessionDeltaFact(HAKieSessionBuilder builder, Fact fact) {
+        this.builder = builder;
         this.fact = fact;
     }
 
     @Override
     public DeltaAware merge(DeltaAware d) {
         if (d == null) {
-            throw new IllegalStateException();
+            LOGGER.debug("[HAKieSessionDeltaFact: {}, FactKey {}, FactInstant: {}], merged with null.", fact, fact == null ? null : fact.extractKey(), fact == null ? null : fact.getInstant());
+            HAKieSerializedSession haSession = builder.buildSerialized();
+            haSession.add(fact);
+            return haSession;
         }
 
         HAKieSerializedSession haSession;
@@ -53,8 +59,7 @@ public class HAKieSessionDeltaFact implements Delta {
             if (HAKieSession.class.isAssignableFrom(d.getClass())) {
                 haSession = ((HAKieSession) d).wrapWithSerializedSession();
             } else {
-                // This should never happen
-                throw new IllegalArgumentException("Class [" + d.getClass() + "]");
+                throw new IllegalArgumentException("This should never happen HAKieSessionDeltaFact.merge() called with DeltaAware's Class [" + d.getClass() + "]");
             }
         }
         haSession.add(fact);
@@ -66,6 +71,12 @@ public class HAKieSessionDeltaFact implements Delta {
     }
 
     public static class HASessionDeltaFactExternalizer implements AdvancedExternalizer<HAKieSessionDeltaFact> {
+
+        private final HAKieSessionBuilder builder;
+
+        public HASessionDeltaFactExternalizer(HAKieSessionBuilder builder) {
+            this.builder = builder;
+        }
 
         @Override
         public Set<Class<? extends HAKieSessionDeltaFact>> getTypeClasses() {
@@ -85,7 +96,7 @@ public class HAKieSessionDeltaFact implements Delta {
         @Override
         public HAKieSessionDeltaFact readObject(ObjectInput input) throws IOException, ClassNotFoundException {
             Object o = input.readObject();
-            return new HAKieSessionDeltaFact((Fact) o);
+            return new HAKieSessionDeltaFact(builder, (Fact) o);
         }
     }
 }

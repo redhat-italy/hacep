@@ -20,32 +20,33 @@ package it.redhat.hacep.cache.session;
 import it.redhat.hacep.configuration.RulesManager;
 import org.kie.api.runtime.KieSession;
 
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 public class HAKieSessionBuilder {
 
     private final RulesManager rulesManager;
-    private final ExecutorService executorService;
+    private final Executor executor;
 
-    public HAKieSessionBuilder(RulesManager rulesManager, ExecutorService executorService) {
+    public HAKieSessionBuilder(RulesManager rulesManager, Executor executor) {
         this.rulesManager = rulesManager;
-        this.executorService = executorService;
+        this.executor = executor;
     }
 
     public HAKieSession build() {
-        return new HAKieSession(rulesManager, executorService);
+        return new HAKieSession(rulesManager, executor);
     }
 
     public HAKieSession build(KieSession session) {
-        return new HAKieSession(rulesManager, executorService, session);
+        return new HAKieSession(rulesManager, executor, session);
     }
 
     public HAKieSerializedSession buildSerialized() {
-        return new HAKieSerializedSession(rulesManager, executorService);
+        return new HAKieSerializedSession(rulesManager, executor);
     }
 
     public HAKieSerializedSession buildSerialized(String version, byte[] buffer) {
-        return new HAKieSerializedSession(rulesManager, executorService, version, buffer);
+        return new HAKieSerializedSession(rulesManager, executor, version, buffer);
     }
 
     public String getVersion() {

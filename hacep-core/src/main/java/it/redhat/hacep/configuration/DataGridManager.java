@@ -104,7 +104,7 @@ public class DataGridManager {
                     .addAdvancedExternalizer(new HAKieSession.HASessionExternalizer(builder))
                     .addAdvancedExternalizer(new HAKieSerializedSession.HASerializedSessionExternalizer(builder))
                     .addAdvancedExternalizer(new HAKieSessionDeltaEmpty.HASessionDeltaEmptyExternalizer(builder))
-                    .addAdvancedExternalizer(new HAKieSessionDeltaFact.HASessionDeltaFactExternalizer())
+                    .addAdvancedExternalizer(new HAKieSessionDeltaFact.HASessionDeltaFactExternalizer(builder))
                     .build();
 
             ConfigurationBuilder commonConfigurationBuilder = new ConfigurationBuilder();
